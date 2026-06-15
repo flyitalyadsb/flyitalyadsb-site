@@ -1,0 +1,220 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout
+  title="Open ADS-B data, global coverage"
+  description="FlyItalyADSB collects ADS-B and Mode-S data worldwide, with active MLAT over Italy — including military aircraft. Non-profit, unfiltered."
+>
+
+  <!-- HERO -->
+  <section class="relative" style="height:90vh;min-height:560px">
+
+    <iframe
+      src="https://mappa.flyitalyadsb.com"
+      title="Live ADS-B map"
+      class="absolute inset-0 w-full h-full border-0"
+      loading="lazy"
+      sandbox="allow-scripts allow-same-origin allow-popups"
+    ></iframe>
+
+    <div class="absolute inset-0 pointer-events-none"
+         style="background:linear-gradient(to bottom, #070d1acc 0%, #070d1a22 30%, #070d1a22 60%, #070d1aff 100%)">
+    </div>
+    <div class="absolute inset-0 pointer-events-none"
+         style="background:linear-gradient(to right, #070d1acc 0%, transparent 60%)">
+    </div>
+
+    <div class="absolute inset-0 flex items-center px-6 sm:px-12 lg:px-20 pt-14">
+      <div class="max-w-xl">
+
+        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium mb-5"
+             style="background:#38bdf815;border:1px solid #38bdf830;color:#7dd3fc">
+          <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block"></span>
+          Live · updated every 0.2s
+        </div>
+
+        <h1 class="text-4xl sm:text-5xl font-bold leading-tight mb-4" style="color:#f0f9ff">
+          Open ADS-B data<br />
+          <span style="color:#38bdf8">global coverage</span><br />
+          Italian MLAT
+        </h1>
+
+        <p class="text-slate-400 text-lg leading-relaxed mb-8 max-w-md">
+          We collect ADS-B and Mode-S data from our worldwide receiver network,
+          with MLAT active over Italy — including military aircraft. Non-profit, unfiltered.
+        </p>
+
+        <div class="flex flex-wrap gap-3">
+          <a href="https://mappa.flyitalyadsb.com" target="_blank" rel="noopener"
+             class="px-5 py-2.5 rounded-lg font-medium text-sm no-underline transition-all"
+             style="background:#38bdf8;color:#070d1a"
+             onmouseover="this.style.background='#7dd3fc'"
+             onmouseout="this.style.background='#38bdf8'">
+            Explore the map →
+          </a>
+          <a href="/en/ricerca"
+             class="px-5 py-2.5 rounded-lg font-medium text-sm no-underline transition-all text-slate-200 hover:text-white"
+             style="background:#ffffff10;border:1px solid #ffffff18"
+             onmouseover="this.style.background='#ffffff18'"
+             onmouseout="this.style.background='#ffffff10'">
+            Research
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-slate-600 pointer-events-none">
+      <span class="text-xs">scroll</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="animate-bounce">
+        <path d="M12 5v14m0 0l-7-7m7 7l7-7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+  </section>
+
+  <!-- 3 PILLARS -->
+  <section class="py-20 px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto">
+    <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-10">What we collect</p>
+    <div class="grid md:grid-cols-3 gap-6">
+
+      <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+        <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background:#38bdf815;border:1px solid #38bdf830">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+            <path d="M12 2v3m0 14v3M2 12h3m14 0h3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-slate-100 mb-2">Global ADS-B coverage</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">
+          Aggregated feed from our worldwide receiver network, adsb.lol and theairtraffic.com. Global coverage, high density over Italy and the Mediterranean.
+        </p>
+        <div class="mt-4 text-xs font-mono text-slate-600">aircraft.json · 0.2s</div>
+      </div>
+
+      <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+        <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background:#38bdf815;border:1px solid #38bdf830">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-slate-100 mb-2">Italian MLAT</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">
+          Multilateration on aircraft without full ADS-B transponders, including Italian military. The only active MLAT service over Italy.
+        </p>
+        <div class="mt-4 text-xs font-mono text-slate-600">mlat-server · port 30100</div>
+      </div>
+
+      <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+        <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background:#38bdf815;border:1px solid #38bdf830">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5">
+            <path d="M3 3h18v18H3zM3 9h18M9 21V9" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold text-slate-100 mb-2">Mode-S BDS50/BDS60</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">
+          True Air Speed, magnetic heading and Mach number via Mode-S Comm-B. Used to reconstruct upper-troposphere wind profiles.
+        </p>
+        <div class="mt-4 text-xs font-mono text-slate-600">Mode-S EHS · BDS50 · BDS60</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FEATURED RESEARCH -->
+  <section class="py-20 px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto border-t" style="border-color:#1e3048">
+
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+      <div>
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2">Ongoing research</p>
+        <h2 class="text-2xl font-bold text-slate-100">From airspace to science</h2>
+      </div>
+      <a href="/en/ricerca" class="text-sm text-sky-400 hover:text-sky-300 no-underline">All projects →</a>
+    </div>
+
+    <a href="/en/ricerca/weather" class="block p-8 rounded-2xl border no-underline group transition-all hover:border-sky-400/30"
+       style="background:#0f1929;border-color:#1e3048">
+      <div class="flex flex-col lg:flex-row gap-8">
+        <div class="flex-1">
+          <div class="flex flex-wrap items-center gap-3 mb-4">
+            <span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830">Meteorology</span>
+            <span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:#10b98115;color:#34d399;border:1px solid #10b98130">Ongoing</span>
+          </div>
+          <h3 class="text-xl font-bold text-slate-100 mb-3 group-hover:text-white transition-colors">
+            Upper-troposphere wind measurement from aircraft in flight
+          </h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-4 max-w-2xl">
+            Commercial aircraft are distributed meteorological sensors at altitude.
+            By extracting wind components from Mode-S messages (BDS50/BDS60) and comparing them
+            against ERA5 reanalysis and IASI satellite profiles, we are validating the quality
+            of avionics data as an independent meteorological source.
+          </p>
+          <div class="flex flex-wrap gap-6 text-sm">
+            <div>
+              <div class="text-xs text-slate-600 uppercase tracking-wider mb-1">Method</div>
+              <div class="text-slate-300 font-mono text-xs">W = V<sub>ground</sub> − V<sub>air</sub></div>
+            </div>
+            <div>
+              <div class="text-xs text-slate-600 uppercase tracking-wider mb-1">Validation</div>
+              <div class="text-slate-300 text-xs">ERA5 · IASI (MetOp)</div>
+            </div>
+            <div>
+              <div class="text-xs text-slate-600 uppercase tracking-wider mb-1">Typical RMSE</div>
+              <div class="text-slate-300 text-xs">6.5–7.4 m/s (u, v)</div>
+            </div>
+          </div>
+        </div>
+        <div class="shrink-0 w-full lg:w-64 p-5 rounded-xl" style="background:#111e30;border:1px solid #1e3048">
+          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Mode-S vs ERA5</div>
+          <div class="space-y-3">
+            {[
+              { label: 'Bias u', value: '+0.21 m/s' },
+              { label: 'Bias v', value: '+1.77 m/s' },
+              { label: 'RMSE u', value: '7.38 m/s' },
+              { label: 'RMSE v', value: '6.57 m/s' },
+            ].map(row => (
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-500">{row.label}</span>
+                <span class="text-xs font-mono" style="color:#7dd3fc">{row.value}</span>
+              </div>
+            ))}
+          </div>
+          <div class="mt-4 pt-3 border-t text-xs text-slate-600" style="border-color:#1e3048">Jun 23, 2025</div>
+        </div>
+      </div>
+    </a>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-20 px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto border-t" style="border-color:#1e3048">
+    <div class="rounded-2xl p-8 sm:p-12 flex flex-col sm:flex-row gap-8 items-start sm:items-center justify-between"
+         style="background:linear-gradient(135deg,#0f1929 0%,#111e30 100%);border:1px solid #1e3048">
+      <div class="max-w-lg">
+        <p class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:#38bdf8">Contribute</p>
+        <h2 class="text-2xl font-bold text-slate-100 mb-3">Join the network</h2>
+        <p class="text-slate-400 text-sm leading-relaxed">
+          Data quality depends on network density. A Raspberry Pi and an RTL-SDR antenna
+          are all you need to add coverage to your area. Total cost under €30.
+        </p>
+      </div>
+      <div class="flex flex-col gap-3 shrink-0">
+        <a href="/en/community/feeder"
+           class="px-6 py-3 rounded-lg font-medium text-sm text-center no-underline transition-all"
+           style="background:#38bdf8;color:#070d1a"
+           onmouseover="this.style.background='#7dd3fc'"
+           onmouseout="this.style.background='#38bdf8'">
+          Become a feeder →
+        </a>
+        <a href="/en/chi-siamo"
+           class="px-6 py-3 rounded-lg font-medium text-sm text-center no-underline transition-all text-slate-300 hover:text-white"
+           style="background:#ffffff08;border:1px solid #ffffff14"
+           onmouseover="this.style.background='#ffffff12'"
+           onmouseout="this.style.background='#ffffff08'">
+          About us
+        </a>
+      </div>
+    </div>
+  </section>
+
+</Layout>

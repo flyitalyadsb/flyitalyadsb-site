@@ -1,0 +1,133 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout
+  title="The network"
+  description="FlyItalyADSB's receiver network: a global grid of feeders augmented by adsb.lol and theairtraffic.com, with MLAT active over Italy."
+>
+  <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto">
+
+    <div class="mb-14">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Infrastructure</p>
+      <h1 class="text-4xl font-bold text-slate-100 mb-4">The network</h1>
+      <p class="text-slate-400 max-w-2xl leading-relaxed">
+        FlyItalyADSB aggregates data from a worldwide network of private receivers
+        and international aggregation networks. The result is global ADS-B coverage
+        with high density over Italy and the Mediterranean, and the only active MLAT service over Italy.
+      </p>
+    </div>
+
+    <!-- Architecture -->
+    <div class="grid md:grid-cols-2 gap-6 mb-16">
+
+      <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#38bdf815;border:1px solid #38bdf830">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5">
+              <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0" stroke-linecap="round"/>
+              <path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h2 class="font-semibold text-slate-100">Our receiver network</h2>
+        </div>
+        <p class="text-sm text-slate-400 leading-relaxed mb-4">
+          Private receivers contributed by community members across Italy and beyond.
+          Coverage extends from the Alps to Sicily, from the Tyrrhenian Sea to the Adriatic coast,
+          with individual antennas reaching up to 400 km. Together they form the densest
+          ground-truth ADS-B network over Italy.
+        </p>
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between py-1 border-b" style="border-color:#1e3048">
+            <span class="text-slate-500">Input protocol</span>
+            <span class="text-slate-300 font-mono">BEAST TCP · port 4905</span>
+          </div>
+          <div class="flex justify-between py-1 border-b" style="border-color:#1e3048">
+            <span class="text-slate-500">Mode-S EHS</span>
+            <span class="text-slate-300 font-mono">BDS50 · BDS60 · BDS44</span>
+          </div>
+          <div class="flex justify-between py-1">
+            <span class="text-slate-500">MLAT</span>
+            <span class="text-slate-300 font-mono">port 30100</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#38bdf815;border:1px solid #38bdf830">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2 class="font-semibold text-slate-100">International aggregators</h2>
+        </div>
+        <p class="text-sm text-slate-400 leading-relaxed mb-4">
+          The readsb-globe server connects to <strong class="text-slate-300">adsb.lol</strong> and
+          <strong class="text-slate-300">theairtraffic.com</strong> to aggregate global feeds.
+          This extends coverage worldwide, with MLAT data from these networks
+          merged into the local aggregated stream.
+        </p>
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between py-1 border-b" style="border-color:#1e3048">
+            <span class="text-slate-500">adsb.lol</span>
+            <span class="text-slate-300 font-mono">BEAST in · SBS MLAT in</span>
+          </div>
+          <div class="flex justify-between py-1 border-b" style="border-color:#1e3048">
+            <span class="text-slate-500">theairtraffic.com</span>
+            <span class="text-slate-300 font-mono">BEAST in · SBS MLAT in</span>
+          </div>
+          <div class="flex justify-between py-1">
+            <span class="text-slate-500">OGN (light aircraft)</span>
+            <span class="text-slate-300 font-mono">FLARM/FANET → SBS</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Pipeline -->
+    <div class="mb-16">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-8">Data pipeline</p>
+      <div class="relative">
+        <div class="absolute left-5 top-8 bottom-8 w-px" style="background:linear-gradient(to bottom, #38bdf830, #38bdf810)"></div>
+        <div class="space-y-4">
+          {[
+            { step: '01', title: 'Ingestion', desc: 'Feeders send BEAST TCP data to readsb-ingest (port 4905). Simultaneously, readsb-globe receives from adsb.lol and theairtraffic.com.', tags: ['readsb-ingest', 'readsb-globe'] },
+            { step: '02', title: 'MLAT', desc: 'MLAT clients (port 30100) send time-stamped measurements to mlat-server. With at least 4 synchronized receivers, the server triangulates aircraft position without GPS.', tags: ['mlat-server', 'port 30100'] },
+            { step: '03', title: 'Aggregation', desc: 'readsb-globe merges all feeds: local feeders, computed MLAT, adsb.lol, theairtraffic.com, OGN. Outputs aircraft.json every 200ms and updates heatmap history.', tags: ['aircraft.json', '0.2s', 'heatmap'] },
+            { step: '04', title: 'Distribution', desc: 'Data is served to the tar1090 map via local Unix socket, to the MyFlyItalyADSB dashboard via PostgreSQL, and used by the weather-32 meteorological pipeline.', tags: ['tar1090', 'my.flyitalyadsb.com', 'weather-32'] },
+          ].map(item => (
+            <div class="flex gap-6 pl-12 relative">
+              <div class="absolute left-0 top-4 w-10 h-10 rounded-full flex items-center justify-center text-xs font-mono font-bold shrink-0"
+                   style="background:#0f1929;border:1px solid #38bdf830;color:#38bdf8">{item.step}</div>
+              <div class="flex-1 p-5 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+                <h3 class="font-semibold text-slate-100 mb-1">{item.title}</h3>
+                <p class="text-sm text-slate-400 leading-relaxed mb-3">{item.desc}</p>
+                <div class="flex flex-wrap gap-2">
+                  {item.tags.map(tag => <span class="text-xs px-2 py-0.5 rounded font-mono" style="background:#111e30;color:#64748b">{tag}</span>)}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-2xl p-8 border flex flex-col sm:flex-row gap-6 items-center"
+         style="background:linear-gradient(135deg,#0f1929 0%,#111e30 100%);border-color:#1e3048">
+      <div class="flex-1">
+        <h3 class="font-bold text-slate-100 text-xl mb-2">Add your receiver</h3>
+        <p class="text-sm text-slate-400">More receivers mean better MLAT coverage and denser Mode-S data for meteorological research.</p>
+      </div>
+      <a href="/en/community/feeder"
+         class="shrink-0 px-6 py-3 rounded-lg font-medium text-sm no-underline transition-all"
+         style="background:#38bdf8;color:#070d1a"
+         onmouseover="this.style.background='#7dd3fc'"
+         onmouseout="this.style.background='#38bdf8'">
+        Become a feeder →
+      </a>
+    </div>
+
+  </div>
+</Layout>

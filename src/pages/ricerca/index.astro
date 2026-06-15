@@ -1,0 +1,93 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout
+  title="Ricerca"
+  description="Progetti di ricerca meteorologica e aeronautica basati sui dati ADS-B e MLAT raccolti dalla rete FlyItalyADSB."
+>
+  <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto">
+
+    <div class="mb-16">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Ricerca</p>
+      <h1 class="text-4xl font-bold text-slate-100 mb-4">Ricerca scientifica</h1>
+      <p class="text-slate-400 max-w-2xl leading-relaxed">
+        I dati ADS-B e Mode-S raccolti dalla rete FlyItalyADSB sono usati per ricerca
+        meteorologica e aeronautica. Gli aeromobili commerciali in volo sono sensori distribuiti
+        ad alta quota: permettono di misurare vento, temperatura e pressione con una densità
+        spaziotemporale impossibile con le stazioni tradizionali.
+      </p>
+    </div>
+
+    <!-- Progetto featured -->
+    <div class="mb-6">
+      <p class="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-4">Progetto principale</p>
+
+      <a href="/ricerca/weather" class="block p-8 rounded-2xl border no-underline group transition-all hover:border-sky-400/30"
+         style="background:#0f1929;border-color:#1e3048">
+        <div class="flex flex-col lg:flex-row gap-8">
+          <div class="flex-1">
+            <div class="flex flex-wrap items-center gap-3 mb-4">
+              <span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830">Meteorologia</span>
+              <span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:#10b98115;color:#34d399;border:1px solid #10b98130">In corso</span>
+            </div>
+            <h2 class="text-xl font-bold text-slate-100 mb-3 group-hover:text-white transition-colors">
+              Misura del vento troposferico da aeromobili in volo
+            </h2>
+            <p class="text-slate-400 text-sm leading-relaxed mb-4 max-w-2xl">
+              Estrazione delle componenti di vento (u, v) dai messaggi Mode-S BDS50/BDS60 e ADS-B.
+              La velocità rispetto all'aria (TAS, heading magnetico) viene sottratta alla velocità al suolo
+              (ground speed, track GPS) per ricavare il vento locale.
+              I risultati vengono validati contro le rianalisi ERA5 (ECMWF) e i profili verticali IASI (satellite MetOp).
+            </p>
+            <div class="flex flex-wrap gap-6">
+              {[
+                { label: 'Fonte dati', value: 'ADS-B + Mode-S BDS50/60' },
+                { label: 'Validazione', value: 'ERA5 · IASI (MetOp)' },
+                { label: 'RMSE (u)', value: '7.38 m/s vs ERA5' },
+              ].map(item => (
+                <div>
+                  <div class="text-xs text-slate-600 uppercase tracking-wider mb-1">{item.label}</div>
+                  <div class="text-slate-300 text-xs font-mono">{item.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div class="shrink-0 flex items-center">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5" class="opacity-40 group-hover:opacity-100 transition-opacity">
+              <path d="M7 17L17 7M7 7h10v10" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Accesso ai dati per ricercatori -->
+    <div class="mt-16 rounded-xl p-8 border" style="background:#0a1320;border-color:#1e3048">
+      <div class="flex flex-col sm:flex-row gap-6 items-start">
+        <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+             style="background:#38bdf815;border:1px solid #38bdf830">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <h3 class="font-semibold text-slate-100 mb-2">Accesso ai dati per ricercatori</h3>
+          <p class="text-sm text-slate-400 leading-relaxed mb-4">
+            I dataset ADS-B storici, i file MLAT CSV e i dati Mode-S grezzi non sono distribuiti pubblicamente,
+            ma sono disponibili per ricerche universitarie o istituzionali su richiesta.
+            Contattaci con una breve descrizione del progetto e dell'istituzione di riferimento.
+          </p>
+          <a href="/chi-siamo#contatti"
+             class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium no-underline transition-all"
+             style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
+             onmouseover="this.style.background='#38bdf825'"
+             onmouseout="this.style.background='#38bdf815'">
+            Richiedi accesso →
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</Layout>

@@ -1,0 +1,192 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Open ADS-B data — FlyItalyADSB' } = Astro.props;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://flyitalyadsb.com');
+
+// Language detection
+const path = Astro.url.pathname;
+const isEn = path.startsWith('/en') && (path === '/en' || path.startsWith('/en/'));
+const lang = isEn ? 'en' : 'it';
+
+// Language switcher: swap /en prefix
+function altLangPath(p: string): string {
+  if (p.startsWith('/en/')) return p.replace(/^\/en\//, '/');
+  if (p === '/en') return '/';
+  return `/en${p === '/' ? '' : p}`;
+}
+const altHref = altLangPath(path);
+const altLabel = isEn ? 'IT' : 'EN';
+
+const nav = isEn
+  ? { map: 'Map', data: 'Data', network: 'Network', research: 'Research', about: 'About', dashboard: 'Feeder dashboard →' }
+  : { map: 'Mappa', data: 'Dati', network: 'Rete', research: 'Ricerca', about: 'Chi siamo', dashboard: 'Dashboard feeder →' };
+
+const navLinks = isEn
+  ? [
+      { href: 'https://mappa.flyitalyadsb.com', label: nav.map, external: true },
+      { href: '/en/dati', label: nav.data, external: false },
+      { href: '/en/rete', label: nav.network, external: false },
+      { href: '/en/ricerca', label: nav.research, external: false },
+      { href: '/en/chi-siamo', label: nav.about, external: false },
+    ]
+  : [
+      { href: 'https://mappa.flyitalyadsb.com', label: nav.map, external: true },
+      { href: '/dati', label: nav.data, external: false },
+      { href: '/rete', label: nav.network, external: false },
+      { href: '/ricerca', label: nav.research, external: false },
+      { href: '/chi-siamo', label: nav.about, external: false },
+    ];
+---
+
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="canonical" href={canonicalURL} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title} — FlyItalyADSB</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={`${title} — FlyItalyADSB`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body class="min-h-screen flex flex-col" style="background-color:#070d1a">
+
+    <!-- Nav -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+         style="background:transparent">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+
+        <a href={isEn ? '/en' : '/'} class="flex items-center gap-2 no-underline group">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" class="text-sky-400 group-hover:text-sky-300 transition-colors" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="font-semibold text-sm tracking-wide text-slate-100 group-hover:text-white transition-colors">
+            FlyItalyADSB
+          </span>
+        </a>
+
+        <div class="flex items-center gap-1 text-sm">
+          {navLinks.map(link => (
+            <a href={link.href}
+               target={link.external ? '_blank' : undefined}
+               rel={link.external ? 'noopener' : undefined}
+               class="px-3 py-1.5 rounded text-slate-400 hover:text-slate-100 hover:bg-white/5 transition-colors no-underline">
+              {link.label}
+            </a>
+          ))}
+          <a href="https://my.flyitalyadsb.com" target="_blank" rel="noopener"
+             class="ml-2 px-3 py-1.5 rounded border text-sky-400 hover:text-sky-300 hover:bg-sky-400/10 transition-colors no-underline text-xs font-medium"
+             style="border-color:#38bdf830">
+            {nav.dashboard}
+          </a>
+          <!-- Language switcher -->
+          <a href={altHref}
+             class="ml-3 px-2.5 py-1 rounded text-xs font-mono font-semibold transition-colors no-underline"
+             style="background:#ffffff08;color:#64748b;border:1px solid #ffffff12"
+             onmouseover="this.style.color='#94a3b8'"
+             onmouseout="this.style.color='#64748b'">
+            {altLabel}
+          </a>
+        </div>
+
+      </div>
+    </nav>
+
+    <!-- Slot content -->
+    <main class="flex-1">
+      <slot />
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t mt-24 py-12 px-4" style="border-color:#1e3048;background:#070d1a">
+      <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+
+          <div>
+            <div class="flex items-center gap-2 mb-4">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="text-slate-100 font-semibold text-sm">FlyItalyADSB</span>
+            </div>
+            <p class="text-xs text-slate-500 leading-relaxed">
+              {isEn ? 'Open ADS-B data, global coverage, Italian MLAT. Non-profit.' : 'Dati ADS-B aperti, copertura globale, MLAT italiano. No-profit.'}
+            </p>
+          </div>
+
+          <div>
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">{isEn ? 'Data' : 'Dati'}</div>
+            <ul class="space-y-2 text-sm">
+              <li><a href={isEn ? '/en/dati' : '/dati'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'About our data' : 'I nostri dati'}</a></li>
+              <li><a href={isEn ? '/en/dati/archivio' : '/dati/archivio'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Archive' : 'Archivio storico'}</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">{isEn ? 'Community' : 'Community'}</div>
+            <ul class="space-y-2 text-sm">
+              <li><a href={isEn ? '/en/rete' : '/rete'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'The network' : 'La rete'}</a></li>
+              <li><a href={isEn ? '/en/community/feeder' : '/community/feeder'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Become a feeder' : 'Diventa feeder'}</a></li>
+              <li><a href={isEn ? '/en/community/mlat' : '/community/mlat'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'How MLAT works' : 'Come funziona MLAT'}</a></li>
+              <li><a href={isEn ? '/en/ricerca' : '/ricerca'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Research' : 'Ricerca'}</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">{isEn ? 'Project' : 'Progetto'}</div>
+            <ul class="space-y-2 text-sm">
+              <li><a href={isEn ? '/en/chi-siamo' : '/chi-siamo'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'About' : 'Chi siamo'}</a></li>
+              <li>
+                <a href="https://github.com/flyitalyadsb" target="_blank" rel="noopener"
+                   class="text-slate-500 hover:text-slate-300 no-underline">GitHub ↗</a>
+              </li>
+              <li>
+                <a href="https://nessolabs.it" target="_blank" rel="noopener"
+                   class="text-slate-500 hover:text-slate-300 no-underline">Nesso Labs ↗</a>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div class="border-t pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+             style="border-color:#1e3048">
+          <p class="text-xs text-slate-600">
+            © {new Date().getFullYear()} FlyItalyADSB · {isEn ? 'Data license' : 'Dati licenza'} <a href="https://creativecommons.org/licenses/by-sa/4.0/" class="hover:text-slate-400" target="_blank" rel="noopener">CC BY-SA 4.0</a>
+          </p>
+          <p class="text-xs text-slate-600">
+            {isEn ? 'Infrastructure by' : 'Infrastruttura gestita da'} <a href="https://nessolabs.it" class="hover:text-slate-400" target="_blank" rel="noopener">Nesso Labs</a>
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Nav scroll behavior -->
+    <script>
+      const navbar = document.getElementById('navbar');
+      window.addEventListener('scroll', () => {
+        if (!navbar) return;
+        if (window.scrollY > 20) {
+          navbar.style.background = '#070d1aee';
+          navbar.style.backdropFilter = 'blur(12px)';
+          navbar.style.borderBottom = '1px solid #1e3048';
+        } else {
+          navbar.style.background = 'transparent';
+          navbar.style.backdropFilter = 'none';
+          navbar.style.borderBottom = 'none';
+        }
+      }, { passive: true });
+    </script>
+
+  </body>
+</html>

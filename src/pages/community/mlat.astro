@@ -1,0 +1,147 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout
+  title="Come funziona MLAT"
+  description="Multilateration (MLAT): come la triangolazione temporale permette di localizzare aerei senza transponder ADS-B, inclusi militari."
+>
+  <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-4xl mx-auto">
+
+    <div class="mb-14">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+        <a href="/community/feeder" class="text-slate-600 hover:text-slate-400 no-underline">Community</a>
+        <span class="mx-2">/</span>
+        <span class="text-slate-500">MLAT</span>
+      </p>
+      <h1 class="text-4xl font-bold text-slate-100 mb-4">Come funziona MLAT</h1>
+      <p class="text-slate-400 max-w-2xl leading-relaxed">
+        Multilateration (MLAT) è la tecnica che permette di localizzare aeromobili che non trasmettono
+        posizione GPS — inclusi molti aerei militari, elicotteri e velivoli con transponder Mode-A/C.
+      </p>
+    </div>
+
+    <!-- Principio fisico -->
+    <section class="mb-14">
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">Il principio: TDOA</h2>
+      <p class="text-slate-400 leading-relaxed mb-6">
+        Ogni transponder Mode-S — anche senza ADS-B — risponde alle interrogazioni secondarie
+        con un segnale radio a 1090 MHz. Questo segnale viaggia alla velocità della luce e
+        arriva ai diversi ricevitori in momenti leggermente diversi.
+        La differenza di tempo di arrivo (<strong class="text-slate-300">Time Difference Of Arrival, TDOA</strong>)
+        dipende dalla posizione dell'aeromobile rispetto ai ricevitori.
+      </p>
+
+      <div class="p-6 rounded-xl border mb-6" style="background:#0f1929;border-color:#1e3048">
+        <div class="text-center font-mono text-sm leading-relaxed text-slate-400">
+          <div class="mb-3">
+            <span style="color:#38bdf8">Δt</span> = (distanza al ricevitore A − distanza al ricevitore B) / <span style="color:#7dd3fc">c</span>
+          </div>
+          <div class="text-xs text-slate-600">
+            Δt = differenza di tempo di arrivo (nanosecondi) · c = velocità della luce (3×10⁸ m/s)
+          </div>
+        </div>
+      </div>
+
+      <p class="text-slate-400 leading-relaxed">
+        Con due ricevitori, la posizione dell'aeromobile giace su un'iperbole nello spazio.
+        Con tre ricevitori si ottengono due iperboli — la loro intersezione riduce le soluzioni a due punti.
+        Con <strong class="text-slate-300">quattro o più ricevitori</strong> la soluzione è univoca e tridimensionale:
+        si ricavano latitudine, longitudine e altitudine.
+      </p>
+    </section>
+
+    <!-- Sincronizzazione -->
+    <section class="mb-14">
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">Sincronizzazione tra ricevitori</h2>
+      <p class="text-slate-400 leading-relaxed mb-4">
+        La TDOA funziona solo se i ricevitori hanno clock sincronizzati al nanosecondo.
+        Il server MLAT di FlyItalyADSB non usa GPS per sincronizzare gli orologi:
+        usa invece gli aerei <em>con</em> posizione ADS-B nota come riferimento.
+      </p>
+      <p class="text-slate-400 leading-relaxed">
+        Quando due ricevitori sentono lo stesso aeromobile con posizione GPS verificata,
+        il server può calcolare la differenza di clock tra i due ricevitori.
+        Questo processo di auto-calibrazione è continuo e garantisce precisione
+        anche senza hardware GPS dedicato sui ricevitori.
+      </p>
+    </section>
+
+    <!-- Perché è importante -->
+    <section class="mb-14">
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">Perché è importante</h2>
+
+      <div class="grid sm:grid-cols-2 gap-4">
+        {[
+          {
+            title: 'Aerei militari italiani',
+            desc: 'Caccia, pattugliatori, elicotteri SAR — la maggior parte vola con transponder Mode-S base senza ADS-B. MLAT è l\'unico modo per tracciarli sulla mappa civile.',
+            accent: true,
+          },
+          {
+            title: 'Aviazione generale',
+            desc: 'Molti velivoli leggeri, ultraleggeri e alianti montano solo transponder Mode-A/C. MLAT li rende visibili anche a quota bassa.',
+            accent: false,
+          },
+          {
+            title: 'Dati meteorologici',
+            desc: 'Per la ricerca weather-32, anche gli aerei tracciati via MLAT trasmettono Mode-S — consentendo l\'estrazione dei dati di vento BDS50/BDS60.',
+            accent: false,
+          },
+          {
+            title: 'Sicurezza',
+            desc: 'La copertura MLAT riduce i "buchi" nella sorveglianza civile, utile per analisi del traffico e sicurezza nelle aree montane con scarsa copertura radar.',
+            accent: false,
+          },
+        ].map(item => (
+          <div class="p-5 rounded-xl border" style={`background:#0f1929;border-color:${item.accent ? '#38bdf830' : '#1e3048'}`}>
+            <h3 class="font-semibold mb-2" style={item.accent ? 'color:#7dd3fc' : 'color:#e2e8f0'}>{item.title}</h3>
+            <p class="text-sm text-slate-500 leading-relaxed">{item.desc}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Requisiti per partecipare -->
+    <section class="mb-14">
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">Requisiti per partecipare al MLAT</h2>
+      <div class="space-y-3">
+        {[
+          { ok: true,  text: 'Ricevitore con supporto Mode-S EHS (la maggior parte dei RTL-SDR moderni)' },
+          { ok: true,  text: 'Posizione antenna inserita con precisione (lat/lon/altezza, errore < 10 m)' },
+          { ok: true,  text: 'Connessione al server MLAT di FlyItalyADSB: dati.flyitalyadsb.com:30100' },
+          { ok: true,  text: 'Almeno 3 altri ricevitori nella stessa area geografica per la triangolazione' },
+          { ok: false, text: 'GPS hardware sul ricevitore: NON necessario (il server si auto-calibra)' },
+        ].map(item => (
+          <div class="flex items-start gap-3 p-3 rounded-lg" style="background:#0f1929;border:1px solid #1e3048">
+            <div class="mt-0.5 shrink-0">
+              {item.ok
+                ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01" stroke-linecap="round"/></svg>
+              }
+            </div>
+            <span class="text-sm text-slate-400">{item.text}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <div class="flex flex-col sm:flex-row gap-4">
+      <a href="/community/feeder"
+         class="px-6 py-3 rounded-lg font-medium text-sm text-center no-underline transition-all"
+         style="background:#38bdf8;color:#070d1a"
+         onmouseover="this.style.background='#7dd3fc'"
+         onmouseout="this.style.background='#38bdf8'">
+        Guida al setup feeder →
+      </a>
+      <a href="/rete"
+         class="px-6 py-3 rounded-lg font-medium text-sm text-center no-underline transition-all text-slate-300 hover:text-white"
+         style="background:#ffffff08;border:1px solid #ffffff14"
+         onmouseover="this.style.background='#ffffff12'"
+         onmouseout="this.style.background='#ffffff08'">
+        La rete FlyItalyADSB
+      </a>
+    </div>
+
+  </div>
+</Layout>

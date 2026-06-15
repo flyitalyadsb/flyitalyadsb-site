@@ -1,0 +1,126 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout
+  title="About"
+  description="FlyItalyADSB is Italy's first ADS-B flight tracking community. Non-profit, run by enthusiasts, infrastructure by Nesso Labs."
+>
+  <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-4xl mx-auto">
+
+    <div class="mb-14">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Project</p>
+      <h1 class="text-4xl font-bold text-slate-100 mb-4">About</h1>
+      <p class="text-slate-400 max-w-2xl leading-relaxed text-lg">
+        FlyItalyADSB is Italy's first ADS-B flight tracking community.
+        Born from a group of aviation enthusiasts, it has grown into a data collection
+        infrastructure with global coverage and applications in scientific research.
+      </p>
+    </div>
+
+    <!-- Values -->
+    <section class="mb-16">
+      <div class="grid sm:grid-cols-3 gap-5">
+        {[
+          { icon: `<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-linecap="round" stroke-linejoin="round"/>`, title: 'Non-profit', desc: 'No commercial objective. The infrastructure is maintained by volunteers and Nesso Labs at no cost to users.' },
+          { icon: `<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20" stroke-linecap="round"/>`, title: 'Unfiltered data', desc: 'No FAA, LADD or BARR filters. Data is transmitted as received — including military aircraft via MLAT.' },
+          { icon: `<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75" stroke-linecap="round"/>`, title: 'Open source', desc: 'Stack based on readsb/tar1090/mlat-server by wiedehopf. All core software is public and freely reusable.' },
+        ].map(item => (
+          <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background:#38bdf815;border:1px solid #38bdf830">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5" set:html={item.icon}/>
+            </div>
+            <h3 class="font-semibold text-slate-100 mb-2">{item.title}</h3>
+            <p class="text-sm text-slate-500 leading-relaxed">{item.desc}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- History -->
+    <section class="mb-16">
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">History</h2>
+      <div class="space-y-6 text-slate-400 leading-relaxed">
+        <p>
+          FlyItalyADSB was founded as a community of flight tracking enthusiasts in Italy.
+          The network expanded progressively across the country — from the Alps to Sicily,
+          from the Tyrrhenian Sea to the Adriatic coast — with receivers covering up to 400 km each.
+          Over time, the feeder community grew beyond Italy to include receivers across Europe and beyond,
+          giving FlyItalyADSB a genuinely global ground network.
+        </p>
+        <p>
+          In 2023, following the acquisition of ADS-B Exchange by JETNET (private equity),
+          the non-profit tracking community fragmented. FlyItalyADSB maintained its independence
+          and positioned itself alongside new community players such as adsb.lol, adsb.fi
+          and airplanes.live — all based on the same open source stack, all non-profit, all unfiltered.
+        </p>
+        <p>
+          Coverage today is global: beyond the ground network, the aggregation server
+          receives data from adsb.lol and theairtraffic.com, extending the map worldwide.
+          Italian MLAT remains a unique feature: FlyItalyADSB is the only network
+          with active MLAT triangulation over Italy, including military flights.
+        </p>
+        <p>
+          In 2025, Mode-S data collected by the network became the foundation of the
+          <a href="/en/ricerca/weather" class="text-sky-400 no-underline hover:text-sky-300">Weather 3.2</a>
+          meteorological research project, which uses aircraft as high-altitude wind sensors
+          to validate ERA5 reanalyses and IASI profiles.
+        </p>
+      </div>
+    </section>
+
+    <!-- Nesso Labs -->
+    <section class="mb-16">
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">Infrastructure</h2>
+      <div class="p-6 rounded-xl border flex flex-col sm:flex-row gap-6 items-start" style="background:#0f1929;border-color:#1e3048">
+        <div class="flex-1">
+          <h3 class="font-semibold text-slate-100 mb-2">Nesso Labs</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            FlyItalyADSB's infrastructure — Kubernetes cluster, distributed storage, data pipelines —
+            is managed by <a href="https://nessolabs.it" target="_blank" rel="noopener" class="text-sky-400 no-underline">Nesso Labs</a>.
+            FlyItalyADSB is the first "Nesso Data" project in the airspace mobility domain:
+            collection, processing and distribution of public data —
+            the same philosophy as the Nesso Equity project in the financial domain.
+          </p>
+        </div>
+        <a href="https://nessolabs.it" target="_blank" rel="noopener"
+           class="shrink-0 px-4 py-2 rounded-lg text-sm font-medium no-underline transition-all"
+           style="background:#ffffff08;color:#94a3b8;border:1px solid #ffffff14"
+           onmouseover="this.style.background='#ffffff12'"
+           onmouseout="this.style.background='#ffffff08'">
+          nessolabs.it ↗
+        </a>
+      </div>
+    </section>
+
+    <!-- Contacts -->
+    <section id="contatti" class="scroll-mt-20">
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">Contact</h2>
+      <div class="grid sm:grid-cols-2 gap-4 mb-8">
+        <div class="p-5 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+          <h3 class="font-semibold text-slate-200 mb-1 text-sm">Research inquiries</h3>
+          <p class="text-xs text-slate-500 leading-relaxed mb-3">
+            Access to historical datasets, raw Mode-S data, MLAT CSV — for university or institutional research.
+          </p>
+          <a href="mailto:info@flyitalyadsb.com" class="text-sm text-sky-400 no-underline hover:text-sky-300">info@flyitalyadsb.com</a>
+        </div>
+        <div class="p-5 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+          <h3 class="font-semibold text-slate-200 mb-1 text-sm">GitHub</h3>
+          <p class="text-xs text-slate-500 leading-relaxed mb-3">
+            Source code for custom components: myflyitalyadsb, readsb fork, mlat-server, wp-stato-mlat.
+          </p>
+          <a href="https://github.com/flyitalyadsb" target="_blank" rel="noopener" class="text-sm text-sky-400 no-underline hover:text-sky-300">github.com/flyitalyadsb ↗</a>
+        </div>
+      </div>
+      <div class="p-6 rounded-xl border" style="background:#0a1320;border-color:#1e3048">
+        <p class="text-sm text-slate-400 leading-relaxed">
+          For technical support on feeder setup or network questions,
+          use the community GitHub Discussions channel or write to
+          <a href="mailto:info@flyitalyadsb.com" class="text-sky-400 no-underline">info@flyitalyadsb.com</a>.
+          We respond within 48 hours.
+        </p>
+      </div>
+    </section>
+
+  </div>
+</Layout>

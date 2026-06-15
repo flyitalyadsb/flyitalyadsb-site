@@ -1,0 +1,123 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout
+  title="Archivio storico"
+  description="Archivio storico dei dati ADS-B raccolti da FlyItalyADSB: heatmap, state history, tracce. Disponibile per ricercatori su richiesta."
+>
+  <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-4xl mx-auto">
+
+    <div class="mb-14">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
+        <a href="/dati" class="text-slate-600 hover:text-slate-400 no-underline">Dati</a>
+        <span class="mx-2">/</span>
+        <span class="text-slate-500">Archivio</span>
+      </p>
+      <h1 class="text-4xl font-bold text-slate-100 mb-4">Archivio storico</h1>
+      <p class="text-slate-400 max-w-2xl leading-relaxed">
+        FlyItalyADSB mantiene un archivio continuo dei dati ADS-B raccolti dalla rete.
+        Lo storico include heatmap di densità, state history delle tracce e i dati Mode-S grezzi
+        usati per la ricerca meteorologica.
+      </p>
+    </div>
+
+    <!-- Cosa contiene l'archivio -->
+    <section class="mb-14">
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">Contenuto dell'archivio</h2>
+
+      <div class="space-y-4">
+        {[
+          {
+            tag: 'Globe history',
+            color: 'purple',
+            title: 'Heatmap e state history',
+            desc: 'File giornalieri in formato JSON compresso (.gz). Ogni file contiene la densità di traffico per cella geografica e le ultime posizioni note degli aeromobili. Generati da readsb ogni 30 minuti, conservati in archivio rolling.',
+            size: '~20 GB totali · crescita ~100 MB/giorno',
+          },
+          {
+            tag: 'MLAT CSV',
+            color: 'yellow',
+            title: 'Triangolazioni MLAT',
+            desc: 'File CSV con i risultati del server di multilateration: timestamp, ICAO hex, lat, lon, altitudine, velocità ground. Include tracce militari e aerei Mode-S senza ADS-B.',
+            size: 'variabile · dipende dalla densità della rete',
+          },
+          {
+            tag: 'Mode-S raw',
+            color: 'green',
+            title: 'Messaggi Mode-S grezzi',
+            desc: 'Dataset Mode-S BDS50/BDS60 usati dal progetto weather-32: True Air Speed, Magnetic Heading, IAS, Mach number. Strutturati in PostgreSQL, esportabili su richiesta.',
+            size: 'PostgreSQL · misurazioni + posizioni',
+          },
+        ].map(item => (
+          <div class="p-6 rounded-xl border flex flex-col sm:flex-row gap-5" style="background:#0f1929;border-color:#1e3048">
+            <div class="shrink-0">
+              <span class="text-xs px-2.5 py-1 rounded font-mono font-semibold"
+                    style={`background:${item.color === 'purple' ? '#8b5cf615' : item.color === 'yellow' ? '#f59e0b15' : '#10b98115'};color:${item.color === 'purple' ? '#a78bfa' : item.color === 'yellow' ? '#fbbf24' : '#34d399'};border:1px solid ${item.color === 'purple' ? '#8b5cf630' : item.color === 'yellow' ? '#f59e0b30' : '#10b98130'}`}>
+                {item.tag}
+              </span>
+            </div>
+            <div class="flex-1">
+              <h3 class="font-semibold text-slate-100 mb-1">{item.title}</h3>
+              <p class="text-sm text-slate-400 leading-relaxed mb-2">{item.desc}</p>
+              <span class="text-xs font-mono text-slate-600">{item.size}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Accesso -->
+    <section class="mb-14">
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">Accesso</h2>
+
+      <div class="grid sm:grid-cols-2 gap-5">
+
+        <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#38bdf830">
+          <div class="flex items-center gap-2 mb-3">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="text-sm font-semibold text-slate-100">Accesso per ricercatori</span>
+          </div>
+          <p class="text-sm text-slate-400 leading-relaxed mb-4">
+            I dataset storici sono disponibili per ricerca universitaria o istituzionale.
+            Invia una richiesta con descrizione del progetto e dell'istituzione.
+          </p>
+          <a href="/chi-siamo#contatti"
+             class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium no-underline transition-all"
+             style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
+             onmouseover="this.style.background='#38bdf825'"
+             onmouseout="this.style.background='#38bdf815'">
+            Richiedi accesso →
+          </a>
+        </div>
+
+        <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+          <div class="flex items-center gap-2 mb-3">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01" stroke-linecap="round"/>
+            </svg>
+            <span class="text-sm font-semibold text-slate-300">Licenza</span>
+          </div>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            I dati distribuiti sono licenziati <strong class="text-slate-300">CC BY-SA 4.0</strong>.
+            Attribuzione richiesta; derivati con la stessa licenza.
+            Dati MLAT militari: verificare applicabilità prima dell'uso pubblico.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Citazione -->
+    <div class="rounded-xl p-5 border" style="background:#0a1320;border-color:#1e3048">
+      <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Come citare</div>
+      <code class="block text-xs font-mono p-3 rounded leading-relaxed" style="background:#0f1929;color:#94a3b8">
+        FlyItalyADSB (flyitalyadsb.com) · Dati ADS-B/MLAT · Licenza CC BY-SA 4.0<br />
+        Infrastruttura: Nesso Labs · nessolabs.it
+      </code>
+    </div>
+
+  </div>
+</Layout>

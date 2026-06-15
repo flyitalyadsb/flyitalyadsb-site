@@ -1,0 +1,214 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+---
+
+<Layout
+  title="Wind measurement from aircraft"
+  description="Upper-troposphere wind extraction from Mode-S BDS50/BDS60 and ADS-B. Validation against ERA5 (ECMWF) and IASI profiles (MetOp satellite)."
+>
+  <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-4xl mx-auto">
+
+    <div class="flex items-center gap-2 text-xs text-slate-600 mb-10">
+      <a href="/en/ricerca" class="hover:text-slate-400 no-underline">Research</a>
+      <span>/</span>
+      <span class="text-slate-500">Meteorology</span>
+    </div>
+
+    <div class="mb-12">
+      <div class="flex flex-wrap items-center gap-3 mb-5">
+        <span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830">Meteorology</span>
+        <span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:#10b98115;color:#34d399;border:1px solid #10b98130">Ongoing</span>
+        <span class="text-xs text-slate-600">Updated June 2025</span>
+      </div>
+      <h1 class="text-4xl font-bold text-slate-100 mb-5 leading-tight">
+        Upper-troposphere wind measurement<br />from aircraft in flight
+      </h1>
+      <p class="text-slate-400 text-lg leading-relaxed">
+        Commercial aircraft carry avionics sensors that measure speed, heading and attitude.
+        By correlating this data with GPS positions transmitted via ADS-B,
+        it is possible to derive local wind with accuracy comparable to radiosondes,
+        but with a much higher spatiotemporal coverage.
+      </p>
+    </div>
+
+    <div class="w-full h-px mb-12" style="background:#1e3048"></div>
+
+    <!-- Key metrics -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-16">
+      {[
+        { label: 'Bias u (vs ERA5)', value: '+0.21', unit: 'm/s' },
+        { label: 'Bias v (vs ERA5)', value: '+1.77', unit: 'm/s' },
+        { label: 'RMSE u', value: '7.38', unit: 'm/s' },
+        { label: 'RMSE v', value: '6.57', unit: 'm/s' },
+      ].map(m => (
+        <div class="p-4 rounded-xl border text-center" style="background:#0f1929;border-color:#1e3048">
+          <div class="text-2xl font-bold font-mono mb-1" style="color:#38bdf8">{m.value}</div>
+          <div class="text-xs text-slate-600">{m.unit}</div>
+          <div class="text-xs text-slate-500 mt-1">{m.label}</div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Methodology -->
+    <section class="mb-14">
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">Methodology</h2>
+      <p class="text-slate-400 leading-relaxed mb-6">
+        The physical principle is straightforward: the ground speed of an aircraft (measured via GPS/ADS-B)
+        is the vector sum of its airspeed and the ambient wind. Inverting the relationship:
+      </p>
+      <div class="p-6 rounded-xl border mb-8 text-center" style="background:#0a1320;border-color:#38bdf830">
+        <div class="text-2xl font-mono text-slate-100 mb-2">
+          <span style="color:#38bdf8">W</span> = <span style="color:#7dd3fc">V<sub>ground</sub></span> − <span style="color:#a78bfa">V<sub>air</sub></span>
+        </div>
+        <div class="flex justify-center gap-8 mt-4 text-xs text-slate-500">
+          <span><span style="color:#38bdf8">W</span> = wind (m/s)</span>
+          <span><span style="color:#7dd3fc">V<sub>ground</sub></span> = ground speed (GPS)</span>
+          <span><span style="color:#a78bfa">V<sub>air</sub></span> = True Air Speed + heading</span>
+        </div>
+      </div>
+      <p class="text-slate-400 leading-relaxed mb-6">
+        In vector form, decomposed into zonal (u, west→east) and meridional (v, south→north) components:
+      </p>
+      <div class="p-5 rounded-lg border font-mono text-sm leading-relaxed mb-8"
+           style="background:#0a1320;border-color:#1e3048;color:#94a3b8">
+        <div class="mb-1"><span style="color:#38bdf8">u</span> = GS·sin(track) − TAS·sin(corrected_heading)</div>
+        <div><span style="color:#38bdf8">v</span> = GS·cos(track) − TAS·cos(corrected_heading)</div>
+      </div>
+      <p class="text-slate-400 leading-relaxed">
+        The magnetic heading transmitted by the aircraft is corrected for local magnetic declination
+        (computed with a geodetic model) and for aircraft compass deviation.
+        True Air Speed (TAS) is extracted from Mode-S BDS50; Mach number and IAS from BDS60
+        provide an alternative path for altitudes above 10,000 ft.
+      </p>
+    </section>
+
+    <!-- Data sources -->
+    <section class="mb-14">
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">Data sources</h2>
+      <div class="space-y-4">
+        {[
+          { tag: 'ADS-B', color: 'sky', title: 'ADS-B Typecode 19 (velocity)', desc: 'Ground Speed (GS) and GPS Track from ADS-B typecode 19 messages. Accuracy class NACv ≥ 1. Filters: GS 50–850 knots, roll angle < 2.5°.' },
+          { tag: 'BDS50', color: 'amber', title: 'Mode-S BDS50 — Track & Speed', desc: 'True Air Speed (TAS) and roll angle. BDS50 is transmitted only on secondary interrogation (Comm-B) — requires a Mode-S EHS-capable receiver. Filter: TAS 100–570 knots.' },
+          { tag: 'BDS60', color: 'amber', title: 'Mode-S BDS60 — Heading & Speed', desc: 'Indicated Air Speed (IAS), magnetic heading and Mach number. Used as an alternative TAS source when BDS50 is unavailable, and for magnetic heading correction.' },
+          { tag: 'ADS-C', color: 'purple', title: 'ADS-C via ACARS (oceanic)', desc: 'For transatlantic aircraft outside ADS-B range, ADS-C reports transmitted via ACARS/satcom contain direct wind speed and direction (BDS44/BDS45). Received on UDP port 50174.' },
+        ].map(item => (
+          <div class="p-5 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+            <div class="flex items-start gap-4">
+              <span class="text-xs px-2 py-1 rounded font-mono shrink-0 mt-0.5"
+                    style={`background:${item.color === 'sky' ? '#38bdf815' : item.color === 'amber' ? '#f59e0b15' : '#8b5cf615'};color:${item.color === 'sky' ? '#7dd3fc' : item.color === 'amber' ? '#fbbf24' : '#a78bfa'}`}>
+                {item.tag}
+              </span>
+              <div>
+                <h3 class="font-semibold text-slate-200 mb-1">{item.title}</h3>
+                <p class="text-sm text-slate-500 leading-relaxed">{item.desc}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Validation -->
+    <section class="mb-14">
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">Validation</h2>
+      <p class="text-slate-400 leading-relaxed mb-8">
+        Wind values extracted from aircraft are compared against two independent high-quality reference sources.
+      </p>
+      <div class="grid sm:grid-cols-2 gap-6 mb-8">
+        <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+          <h3 class="font-semibold text-slate-100 mb-2">ERA5 (ECMWF)</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Global meteorological reanalysis from the European Centre for Medium-Range Weather Forecasts.
+            Horizontal resolution ~31 km, 37 pressure levels from 1000 hPa to 1 hPa.
+            Downloaded via the Copernicus Climate Data Store (CDS).
+          </p>
+        </div>
+        <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+          <h3 class="font-semibold text-slate-100 mb-2">IASI (MetOp satellite)</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Infrared interferometer aboard MetOp-A/B/C satellites (EUMETSAT).
+            Provides vertical profiles of wind, temperature and humidity on 26 levels.
+            BUFR data received via SFTP in near-real-time.
+          </p>
+        </div>
+      </div>
+
+      <h3 class="font-semibold text-slate-200 mb-4">Validation results — June 2025</h3>
+      <div class="overflow-x-auto rounded-xl border" style="border-color:#1e3048">
+        <table class="w-full text-sm">
+          <thead>
+            <tr style="background:#111e30;border-bottom:1px solid #1e3048">
+              <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Comparison</th>
+              <th class="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Bias u</th>
+              <th class="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Bias v</th>
+              <th class="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">RMSE u</th>
+              <th class="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">RMSE v</th>
+              <th class="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Std u</th>
+              <th class="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Std v</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { label: 'Mode-S vs ERA5', date: 'Jun 23, 2025', bias_u: '+0.21', bias_v: '+1.77', rmse_u: '7.38', rmse_v: '6.57', std_u: '7.37', std_v: '6.33', highlight: true },
+              { label: 'IASI vs ERA5',   date: 'Jun 13, 2025', bias_u: '+1.29', bias_v: '–4.16', rmse_u: '4.61', rmse_v: '7.15', std_u: '4.43', std_v: '5.82', highlight: false },
+              { label: 'Mode-S vs IASI', date: 'Jun 13, 2025', bias_u: '–1.91', bias_v: '+6.83', rmse_u: '10.99', rmse_v: '12.33', std_u: '10.83', std_v: '10.26', highlight: false },
+            ].map(row => (
+              <tr style={`border-bottom:1px solid #1e3048;${row.highlight ? 'background:#0f1929' : 'background:#080e1a'}`}>
+                <td class="px-4 py-3">
+                  <div class="font-medium text-slate-300">{row.label}</div>
+                  <div class="text-xs text-slate-600">{row.date}</div>
+                </td>
+                <td class="px-4 py-3 text-right font-mono text-xs" style={row.highlight ? 'color:#7dd3fc' : 'color:#64748b'}>{row.bias_u} m/s</td>
+                <td class="px-4 py-3 text-right font-mono text-xs" style={row.highlight ? 'color:#7dd3fc' : 'color:#64748b'}>{row.bias_v} m/s</td>
+                <td class="px-4 py-3 text-right font-mono text-xs" style={row.highlight ? 'color:#f0f9ff' : 'color:#64748b'}>{row.rmse_u} m/s</td>
+                <td class="px-4 py-3 text-right font-mono text-xs" style={row.highlight ? 'color:#f0f9ff' : 'color:#64748b'}>{row.rmse_v} m/s</td>
+                <td class="px-4 py-3 text-right font-mono text-xs text-slate-600">{row.std_u} m/s</td>
+                <td class="px-4 py-3 text-right font-mono text-xs text-slate-600">{row.std_v} m/s</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="text-xs text-slate-600 mt-3">u = zonal component (west→east) · v = meridional component (south→north) · density filter active for Mode-S vs ERA5</p>
+    </section>
+
+    <!-- Technical stack -->
+    <section class="mb-14">
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">Technical infrastructure</h2>
+      <div class="grid sm:grid-cols-2 gap-3 text-sm">
+        {[
+          { label: 'Data reception', value: 'FlyItalyADSB — dati.flyitalyadsb.com:60005 (BEAST protocol)' },
+          { label: 'Mode-S decoding', value: 'pyModeS — BDS50, BDS60, BDS44, CPR position' },
+          { label: 'Magnetic correction', value: 'PyGeoMag — local geodetic magnetic declination' },
+          { label: 'Storage', value: 'PostgreSQL — measurements table (timestamp, lat, lon, u, v)' },
+          { label: 'Orchestration', value: 'APScheduler — multi-process pipeline with worker pool' },
+          { label: 'Validation', value: 'SciPy griddata, Hampel filter (MAD), Bias/RMSE/Std-dev' },
+          { label: 'ERA5', value: 'Copernicus CDS API — u, v, temperature on 37 pressure levels' },
+          { label: 'IASI', value: 'BUFR via pdbufr — vertical profiles from MetOp-A/B/C' },
+        ].map(item => (
+          <div class="flex gap-3 p-3 rounded-lg" style="background:#0f1929;border:1px solid #1e3048">
+            <span class="text-slate-500 shrink-0 w-36 text-xs pt-0.5">{item.label}</span>
+            <span class="text-slate-400 text-xs">{item.value}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <div class="rounded-xl p-6 border" style="background:#0a1320;border-color:#1e3048">
+      <h3 class="font-semibold text-slate-200 mb-3">Collaboration and data access</h3>
+      <p class="text-sm text-slate-400 leading-relaxed mb-4">
+        Raw Mode-S data, MLAT CSV files and historical datasets are available for researchers
+        and academic institutions. If you are conducting meteorological or aeronautical research
+        and are interested in collaborating, contact us with a brief project description.
+      </p>
+      <a href="/en/chi-siamo#contatti"
+         class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium no-underline transition-all"
+         style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
+         onmouseover="this.style.background='#38bdf825'"
+         onmouseout="this.style.background='#38bdf815'">
+        Request collaboration →
+      </a>
+    </div>
+
+  </div>
+</Layout>

@@ -1,0 +1,164 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="La rete"
+  description="La rete di ricevitori ADS-B di FlyItalyADSB: feeder italiani, connessioni internazionali, copertura globale aggregata da adsb.lol e theairtraffic.com."
+>
+  <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto">
+
+    <div class="mb-14">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Infrastruttura</p>
+      <h1 class="text-4xl font-bold text-slate-100 mb-4">La rete</h1>
+      <p class="text-slate-400 max-w-2xl leading-relaxed">
+        FlyItalyADSB aggrega dati da ricevitori privati distribuiti sul territorio italiano
+        e da reti internazionali di aggregazione. Il risultato è una copertura globale
+        con densità elevata sopra l'Italia e il Mediterraneo.
+      </p>
+    </div>
+
+    <!-- Architettura rete -->
+    <div class="grid md:grid-cols-2 gap-6 mb-16">
+
+      <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#38bdf815;border:1px solid #38bdf830">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5">
+              <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0" stroke-linecap="round"/>
+              <path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h2 class="font-semibold text-slate-100">Feeder italiani</h2>
+        </div>
+        <p class="text-sm text-slate-400 leading-relaxed mb-4">
+          Ricevitori privati dislocati dal nord fino al sud Italia, Svizzera e coste tirrenica e adriatica.
+          Ogni ricevitore copre un raggio fino a 400 km e invia dati ADS-B e Mode-S in tempo reale
+          al server di ingestione centrale.
+        </p>
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between py-1 border-b" style="border-color:#1e3048">
+            <span class="text-slate-500">Protocollo in</span>
+            <span class="text-slate-300 font-mono">BEAST TCP · porta 4905</span>
+          </div>
+          <div class="flex justify-between py-1 border-b" style="border-color:#1e3048">
+            <span class="text-slate-500">Mode-S EHS</span>
+            <span class="text-slate-300 font-mono">BDS50 · BDS60 · BDS44</span>
+          </div>
+          <div class="flex justify-between py-1">
+            <span class="text-slate-500">MLAT</span>
+            <span class="text-slate-300 font-mono">porta 30100</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#38bdf815;border:1px solid #38bdf830">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2 class="font-semibold text-slate-100">Aggregatori internazionali</h2>
+        </div>
+        <p class="text-sm text-slate-400 leading-relaxed mb-4">
+          Il server readsb-globe si connette a <strong class="text-slate-300">adsb.lol</strong> e
+          <strong class="text-slate-300">theairtraffic.com</strong> per aggregare dati globali.
+          Questo estende la copertura a tutto il mondo, con i dati MLAT di questi network
+          integrati nel feed locale.
+        </p>
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between py-1 border-b" style="border-color:#1e3048">
+            <span class="text-slate-500">adsb.lol</span>
+            <span class="text-slate-300 font-mono">BEAST in · SBS MLAT in</span>
+          </div>
+          <div class="flex justify-between py-1 border-b" style="border-color:#1e3048">
+            <span class="text-slate-500">theairtraffic.com</span>
+            <span class="text-slate-300 font-mono">BEAST in · SBS MLAT in</span>
+          </div>
+          <div class="flex justify-between py-1">
+            <span class="text-slate-500">OGN (ultraleggeri)</span>
+            <span class="text-slate-300 font-mono">FLARM/FANET → SBS</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Pipeline dati -->
+    <div class="mb-16">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-8">Pipeline</p>
+
+      <div class="relative">
+        <!-- Linea verticale connettore -->
+        <div class="absolute left-5 top-8 bottom-8 w-px" style="background:linear-gradient(to bottom, #38bdf830, #38bdf810)"></div>
+
+        <div class="space-y-4">
+
+          {[
+            {
+              step: '01',
+              title: 'Ricezione',
+              desc: 'I feeder inviano dati BEAST TCP al server readsb-ingest (porta 4905). Simultaneamente, readsb-globe riceve da adsb.lol e theairtraffic.com.',
+              tags: ['readsb-ingest', 'readsb-globe']
+            },
+            {
+              step: '02',
+              title: 'MLAT',
+              desc: 'I client MLAT (porta 30100) inviano misurazioni temporizzate al mlat-server. Con almeno 4 ricevitori sincronizzati, il server triangola la posizione degli aeromobili senza GPS.',
+              tags: ['mlat-server', 'porta 30100']
+            },
+            {
+              step: '03',
+              title: 'Aggregazione',
+              desc: 'readsb-globe fonde tutti i feed: feeder locali, MLAT risultante, adsb.lol, theairtraffic.com, OGN. Produce aircraft.json ogni 200ms e aggiorna lo storico heatmap.',
+              tags: ['aircraft.json', '0.2s', 'heatmap']
+            },
+            {
+              step: '04',
+              title: 'Distribuzione',
+              desc: 'I dati vengono serviti alla mappa tar1090 via socket Unix locale, alla dashboard MyFlyItalyADSB via PostgreSQL, e usati dalla pipeline meteorologica weather-32.',
+              tags: ['tar1090', 'my.flyitalyadsb.com', 'weather-32']
+            },
+          ].map(item => (
+            <div class="flex gap-6 pl-12 relative">
+              <div class="absolute left-0 top-4 w-10 h-10 rounded-full flex items-center justify-center text-xs font-mono font-bold shrink-0"
+                   style="background:#0f1929;border:1px solid #38bdf830;color:#38bdf8">
+                {item.step}
+              </div>
+              <div class="flex-1 p-5 rounded-xl border mb-0" style="background:#0f1929;border-color:#1e3048">
+                <h3 class="font-semibold text-slate-100 mb-1">{item.title}</h3>
+                <p class="text-sm text-slate-400 leading-relaxed mb-3">{item.desc}</p>
+                <div class="flex flex-wrap gap-2">
+                  {item.tags.map(tag => (
+                    <span class="text-xs px-2 py-0.5 rounded font-mono" style="background:#111e30;color:#64748b">{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA feeder -->
+    <div class="rounded-2xl p-8 border flex flex-col sm:flex-row gap-6 items-center"
+         style="background:linear-gradient(135deg,#0f1929 0%,#111e30 100%);border-color:#1e3048">
+      <div class="flex-1">
+        <h3 class="font-bold text-slate-100 text-xl mb-2">Contribuisci con il tuo ricevitore</h3>
+        <p class="text-sm text-slate-400">
+          Più ricevitori significano migliore copertura MLAT e dati Mode-S più densi per la ricerca meteorologica.
+        </p>
+      </div>
+      <a href="/community/feeder"
+         class="shrink-0 px-6 py-3 rounded-lg font-medium text-sm no-underline transition-all"
+         style="background:#38bdf8;color:#070d1a"
+         onmouseover="this.style.background='#7dd3fc'"
+         onmouseout="this.style.background='#38bdf8'">
+        Diventa feeder →
+      </a>
+    </div>
+
+  </div>
+</Layout>

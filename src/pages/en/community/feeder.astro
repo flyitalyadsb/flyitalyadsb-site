@@ -1,0 +1,148 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+---
+
+<Layout
+  title="Become a feeder"
+  description="How to connect your ADS-B receiver to the FlyItalyADSB network: hardware, ultrafeeder setup, BEAST and MLAT connection."
+>
+  <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-4xl mx-auto">
+
+    <div class="mb-14">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Community</p>
+      <h1 class="text-4xl font-bold text-slate-100 mb-4">Become a feeder</h1>
+      <p class="text-slate-400 max-w-2xl leading-relaxed">
+        Contributing to the network is simple and inexpensive. A Raspberry Pi and an RTL-SDR antenna
+        are all you need to add coverage in your area and contribute data for meteorological research.
+      </p>
+    </div>
+
+    <section class="mb-14">
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">Hardware</h2>
+      <div class="grid sm:grid-cols-3 gap-4 mb-6">
+        {[
+          { name: 'Raspberry Pi', detail: 'Pi 3, 4 or 5 — any model with USB and network. A Pi Zero 2W is sufficient.', price: '~€15–45' },
+          { name: 'RTL-SDR dongle', detail: '1090 MHz Software Defined Radio receiver. RTL-SDR Blog v4 is the recommended choice.', price: '~€25–35' },
+          { name: '1090 MHz antenna', detail: 'Omnidirectional vertical antenna. FlightAware 66 cm or home-built. Higher is better.', price: '~€15–30' },
+        ].map(item => (
+          <div class="p-5 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+            <div class="flex items-start justify-between mb-2">
+              <h3 class="font-semibold text-slate-100">{item.name}</h3>
+              <span class="text-xs font-mono" style="color:#38bdf8">{item.price}</span>
+            </div>
+            <p class="text-xs text-slate-500 leading-relaxed">{item.detail}</p>
+          </div>
+        ))}
+      </div>
+      <div class="p-4 rounded-lg text-sm" style="background:#0a1320;border:1px solid #1e3048">
+        <span class="text-slate-400">Estimated total:</span>
+        <span class="font-mono ml-2" style="color:#38bdf8">€55–110</span>
+        <span class="text-slate-500 ml-3 text-xs">The RTL-SDR Blog v4 includes a built-in 1090 MHz LNA filter</span>
+      </div>
+    </section>
+
+    <section class="mb-14">
+      <h2 class="text-2xl font-bold text-slate-100 mb-4">Setup with docker-adsb-ultrafeeder</h2>
+      <p class="text-slate-400 text-sm leading-relaxed mb-6">
+        The easiest way to contribute is <code class="text-xs px-1.5 py-0.5 rounded" style="background:#111e30;color:#7dd3fc">docker-adsb-ultrafeeder</code>,
+        a Docker container that handles ADS-B reception, Mode-S EHS decoding,
+        MLAT participation and feeding to multiple networks automatically.
+      </p>
+      <div class="space-y-6">
+        <div>
+          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">1. Install Docker on Raspberry Pi OS</div>
+          <pre class="p-4 rounded-lg text-xs overflow-auto leading-relaxed" style="background:#0a1320;color:#94a3b8;border:1px solid #1e3048"><code>curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER</code></pre>
+        </div>
+        <div>
+          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">2. docker-compose.yml</div>
+          <pre class="p-4 rounded-lg text-xs overflow-auto leading-relaxed" style="background:#0a1320;color:#94a3b8;border:1px solid #1e3048"><code>{`version: '3'
+services:
+  ultrafeeder:
+    image: ghcr.io/sdr-enthusiasts/docker-adsb-ultrafeeder
+    container_name: ultrafeeder
+    restart: unless-stopped
+    device_cgroup_rules:
+      - 'c 189:* rwm'
+    devices:
+      - /dev/bus/usb:/dev/bus/usb
+    environment:
+      # Your receiver location (lat/lon/altitude in meters)
+      - READSB_LAT=45.46
+      - READSB_LON=9.19
+      - READSB_ALT=120m
+
+      # Send data to FlyItalyADSB
+      - READSB_NET_CONNECTOR=dati.flyitalyadsb.com,4905,beast_reduce_out
+
+      # MLAT (replace with your coordinates and a unique name)
+      - MLAT_USER=your-name
+      - MLAT_CONFIG=dati.flyitalyadsb.com,30100,39000
+
+    volumes:
+      - /opt/adsb/ultrafeeder/globe_history:/var/globe_history
+      - /opt/adsb/ultrafeeder/graphs1090:/var/lib/collectd`}</code></pre>
+        </div>
+        <div>
+          <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">3. Start</div>
+          <pre class="p-4 rounded-lg text-xs overflow-auto" style="background:#0a1320;color:#94a3b8;border:1px solid #1e3048"><code>docker compose up -d
+docker logs -f ultrafeeder</code></pre>
+        </div>
+      </div>
+      <div class="mt-6 p-4 rounded-lg" style="background:#0f1929;border:1px solid #1e3048">
+        <p class="text-xs text-slate-400">
+          <span class="font-semibold text-slate-300">MLAT note:</span> accurate lat/lon/altitude is critical
+          (error &lt; 10 m). Use Google Maps or a GPS for exact position. Altitude is the antenna height, not ground level.
+        </p>
+      </div>
+    </section>
+
+    <section class="mb-14">
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">Connection endpoints</h2>
+      <div class="overflow-x-auto rounded-xl border" style="border-color:#1e3048">
+        <table class="w-full text-sm">
+          <thead>
+            <tr style="background:#111e30;border-bottom:1px solid #1e3048">
+              <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Host</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Port</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Protocol</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Use</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { host: 'dati.flyitalyadsb.com', port: '4905', proto: 'BEAST TCP', use: 'Send ADS-B data (in)' },
+              { host: 'dati.flyitalyadsb.com', port: '30100', proto: 'TCP', use: 'MLAT client' },
+              { host: 'dati.flyitalyadsb.com', port: '60005', proto: 'BEAST TCP', use: 'Receive aggregated feed (out)' },
+              { host: 'dati.flyitalyadsb.com', port: '60004', proto: 'SBS TCP', use: 'Receive aggregated feed SBS (out)' },
+            ].map(row => (
+              <tr style="border-bottom:1px solid #1e3048">
+                <td class="px-4 py-3 font-mono text-xs text-sky-400">{row.host}</td>
+                <td class="px-4 py-3 font-mono text-xs text-slate-300">{row.port}</td>
+                <td class="px-4 py-3 text-xs text-slate-500">{row.proto}</td>
+                <td class="px-4 py-3 text-xs text-slate-500">{row.use}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="rounded-xl p-6 border" style="background:#0a1320;border-color:#1e3048">
+      <h3 class="font-semibold text-slate-100 mb-2">Feeder dashboard</h3>
+      <p class="text-sm text-slate-400 leading-relaxed mb-4">
+        After setup, monitor your statistics on
+        <a href="https://my.flyitalyadsb.com" target="_blank" rel="noopener" class="text-sky-400">my.flyitalyadsb.com</a>:
+        messages received, coverage, MLAT quality, aircraft tracked in the last 24h.
+      </p>
+      <a href="https://my.flyitalyadsb.com" target="_blank" rel="noopener"
+         class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium no-underline transition-all"
+         style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
+         onmouseover="this.style.background='#38bdf825'"
+         onmouseout="this.style.background='#38bdf815'">
+        Open dashboard →
+      </a>
+    </div>
+
+  </div>
+</Layout>

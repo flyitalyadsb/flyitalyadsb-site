@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+@theme {
+  --color-sky-accent: #38bdf8;
+  --color-bg-base: #070d1a;
+  --color-bg-surface: #0f1929;
+  --color-bg-card: #111e30;
+  --color-border: #1e3048;
+}
+
+@layer base {
+  html {
+    background-color: #070d1a;
+    color: #cbd5e1;
+    scroll-behavior: smooth;
+  }
+
+  ::selection {
+    background: #38bdf840;
+    color: #f0f9ff;
+  }
+
+  h1, h2, h3, h4 {
+    color: #f0f9ff;
+  }
+
+  a {
+    color: #38bdf8;
+  }
+
+  a:hover {
+    color: #7dd3fc;
+  }
+
+  code, pre {
+    font-family: "JetBrains Mono", "Fira Mono", ui-monospace, monospace;
+  }
+}
