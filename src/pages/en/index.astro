@@ -31,7 +31,8 @@ import Layout from '../../layouts/Layout.astro';
         <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium mb-5"
              style="background:#38bdf815;border:1px solid #38bdf830;color:#7dd3fc">
           <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block"></span>
-          Live · updated every 0.2s
+          Live ·
+          <span id="live-count-en">—</span> aircraft now
         </div>
 
         <h1 class="text-4xl sm:text-5xl font-bold leading-tight mb-4" style="color:#f0f9ff">
@@ -216,5 +217,19 @@ import Layout from '../../layouts/Layout.astro';
       </div>
     </div>
   </section>
+
+<script>
+async function updateLiveCountEn() {
+  try {
+    const res = await fetch('https://dati.flyitalyadsb.com/api/stats.json', { cache: 'no-store' });
+    const data = await res.json();
+    const count = Array.isArray(data.aircraft) ? data.aircraft.length : '—';
+    const el = document.getElementById('live-count-en');
+    if (el) el.textContent = count.toLocaleString('en-US');
+  } catch {}
+}
+updateLiveCountEn();
+setInterval(updateLiveCountEn, 10000);
+</script>
 
 </Layout>
