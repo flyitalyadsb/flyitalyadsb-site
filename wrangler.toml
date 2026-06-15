@@ -1,0 +1,3 @@
+name = "flyitalyadsb-site"
+pages_build_output_dir = "dist"
+compatibility_date = "2025-06-15"
