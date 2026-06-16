@@ -24,8 +24,8 @@ const altHref = altLangPath(path);
 const altLabel = isEn ? 'IT' : 'EN';
 
 const nav = isEn
-  ? { map: 'Map', data: 'Data', network: 'Network', research: 'Research', about: 'About', dashboard: 'Feeder dashboard →' }
-  : { map: 'Mappa', data: 'Dati', network: 'Rete', research: 'Ricerca', about: 'Chi siamo', dashboard: 'Dashboard feeder →' };
+  ? { map: 'Map', data: 'Data', network: 'Network', research: 'Research', about: 'About' }
+  : { map: 'Mappa', data: 'Dati', network: 'Rete', research: 'Ricerca', about: 'Chi siamo' };
 
 const navLinks = isEn
   ? [
@@ -84,11 +84,6 @@ const navLinks = isEn
               {link.label}
             </a>
           ))}
-          <a href="https://my.flyitalyadsb.com" target="_blank" rel="noopener"
-             class="ml-2 px-3 py-1.5 rounded border text-sky-400 hover:text-sky-300 hover:bg-sky-400/10 transition-colors no-underline text-xs font-medium"
-             style="border-color:#38bdf830">
-            {nav.dashboard}
-          </a>
           <!-- Language switcher -->
           <a href={altHref}
              class="ml-3 px-2.5 py-1 rounded text-xs font-mono font-semibold transition-colors no-underline"
