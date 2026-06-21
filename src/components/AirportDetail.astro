@@ -169,31 +169,19 @@ const t = isEn
 </div>
 
 <script>
-  // Live count of aircraft within RADIUS_KM of this airport, from the public stats feed.
+  // Live count of aircraft within RADIUS_KM of this airport. The count is computed
+  // server-side (the API never returns the full feed): just pass lat/lon/radius.
   const el = document.getElementById('ac-count');
   if (el) {
     const lat0 = parseFloat(el.dataset.lat || '0');
     const lon0 = parseFloat(el.dataset.lon || '0');
     const radius = parseFloat(el.dataset.radius || '80');
-    const toRad = (d: number) => (d * Math.PI) / 180;
-    const dist = (la: number, lo: number) => {
-      const R = 6371;
-      const dLat = toRad(la - lat0);
-      const dLon = toRad(lo - lon0);
-      const s =
-        Math.sin(dLat / 2) ** 2 +
-        Math.cos(toRad(lat0)) * Math.cos(toRad(la)) * Math.sin(dLon / 2) ** 2;
-      return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
-    };
     const update = async () => {
       try {
-        const res = await fetch('https://dati.flyitalyadsb.com/api/stats.json', { cache: 'no-store' });
+        const url = `https://dati.flyitalyadsb.com/api/count?lat=${lat0}&lon=${lon0}&radius=${radius}`;
+        const res = await fetch(url, { cache: 'no-store' });
         const data = await res.json();
-        const list = Array.isArray(data.aircraft) ? data.aircraft : [];
-        let n = 0;
-        for (const ac of list) {
-          if (typeof ac.lat === 'number' && typeof ac.lon === 'number' && dist(ac.lat, ac.lon) <= radius) n++;
-        }
+        const n = typeof data.count === 'number' ? data.count : 0;
         el.textContent = n.toLocaleString('it-IT');
       } catch {
         el.textContent = '—';

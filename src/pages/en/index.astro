@@ -223,9 +223,10 @@ async function updateLiveCountEn() {
   try {
     const res = await fetch('https://dati.flyitalyadsb.com/api/stats.json', { cache: 'no-store' });
     const data = await res.json();
-    const count = Array.isArray(data.aircraft) ? data.aircraft.length : '—';
+    // /api/stats.json now returns the global count (aircraft = number), not the array.
+    const n = typeof data.aircraft === 'number' ? data.aircraft : null;
     const el = document.getElementById('live-count-en');
-    if (el) el.textContent = count.toLocaleString('en-US');
+    if (el && n !== null) el.textContent = n.toLocaleString('en-US');
   } catch {}
 }
 updateLiveCountEn();

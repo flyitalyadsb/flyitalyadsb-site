@@ -198,20 +198,22 @@ const t = isEn
   async function update() {
     if (!code || !countEl) return;
     try {
-      const res = await fetch('https://dati.flyitalyadsb.com/api/stats.json', { cache: 'no-store' });
+      // Count + sample are computed server-side: the API returns only this type's
+      // count and up to 20 sample rows, never the full live feed.
+      const res = await fetch(`https://dati.flyitalyadsb.com/api/type?code=${encodeURIComponent(code)}`, { cache: 'no-store' });
       const data = await res.json();
-      const list = (Array.isArray(data.aircraft) ? data.aircraft : []).filter((a: any) => a.t === code);
-      countEl.textContent = list.length.toLocaleString('it-IT');
+      const count = typeof data.count === 'number' ? data.count : 0;
+      const list = Array.isArray(data.sample) ? data.sample : [];
+      countEl.textContent = count.toLocaleString('it-IT');
 
       if (!body || !table || !empty) return;
-      if (list.length === 0) {
+      if (count === 0) {
         table.classList.add('hidden');
         empty.classList.remove('hidden');
         return;
       }
-      // Show those with the most context first (registration known), cap at 20.
-      list.sort((a: any, b: any) => (b.r ? 1 : 0) - (a.r ? 1 : 0));
-      const rows = list.slice(0, 20).map((a: any) => {
+      // Already ordered server-side (registration known first) and capped at 20.
+      const rows = list.map((a: any) => {
         const reg = a.r ? esc(a.r) : '<span style="color:#475569">—</span>';
         const flight = a.flight ? esc(String(a.flight).trim()) : '<span style="color:#475569">—</span>';
         return `<tr style="border-top:1px solid #16263c">
