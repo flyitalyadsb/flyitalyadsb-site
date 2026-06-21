@@ -1,0 +1,5 @@
+# FlyItalyADSB — https://flyitalyadsb.com
+User-agent: *
+Allow: /
+
+Sitemap: https://flyitalyadsb.com/sitemap.xml

@@ -1,0 +1,30 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import AircraftTypeDetail from '../../components/AircraftTypeDetail.astro';
+import { aircraftTypes, getAircraftType } from '../../data/aircraftTypes';
+import {
+  pageTitle,
+  metaDescription,
+  faqJsonLd,
+  breadcrumbJsonLd,
+} from '../../lib/aircraft-content';
+
+export function getStaticPaths() {
+  return aircraftTypes.map((t) => ({ params: { slug: t.slug } }));
+}
+
+const lang = 'it';
+const { slug } = Astro.params;
+const type = getAircraftType(slug!);
+if (!type) throw new Error(`Unknown aircraft type slug: ${slug}`);
+
+const jsonLd = [faqJsonLd(type, lang), breadcrumbJsonLd(type, lang)];
+---
+
+<Layout
+  title={pageTitle(type, lang)}
+  description={metaDescription(type, lang)}
+  jsonLd={jsonLd}
+>
+  <AircraftTypeDetail type={type} lang={lang} />
+</Layout>

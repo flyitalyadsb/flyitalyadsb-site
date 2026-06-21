@@ -1,0 +1,205 @@
+---
+import type { Airport } from '../data/airports';
+import { fullName, nearbyAirports, RADIUS_KM } from '../data/airports';
+import { faqs, type Lang } from '../lib/airport-content';
+
+interface Props {
+  airport: Airport;
+  lang: Lang;
+}
+
+const { airport, lang } = Astro.props as Props;
+const isEn = lang === 'en';
+const name = fullName(airport);
+const nearby = nearbyAirports(airport, 4);
+const localFaqs = faqs(airport, lang);
+const base = isEn ? '/en' : '';
+const mapSrc = `https://mappa.flyitalyadsb.com/?lat=${airport.lat}&lon=${airport.lon}&zoom=10`;
+
+const t = isEn
+  ? {
+      crumbHome: 'Home',
+      crumbAirports: 'Airports',
+      heroLead: 'Live ·',
+      acSuffix: `aircraft now within ${RADIUS_KM} km`,
+      openMap: 'Open full map →',
+      mapTitle: `Live ADS-B map centred on ${name}`,
+      factsTitle: 'Airport data',
+      iata: 'IATA code',
+      icao: 'ICAO code',
+      city: 'City',
+      region: 'Region',
+      coords: 'Coordinates',
+      trackTitle: 'What you can track here',
+      trackBody: `Every aircraft passing within roughly ${RADIUS_KM} km of ${name} appears on the FlyItalyADSB live map: airliners on approach and departure, business and general aviation, plus — through Italian MLAT — military and state flights without full ADS-B. Coverage is global and unfiltered; density is highest over ${airport.region} thanks to the feeders of the community network.`,
+      faqTitle: 'Frequently asked questions',
+      nearbyTitle: 'Nearby airports',
+      allAirports: 'All airports',
+      contribTitle: 'Improve coverage over ' + airport.city,
+      contribBody: `Coverage quality depends on the density of receivers. With a Raspberry Pi and an RTL-SDR antenna you can help track flights over ${airport.region}.`,
+      contribCta: 'Become a feeder →',
+    }
+  : {
+      crumbHome: 'Home',
+      crumbAirports: 'Aeroporti',
+      heroLead: 'Live ·',
+      acSuffix: `aerei ora entro ${RADIUS_KM} km`,
+      openMap: 'Apri la mappa intera →',
+      mapTitle: `Mappa ADS-B live centrata su ${name}`,
+      factsTitle: "Dati dell'aeroporto",
+      iata: 'Codice IATA',
+      icao: 'Codice ICAO',
+      city: 'Città',
+      region: 'Regione',
+      coords: 'Coordinate',
+      trackTitle: 'Cosa puoi tracciare qui',
+      trackBody: `Ogni aeromobile in transito entro circa ${RADIUS_KM} km da ${name} compare sulla mappa live di FlyItalyADSB: voli di linea in avvicinamento e decollo, aviazione generale ed executive e — grazie all'MLAT italiano — anche mezzi militari e di Stato privi di ADS-B completo. La copertura è globale e non filtrata; la densità è massima sopra ${airport.region} grazie ai feeder della rete community.`,
+      faqTitle: 'Domande frequenti',
+      nearbyTitle: 'Aeroporti vicini',
+      allAirports: 'Tutti gli aeroporti',
+      contribTitle: 'Migliora la copertura su ' + airport.city,
+      contribBody: `La qualità della copertura dipende dalla densità dei ricevitori. Con un Raspberry Pi e un'antenna RTL-SDR puoi aiutare a tracciare i voli sopra ${airport.region}.`,
+      contribCta: 'Diventa feeder →',
+    };
+---
+
+<div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto">
+
+  <!-- Breadcrumb -->
+  <nav class="text-xs text-slate-500 mb-6 flex flex-wrap items-center gap-2" aria-label="breadcrumb">
+    <a href={`${base}/`} class="hover:text-slate-300 no-underline">{t.crumbHome}</a>
+    <span class="text-slate-700">/</span>
+    <a href={`${base}/aeroporti`} class="hover:text-slate-300 no-underline">{t.crumbAirports}</a>
+    <span class="text-slate-700">/</span>
+    <span class="text-slate-400">{name}</span>
+  </nav>
+
+  <!-- Hero -->
+  <div class="mb-10">
+    <div class="flex flex-wrap items-center gap-3 mb-4">
+      <span class="text-xs px-2.5 py-1 rounded font-mono font-semibold" style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830">{airport.iata} · {airport.icao}</span>
+      <span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:#ffffff08;color:#94a3b8;border:1px solid #ffffff12">{airport.region}</span>
+      <span class="inline-flex items-center gap-2 text-xs px-2.5 py-1 rounded-full font-medium" style="background:#10b98115;color:#34d399;border:1px solid #10b98130">
+        <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block"></span>
+        {t.heroLead} <span id="ac-count" data-lat={airport.lat} data-lon={airport.lon} data-radius={RADIUS_KM}>—</span> {t.acSuffix}
+      </span>
+    </div>
+    <h1 class="text-3xl sm:text-4xl font-bold text-slate-100 mb-4 leading-tight">
+      {isEn ? 'Live flights over' : 'Voli in tempo reale su'} {name} <span class="text-slate-500">({airport.iata})</span>
+    </h1>
+    <p class="text-slate-400 max-w-3xl leading-relaxed">{isEn ? airport.blurbEn : airport.blurbIt}</p>
+  </div>
+
+  <!-- Live map -->
+  <div class="rounded-2xl overflow-hidden border mb-4" style="border-color:#1e3048;background:#0f1929">
+    <div class="relative" style="height:60vh;min-height:420px">
+      <iframe
+        src={mapSrc}
+        title={t.mapTitle}
+        class="absolute inset-0 w-full h-full border-0"
+        loading="lazy"
+        sandbox="allow-scripts allow-same-origin allow-popups"
+      ></iframe>
+    </div>
+  </div>
+  <div class="text-right mb-14">
+    <a href={mapSrc} target="_blank" rel="noopener" class="text-sm text-sky-400 hover:text-sky-300 no-underline">{t.openMap}</a>
+  </div>
+
+  <!-- Facts + what you can track -->
+  <div class="grid lg:grid-cols-3 gap-6 mb-16">
+    <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">{t.factsTitle}</p>
+      <dl class="space-y-3 text-sm">
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">{t.iata}</dt><dd class="text-slate-200 font-mono">{airport.iata}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">{t.icao}</dt><dd class="text-slate-200 font-mono">{airport.icao}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">{t.city}</dt><dd class="text-slate-200">{airport.city}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">{t.region}</dt><dd class="text-slate-200">{airport.region}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">{t.coords}</dt><dd class="text-slate-200 font-mono text-xs">{airport.lat}, {airport.lon}</dd></div>
+      </dl>
+    </div>
+    <div class="lg:col-span-2 p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+      <h2 class="font-semibold text-slate-100 mb-3">{t.trackTitle}</h2>
+      <p class="text-sm text-slate-400 leading-relaxed">{t.trackBody}</p>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="mb-16">
+    <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-6">{t.faqTitle}</p>
+    <div class="space-y-3">
+      {localFaqs.map((f) => (
+        <details class="group rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+          <summary class="cursor-pointer list-none px-5 py-4 flex items-center justify-between gap-4 text-slate-100 font-medium text-sm">
+            {f.q}
+            <span class="text-slate-500 transition-transform group-open:rotate-45 text-lg leading-none">+</span>
+          </summary>
+          <p class="px-5 pb-5 text-sm text-slate-400 leading-relaxed">{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+
+  <!-- Nearby airports -->
+  <div class="mb-16">
+    <div class="flex items-end justify-between gap-4 mb-6">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest">{t.nearbyTitle}</p>
+      <a href={`${base}/aeroporti`} class="text-sm text-sky-400 hover:text-sky-300 no-underline">{t.allAirports} →</a>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {nearby.map((o) => (
+        <a href={`${base}/aeroporti/${o.slug}`} class="block p-5 rounded-xl border no-underline group transition-all hover:border-sky-400/30" style="background:#0f1929;border-color:#1e3048">
+          <div class="text-xs font-mono text-slate-500 mb-2">{o.iata} · {o.icao}</div>
+          <div class="text-slate-100 font-semibold text-sm group-hover:text-white transition-colors">{o.city} {o.name}</div>
+          <div class="text-xs text-slate-600 mt-1">{o.region}</div>
+        </a>
+      ))}
+    </div>
+  </div>
+
+  <!-- Feeder CTA -->
+  <div class="rounded-2xl p-8 flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between" style="background:linear-gradient(135deg,#0f1929 0%,#111e30 100%);border:1px solid #1e3048">
+    <div class="max-w-lg">
+      <h2 class="text-lg font-bold text-slate-100 mb-2">{t.contribTitle}</h2>
+      <p class="text-sm text-slate-400 leading-relaxed">{t.contribBody}</p>
+    </div>
+    <a href={`${base}/community/feeder`} class="shrink-0 px-6 py-3 rounded-lg font-medium text-sm text-center no-underline transition-all" style="background:#38bdf8;color:#070d1a">{t.contribCta}</a>
+  </div>
+
+</div>
+
+<script>
+  // Live count of aircraft within RADIUS_KM of this airport, from the public stats feed.
+  const el = document.getElementById('ac-count');
+  if (el) {
+    const lat0 = parseFloat(el.dataset.lat || '0');
+    const lon0 = parseFloat(el.dataset.lon || '0');
+    const radius = parseFloat(el.dataset.radius || '80');
+    const toRad = (d: number) => (d * Math.PI) / 180;
+    const dist = (la: number, lo: number) => {
+      const R = 6371;
+      const dLat = toRad(la - lat0);
+      const dLon = toRad(lo - lon0);
+      const s =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(lat0)) * Math.cos(toRad(la)) * Math.sin(dLon / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
+    };
+    const update = async () => {
+      try {
+        const res = await fetch('https://dati.flyitalyadsb.com/api/stats.json', { cache: 'no-store' });
+        const data = await res.json();
+        const list = Array.isArray(data.aircraft) ? data.aircraft : [];
+        let n = 0;
+        for (const ac of list) {
+          if (typeof ac.lat === 'number' && typeof ac.lon === 'number' && dist(ac.lat, ac.lon) <= radius) n++;
+        }
+        el.textContent = n.toLocaleString('it-IT');
+      } catch {
+        el.textContent = '—';
+      }
+    };
+    update();
+    setInterval(update, 10000);
+  }
+</script>

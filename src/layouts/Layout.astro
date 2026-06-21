@@ -4,32 +4,89 @@ import '../styles/global.css';
 interface Props {
   title: string;
   description?: string;
+  /** OG/Twitter image, absolute path from site root. Defaults to the branded card. */
+  image?: string;
+  /** Set true to keep the page out of search indexes. */
+  noindex?: boolean;
+  /** og:type — 'website' (default) or 'article'. */
+  ogType?: string;
+  /** Extra JSON-LD block(s) injected into <head> (object or array). */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-const { title, description = 'Open ADS-B data — FlyItalyADSB' } = Astro.props;
-const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://flyitalyadsb.com');
+const SITE = 'https://flyitalyadsb.com';
 
 // Language detection
 const path = Astro.url.pathname;
 const isEn = path.startsWith('/en') && (path === '/en' || path.startsWith('/en/'));
 const lang = isEn ? 'en' : 'it';
 
-// Language switcher: swap /en prefix
+const {
+  title,
+  description = isEn
+    ? 'Open, unfiltered ADS-B & MLAT data over Italy — global coverage, Italian multilateration, weather research. Non-profit.'
+    : 'Dati ADS-B e MLAT aperti e non filtrati sull’Italia — copertura globale, multilaterazione italiana, ricerca meteo. No-profit.',
+  image = '/og.png',
+  noindex = false,
+  ogType = 'website',
+  jsonLd,
+} = Astro.props;
+
+const siteOrigin = (Astro.site ?? new URL(SITE)).origin;
+// Directory build format → pathnames carry a trailing slash; keep it so canonical
+// and hreflang match the URL the server actually serves (no 3xx redirect).
+const abs = (p: string) => new URL(p, siteOrigin).href;
+const canonicalURL = abs(path);
+const imageURL = new URL(image, siteOrigin).href;
+
+// Language switcher: swap the /en prefix while preserving the trailing slash.
 function altLangPath(p: string): string {
-  if (p.startsWith('/en/')) return p.replace(/^\/en\//, '/');
-  if (p === '/en') return '/';
-  return `/en${p === '/' ? '' : p}`;
+  if (p === '/en' || p === '/en/') return '/';
+  if (p.startsWith('/en/')) return p.replace(/^\/en/, '');
+  if (p === '/') return '/en/';
+  return `/en${p}`;
 }
 const altHref = altLangPath(path);
 const altLabel = isEn ? 'IT' : 'EN';
 
+// hreflang alternates (absolute)
+const itHref = abs(isEn ? altLangPath(path) : path);
+const enHref = abs(isEn ? path : altLangPath(path));
+
+// Site-wide structured data + optional per-page blocks
+const orgLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'FlyItalyADSB',
+  url: SITE,
+  logo: `${SITE}/favicon.svg`,
+  description: isEn
+    ? 'Non-profit network collecting open ADS-B, Mode-S and MLAT aircraft data over Italy.'
+    : 'Rete no-profit che raccoglie dati aeronautici ADS-B, Mode-S e MLAT aperti sull’Italia.',
+  sameAs: ['https://github.com/flyitalyadsb'],
+};
+const websiteLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'FlyItalyADSB',
+  url: SITE,
+  inLanguage: lang === 'en' ? 'en-US' : 'it-IT',
+};
+const jsonLdBlocks = [
+  orgLd,
+  websiteLd,
+  ...(Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : []),
+];
+
 const nav = isEn
-  ? { map: 'Map', data: 'Data', network: 'Network', research: 'Research', about: 'About' }
-  : { map: 'Mappa', data: 'Dati', network: 'Rete', research: 'Ricerca', about: 'Chi siamo' };
+  ? { map: 'Map', airports: 'Airports', aircraft: 'Aircraft', data: 'Data', network: 'Network', research: 'Research', about: 'About' }
+  : { map: 'Mappa', airports: 'Aeroporti', aircraft: 'Aeromobili', data: 'Dati', network: 'Rete', research: 'Ricerca', about: 'Chi siamo' };
 
 const navLinks = isEn
   ? [
       { href: 'https://mappa.flyitalyadsb.com', label: nav.map, external: true },
+      { href: '/en/aeroporti', label: nav.airports, external: false },
+      { href: '/en/aeromobili', label: nav.aircraft, external: false },
       { href: '/en/dati', label: nav.data, external: false },
       { href: '/en/rete', label: nav.network, external: false },
       { href: '/en/ricerca', label: nav.research, external: false },
@@ -37,6 +94,8 @@ const navLinks = isEn
     ]
   : [
       { href: 'https://mappa.flyitalyadsb.com', label: nav.map, external: true },
+      { href: '/aeroporti', label: nav.airports, external: false },
+      { href: '/aeromobili', label: nav.aircraft, external: false },
       { href: '/dati', label: nav.data, external: false },
       { href: '/rete', label: nav.network, external: false },
       { href: '/ricerca', label: nav.research, external: false },
@@ -45,19 +104,46 @@ const navLinks = isEn
 ---
 
 <!doctype html>
-<html lang="it">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
-    <link rel="canonical" href={canonicalURL} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#070d1a" />
+    <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
+
     <title>{title} — FlyItalyADSB</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- hreflang alternates -->
+    <link rel="alternate" hreflang="it" href={itHref} />
+    <link rel="alternate" hreflang="en" href={enHref} />
+    <link rel="alternate" hreflang="x-default" href={itHref} />
+
+    <!-- Open Graph -->
     <meta property="og:title" content={`${title} — FlyItalyADSB`} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:site_name" content="FlyItalyADSB" />
+    <meta property="og:locale" content={lang === 'en' ? 'en_US' : 'it_IT'} />
+    <meta property="og:locale:alternate" content={lang === 'en' ? 'it_IT' : 'en_US'} />
+    <meta property="og:image" content={imageURL} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={`${title} — FlyItalyADSB`} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageURL} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    {jsonLdBlocks.map((block) => (
+      <script type="application/ld+json" set:html={JSON.stringify(block)} />
+    ))}
   </head>
   <body class="min-h-screen flex flex-col" style="background-color:#070d1a">
 
@@ -123,6 +209,8 @@ const navLinks = isEn
             <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">{isEn ? 'Data' : 'Dati'}</div>
             <ul class="space-y-2 text-sm">
               <li><a href={isEn ? '/en/dati' : '/dati'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'About our data' : 'I nostri dati'}</a></li>
+              <li><a href={isEn ? '/en/aeroporti' : '/aeroporti'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Airports' : 'Aeroporti'}</a></li>
+              <li><a href={isEn ? '/en/aeromobili' : '/aeromobili'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Aircraft types' : 'Aeromobili'}</a></li>
               <li><a href={isEn ? '/en/dati/archivio' : '/dati/archivio'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Archive' : 'Archivio storico'}</a></li>
             </ul>
           </div>

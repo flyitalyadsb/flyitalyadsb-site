@@ -1,0 +1,233 @@
+---
+import type { AircraftType } from '../data/aircraftTypes';
+import { fullName, relatedTypes } from '../data/aircraftTypes';
+import { categoryLabel, faqs, type Lang } from '../lib/aircraft-content';
+
+interface Props {
+  type: AircraftType;
+  lang: Lang;
+}
+
+const { type, lang } = Astro.props as Props;
+const isEn = lang === 'en';
+const name = fullName(type);
+const related = relatedTypes(type, 4);
+const localFaqs = faqs(type, lang);
+const base = isEn ? '/en' : '';
+const isMil = type.category === 'military';
+
+const t = isEn
+  ? {
+      crumbHome: 'Home',
+      crumbTypes: 'Aircraft',
+      live: 'Live ·',
+      now: `${type.model} airborne now`,
+      flyingTitle: `${type.model} in the air right now`,
+      flyingEmpty: `No ${type.model} in the network's coverage at this moment — check back shortly.`,
+      colReg: 'Registration',
+      colFlight: 'Callsign',
+      colAlt: 'Altitude',
+      colSpd: 'Speed',
+      specsTitle: 'Specifications',
+      manufacturer: 'Manufacturer',
+      code: 'ICAO type code',
+      category: 'Category',
+      engines: 'Engines',
+      first: 'First flight',
+      seats: 'Typical seating',
+      aboutTitle: `About the ${name}`,
+      milNote: ` Because military aircraft like this often fly without full ADS-B, FlyItalyADSB reconstructs their position through multilateration (MLAT) — the only such service active in Italy.`,
+      openMap: 'Open the live map →',
+      relatedTitle: 'Related aircraft',
+      allTypes: 'All aircraft types',
+    }
+  : {
+      crumbHome: 'Home',
+      crumbTypes: 'Aeromobili',
+      live: 'Live ·',
+      now: `${type.model} in volo ora`,
+      flyingTitle: `${type.model} in volo in questo momento`,
+      flyingEmpty: `Nessun ${type.model} nella copertura della rete in questo momento — riprova tra poco.`,
+      colReg: 'Immatricolazione',
+      colFlight: 'Callsign',
+      colAlt: 'Quota',
+      colSpd: 'Velocità',
+      specsTitle: 'Caratteristiche',
+      manufacturer: 'Costruttore',
+      code: 'Codice tipo ICAO',
+      category: 'Categoria',
+      engines: 'Motori',
+      first: 'Primo volo',
+      seats: 'Posti tipici',
+      aboutTitle: `Il ${name}`,
+      milNote: ` Poiché i velivoli militari come questo volano spesso senza ADS-B completo, FlyItalyADSB ne ricostruisce la posizione tramite multilaterazione (MLAT) — unica attiva in Italia.`,
+      openMap: 'Apri la mappa live →',
+      relatedTitle: 'Aeromobili correlati',
+      allTypes: 'Tutti i tipi di aeromobile',
+    };
+---
+
+<div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto">
+
+  <!-- Breadcrumb -->
+  <nav class="text-xs text-slate-500 mb-6 flex flex-wrap items-center gap-2" aria-label="breadcrumb">
+    <a href={`${base}/`} class="hover:text-slate-300 no-underline">{t.crumbHome}</a>
+    <span class="text-slate-700">/</span>
+    <a href={`${base}/aeromobili`} class="hover:text-slate-300 no-underline">{t.crumbTypes}</a>
+    <span class="text-slate-700">/</span>
+    <span class="text-slate-400">{name}</span>
+  </nav>
+
+  <!-- Hero -->
+  <div class="mb-10">
+    <div class="flex flex-wrap items-center gap-3 mb-4">
+      <span class="text-xs px-2.5 py-1 rounded font-mono font-semibold" style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830">{type.code}</span>
+      <span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:#ffffff08;color:#94a3b8;border:1px solid #ffffff12">{categoryLabel(type.category, lang)}</span>
+      <span class="inline-flex items-center gap-2 text-xs px-2.5 py-1 rounded-full font-medium" style="background:#10b98115;color:#34d399;border:1px solid #10b98130">
+        <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block"></span>
+        {t.live} <span id="ac-count" data-code={type.code}>—</span> {t.now}
+      </span>
+    </div>
+    <h1 class="text-3xl sm:text-4xl font-bold text-slate-100 mb-4 leading-tight">
+      {name} <span class="text-slate-500">({type.code})</span>
+    </h1>
+    <p class="text-slate-400 max-w-3xl leading-relaxed">{isEn ? type.blurbEn : type.blurbIt}</p>
+  </div>
+
+  <!-- Live list of this type currently flying -->
+  <div class="rounded-2xl border mb-16 overflow-hidden" style="border-color:#1e3048;background:#0f1929">
+    <div class="px-6 py-4 border-b flex items-center justify-between gap-4" style="border-color:#1e3048">
+      <h2 class="font-semibold text-slate-100 text-sm">{t.flyingTitle}</h2>
+      <a href="https://mappa.flyitalyadsb.com" target="_blank" rel="noopener" class="text-xs text-sky-400 hover:text-sky-300 no-underline shrink-0">{t.openMap}</a>
+    </div>
+    <div id="live-wrap" class="p-2">
+      <p id="live-empty" class="px-4 py-6 text-sm text-slate-500">…</p>
+      <table id="live-table" class="w-full text-sm hidden">
+        <thead>
+          <tr class="text-xs text-slate-500 uppercase tracking-wider">
+            <th class="text-left font-medium px-4 py-2">{t.colReg}</th>
+            <th class="text-left font-medium px-4 py-2">{t.colFlight}</th>
+            <th class="text-right font-medium px-4 py-2">{t.colAlt}</th>
+            <th class="text-right font-medium px-4 py-2">{t.colSpd}</th>
+          </tr>
+        </thead>
+        <tbody id="live-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Specs + about -->
+  <div class="grid lg:grid-cols-3 gap-6 mb-16">
+    <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">{t.specsTitle}</p>
+      <dl class="space-y-3 text-sm">
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">{t.manufacturer}</dt><dd class="text-slate-200">{type.manufacturer}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">{t.code}</dt><dd class="text-slate-200 font-mono">{type.code}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">{t.category}</dt><dd class="text-slate-200 text-right">{categoryLabel(type.category, lang)}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">{t.engines}</dt><dd class="text-slate-200 text-right">{type.engines}</dd></div>
+        <div class="flex justify-between gap-4"><dt class="text-slate-500">{t.first}</dt><dd class="text-slate-200 font-mono">{type.firstFlight}</dd></div>
+        {type.seats && (
+          <div class="flex justify-between gap-4"><dt class="text-slate-500">{t.seats}</dt><dd class="text-slate-200">{type.seats}</dd></div>
+        )}
+      </dl>
+    </div>
+    <div class="lg:col-span-2 p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+      <h2 class="font-semibold text-slate-100 mb-3">{t.aboutTitle}</h2>
+      <p class="text-sm text-slate-400 leading-relaxed">
+        {isEn ? type.blurbEn : type.blurbIt}{isMil ? t.milNote : ''}
+      </p>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="mb-16">
+    <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-6">{isEn ? 'Frequently asked questions' : 'Domande frequenti'}</p>
+    <div class="space-y-3">
+      {localFaqs.map((f) => (
+        <details class="group rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+          <summary class="cursor-pointer list-none px-5 py-4 flex items-center justify-between gap-4 text-slate-100 font-medium text-sm">
+            {f.q}
+            <span class="text-slate-500 transition-transform group-open:rotate-45 text-lg leading-none">+</span>
+          </summary>
+          <p class="px-5 pb-5 text-sm text-slate-400 leading-relaxed">{f.a}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+
+  <!-- Related types -->
+  {related.length > 0 && (
+    <div class="mb-4">
+      <div class="flex items-end justify-between gap-4 mb-6">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest">{t.relatedTitle}</p>
+        <a href={`${base}/aeromobili`} class="text-sm text-sky-400 hover:text-sky-300 no-underline">{t.allTypes} →</a>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {related.map((o) => (
+          <a href={`${base}/aeromobili/${o.slug}`} class="block p-5 rounded-xl border no-underline group transition-all hover:border-sky-400/30" style="background:#0f1929;border-color:#1e3048">
+            <div class="text-xs font-mono text-slate-500 mb-2">{o.code}</div>
+            <div class="text-slate-100 font-semibold text-sm group-hover:text-white transition-colors">{fullName(o)}</div>
+          </a>
+        ))}
+      </div>
+    </div>
+  )}
+
+</div>
+
+<script>
+  // Live list of this aircraft type currently within FlyItalyADSB coverage.
+  const countEl = document.getElementById('ac-count');
+  const code = countEl?.dataset.code;
+  const table = document.getElementById('live-table');
+  const body = document.getElementById('live-body');
+  const empty = document.getElementById('live-empty');
+
+  function fmtAlt(a: unknown): string {
+    if (a === 'ground') return 'ground';
+    if (typeof a === 'number') return Math.round(a).toLocaleString('it-IT') + ' ft';
+    return '—';
+  }
+  function fmtSpd(g: unknown): string {
+    return typeof g === 'number' ? Math.round(g) + ' kt' : '—';
+  }
+  function esc(s: unknown): string {
+    return String(s ?? '').replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c] || c));
+  }
+
+  async function update() {
+    if (!code || !countEl) return;
+    try {
+      const res = await fetch('https://dati.flyitalyadsb.com/api/stats.json', { cache: 'no-store' });
+      const data = await res.json();
+      const list = (Array.isArray(data.aircraft) ? data.aircraft : []).filter((a: any) => a.t === code);
+      countEl.textContent = list.length.toLocaleString('it-IT');
+
+      if (!body || !table || !empty) return;
+      if (list.length === 0) {
+        table.classList.add('hidden');
+        empty.classList.remove('hidden');
+        return;
+      }
+      // Show those with the most context first (registration known), cap at 20.
+      list.sort((a: any, b: any) => (b.r ? 1 : 0) - (a.r ? 1 : 0));
+      const rows = list.slice(0, 20).map((a: any) => {
+        const reg = a.r ? esc(a.r) : '<span style="color:#475569">—</span>';
+        const flight = a.flight ? esc(String(a.flight).trim()) : '<span style="color:#475569">—</span>';
+        return `<tr style="border-top:1px solid #16263c">
+          <td class="px-4 py-2 font-mono text-slate-200">${reg}</td>
+          <td class="px-4 py-2 font-mono text-slate-400">${flight}</td>
+          <td class="px-4 py-2 text-right text-slate-400 font-mono text-xs">${fmtAlt(a.alt_baro)}</td>
+          <td class="px-4 py-2 text-right text-slate-400 font-mono text-xs">${fmtSpd(a.gs)}</td>
+        </tr>`;
+      }).join('');
+      body.innerHTML = rows;
+      empty.classList.add('hidden');
+      table.classList.remove('hidden');
+    } catch {
+      countEl.textContent = '—';
+    }
+  }
+  update();
+  setInterval(update, 10000);
+</script>

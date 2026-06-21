@@ -1,0 +1,35 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import AirportDetail from '../../../components/AirportDetail.astro';
+import { airports, getAirport } from '../../../data/airports';
+import {
+  pageTitle,
+  metaDescription,
+  airportJsonLd,
+  faqJsonLd,
+  breadcrumbJsonLd,
+} from '../../../lib/airport-content';
+
+export function getStaticPaths() {
+  return airports.map((a) => ({ params: { slug: a.slug } }));
+}
+
+const lang = 'en';
+const { slug } = Astro.params;
+const airport = getAirport(slug!);
+if (!airport) throw new Error(`Unknown airport slug: ${slug}`);
+
+const jsonLd = [
+  airportJsonLd(airport, lang),
+  faqJsonLd(airport, lang),
+  breadcrumbJsonLd(airport, lang),
+];
+---
+
+<Layout
+  title={pageTitle(airport, lang)}
+  description={metaDescription(airport, lang)}
+  jsonLd={jsonLd}
+>
+  <AirportDetail airport={airport} lang={lang} />
+</Layout>

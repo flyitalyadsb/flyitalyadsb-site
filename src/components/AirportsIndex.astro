@@ -1,0 +1,54 @@
+---
+import { airportsByRegion, fullName, airports } from '../data/airports';
+import type { Lang } from '../lib/airport-content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props as Props;
+const isEn = lang === 'en';
+const base = isEn ? '/en' : '';
+const groups = airportsByRegion();
+
+const t = isEn
+  ? {
+      kicker: 'Airports',
+      h1: 'Italian airports — live flights',
+      lead: `Real-time air traffic over Italy's main airports. Pick an airport to open the live ADS-B and MLAT map centred on it, see how many aircraft are nearby right now and what FlyItalyADSB can track in the area. ${airports.length} airports across ${groups.length} regions.`,
+    }
+  : {
+      kicker: 'Aeroporti',
+      h1: 'Aeroporti italiani — voli in tempo reale',
+      lead: `Il traffico aereo in tempo reale sui principali aeroporti italiani. Scegli uno scalo per aprire la mappa live ADS-B e MLAT centrata su di esso, vedere quanti aerei ci sono ora nelle vicinanze e cosa FlyItalyADSB riesce a tracciare nell'area. ${airports.length} aeroporti in ${groups.length} regioni.`,
+    };
+---
+
+<div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto">
+
+  <div class="mb-14">
+    <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">{t.kicker}</p>
+    <h1 class="text-4xl font-bold text-slate-100 mb-4">{t.h1}</h1>
+    <p class="text-slate-400 max-w-3xl leading-relaxed">{t.lead}</p>
+  </div>
+
+  <div class="space-y-12">
+    {groups.map((g) => (
+      <section>
+        <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 pb-2 border-b" style="border-color:#1e3048">{g.region}</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {g.items.map((a) => (
+            <a href={`${base}/aeroporti/${a.slug}`} class="block p-5 rounded-xl border no-underline group transition-all hover:border-sky-400/30" style="background:#0f1929;border-color:#1e3048">
+              <div class="flex items-center justify-between gap-3 mb-2">
+                <span class="text-slate-100 font-semibold text-sm group-hover:text-white transition-colors">{fullName(a)}</span>
+                <span class="text-xs font-mono text-slate-500 shrink-0">{a.iata}</span>
+              </div>
+              <p class="text-xs text-slate-500 leading-relaxed line-clamp-2">{isEn ? a.blurbEn : a.blurbIt}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))}
+  </div>
+
+</div>
