@@ -140,8 +140,6 @@ docker logs -f ultrafeeder</code></pre>
             {[
               { host: 'dati.flyitalyadsb.com', port: '4905', proto: 'BEAST TCP', use: 'Invia dati ADS-B (in)' },
               { host: 'dati.flyitalyadsb.com', port: '30100', proto: 'TCP', use: 'Client MLAT' },
-              { host: 'dati.flyitalyadsb.com', port: '60005', proto: 'BEAST TCP', use: 'Ricevi feed aggregato (out)' },
-              { host: 'dati.flyitalyadsb.com', port: '60004', proto: 'SBS TCP', use: 'Ricevi feed aggregato SBS (out)' },
             ].map(row => (
               <tr style="border-bottom:1px solid #1e3048">
                 <td class="px-4 py-3 font-mono text-xs text-sky-400">{row.host}</td>
@@ -153,10 +151,6 @@ docker logs -f ultrafeeder</code></pre>
           </tbody>
         </table>
       </div>
-      <p class="text-xs text-slate-600 mt-3">
-        Le porte in uscita (60004, 60005) sono il feed aggregato globale — utile per alimentare
-        altri software locali come Virtual Radar Server o PlanePlotter.
-      </p>
     </section>
 
     <!-- Archivio dati -->

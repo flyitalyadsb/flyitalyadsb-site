@@ -200,7 +200,7 @@ const t = isEn
     try {
       // Count + sample are computed server-side: the API returns only this type's
       // count and up to 20 sample rows, never the full live feed.
-      const res = await fetch(`https://dati.flyitalyadsb.com/api/type?code=${encodeURIComponent(code)}`, { cache: 'no-store' });
+      const res = await fetch(`https://api.flyitalyadsb.com/api/type?code=${encodeURIComponent(code)}`, { cache: 'no-store' });
       const data = await res.json();
       const count = typeof data.count === 'number' ? data.count : 0;
       const list = Array.isArray(data.sample) ? data.sample : [];

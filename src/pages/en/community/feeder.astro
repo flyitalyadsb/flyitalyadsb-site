@@ -113,8 +113,6 @@ docker logs -f ultrafeeder</code></pre>
             {[
               { host: 'dati.flyitalyadsb.com', port: '4905', proto: 'BEAST TCP', use: 'Send ADS-B data (in)' },
               { host: 'dati.flyitalyadsb.com', port: '30100', proto: 'TCP', use: 'MLAT client' },
-              { host: 'dati.flyitalyadsb.com', port: '60005', proto: 'BEAST TCP', use: 'Receive aggregated feed (out)' },
-              { host: 'dati.flyitalyadsb.com', port: '60004', proto: 'SBS TCP', use: 'Receive aggregated feed SBS (out)' },
             ].map(row => (
               <tr style="border-bottom:1px solid #1e3048">
                 <td class="px-4 py-3 font-mono text-xs text-sky-400">{row.host}</td>

@@ -178,7 +178,7 @@ const t = isEn
     const radius = parseFloat(el.dataset.radius || '80');
     const update = async () => {
       try {
-        const url = `https://dati.flyitalyadsb.com/api/count?lat=${lat0}&lon=${lon0}&radius=${radius}`;
+        const url = `https://api.flyitalyadsb.com/api/count?lat=${lat0}&lon=${lon0}&radius=${radius}`;
         const res = await fetch(url, { cache: 'no-store' });
         const data = await res.json();
         const n = typeof data.count === 'number' ? data.count : 0;

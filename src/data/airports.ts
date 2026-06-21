@@ -1,7 +1,7 @@
 // Curated dataset of major Italian airports.
 // Powers the programmatic SEO pages under /aeroporti and /en/aeroporti.
 // Coordinates are used to center the live map and to count aircraft within a
-// radius (server-side, via dati.flyitalyadsb.com/api/count?lat&lon&radius).
+// radius (server-side, via api.flyitalyadsb.com/api/count?lat&lon&radius).
 
 export interface Airport {
   /** URL slug, e.g. "roma-fiumicino" → /aeroporti/roma-fiumicino */

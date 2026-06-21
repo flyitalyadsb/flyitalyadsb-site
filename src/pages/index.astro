@@ -239,7 +239,7 @@ import Layout from '../layouts/Layout.astro';
 <script>
 async function updateLiveCount() {
   try {
-    const res = await fetch('https://dati.flyitalyadsb.com/api/stats.json', { cache: 'no-store' });
+    const res = await fetch('https://api.flyitalyadsb.com/api/stats.json', { cache: 'no-store' });
     const data = await res.json();
     // /api/stats.json ora ritorna il conteggio globale (aircraft = numero), non l'array.
     const n = typeof data.aircraft === 'number' ? data.aircraft : null;
