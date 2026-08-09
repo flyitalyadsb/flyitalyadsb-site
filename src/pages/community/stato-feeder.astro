@@ -1,0 +1,218 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout
+  title="I miei dati arrivano?"
+  description="Verifica in tempo reale se il tuo ricevitore ADS-B sta alimentando la rete FlyItalyADSB: stato della connessione BEAST e MLAT."
+>
+  <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-3xl mx-auto">
+
+    <div class="mb-10">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
+        <a href="/community/feeder" class="text-slate-600 hover:text-slate-400 no-underline">Community</a>
+      </p>
+      <h1 class="text-4xl font-bold text-slate-100 mb-4">I miei dati arrivano?</h1>
+      <p class="text-slate-400 max-w-2xl leading-relaxed">
+        Questa pagina controlla se in questo momento riceviamo dati dal tuo indirizzo IP.
+        Non serve registrarsi e non c'è niente da inserire: guardiamo semplicemente da dove
+        arriva la richiesta.
+      </p>
+    </div>
+
+    <!-- Esito -->
+    <div id="esito" class="rounded-xl p-6 border mb-10" style="background:#0f1929;border-color:#1e3048">
+      <p class="text-sm text-slate-400">Verifica in corso…</p>
+    </div>
+
+    <!-- Mostrata solo a chi riceve un esito negativo su BEAST o MLAT -->
+    <section class="mb-12" id="aiuto" hidden>
+      <h2 class="text-2xl font-bold text-slate-100 mb-4">Non ti riconosciamo?</h2>
+      <p class="text-slate-400 text-sm leading-relaxed mb-6">
+        Prima di pensare a un guasto: questa pagina controlla l'indirizzo da cui arriva il
+        <em>browser</em>. Se stai guardando da un telefono in 4G, da un altro edificio o da una VPN,
+        l'indirizzo è diverso da quello del ricevitore e il risultato sarà negativo anche con il
+        feed perfettamente funzionante.
+      </p>
+
+      <div class="mb-8">
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+          Verifica dal ricevitore stesso
+        </div>
+        <p class="text-slate-400 text-sm leading-relaxed mb-3">
+          Esegui questo comando <span class="text-slate-300">sulla macchina che invia i dati</span>:
+          esce dallo stesso indirizzo del feed, quindi la risposta riguarda davvero il tuo ricevitore.
+        </p>
+        <pre class="p-4 rounded-lg text-xs overflow-auto leading-relaxed" style="background:#0a1320;color:#94a3b8;border:1px solid #1e3048"><code>curl https://api.flyitalyadsb.com/api/am_i_feeding</code></pre>
+      </div>
+
+      <h3 class="font-semibold text-slate-100 mb-3">Se anche da lì risulta negativo</h3>
+      <ul class="space-y-2 text-sm text-slate-400 leading-relaxed list-disc pl-5">
+        <li>
+          Controlla la destinazione:
+          <code class="text-xs px-1.5 py-0.5 rounded" style="background:#111e30;color:#7dd3fc">dati.flyitalyadsb.com</code>
+          porta <code class="text-xs px-1.5 py-0.5 rounded" style="background:#111e30;color:#7dd3fc">4905</code> per il BEAST,
+          <code class="text-xs px-1.5 py-0.5 rounded" style="background:#111e30;color:#7dd3fc">30100</code> per l'MLAT.
+        </li>
+        <li>
+          Verifica che la connessione sia davvero aperta:
+          <code class="text-xs px-1.5 py-0.5 rounded" style="background:#111e30;color:#7dd3fc">ss -tnp | grep 4905</code>
+        </li>
+        <li>
+          Con ultrafeeder, guarda i log del container:
+          <code class="text-xs px-1.5 py-0.5 rounded" style="background:#111e30;color:#7dd3fc">docker logs -f ultrafeeder</code>
+        </li>
+        <li>Una connessione appena aperta può metterci fino a un minuto per comparire qui.</li>
+      </ul>
+    </section>
+
+    <!-- Cosa significano i due stati -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">Cosa vuol dire</h2>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div class="p-5 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+          <h3 class="font-semibold text-slate-100 mb-2">BEAST</h3>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Il flusso dei messaggi ADS-B che il tuo ricevitore decodifica e ci manda. È la parte
+            che conta: se è attiva, i tuoi dati stanno entrando nella rete.
+          </p>
+        </div>
+        <div class="p-5 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+          <h3 class="font-semibold text-slate-100 mb-2">MLAT</h3>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            La multilaterazione, che ricava la posizione degli aerei che non la trasmettono
+            incrociando i tempi di arrivo fra più ricevitori. È facoltativa: si può alimentare
+            in BEAST senza fare MLAT. <a href="/community/mlat" class="text-sky-400 no-underline">Come funziona →</a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div class="rounded-xl p-6 border" style="background:#0a1320;border-color:#1e3048">
+      <h3 class="font-semibold text-slate-100 mb-2">Non sei ancora un feeder?</h3>
+      <p class="text-sm text-slate-400 leading-relaxed mb-4">
+        Bastano un Raspberry Pi, un dongle RTL-SDR e un'antenna. La guida spiega tutto,
+        dall'hardware alla configurazione.
+      </p>
+      <a href="/community/feeder"
+         class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium no-underline transition-all"
+         style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
+         onmouseover="this.style.background='#38bdf825'"
+         onmouseout="this.style.background='#38bdf815'">
+        Diventa feeder →
+      </a>
+    </div>
+
+  </div>
+</Layout>
+
+<script>
+  // "Are my data arriving?" — the question my.flyitalyadsb.com/am_i_feeding used to
+  // answer before the k8s migration, and which feeders have been asking by email ever
+  // since. The endpoint replies ONLY about the address the request came from: it takes
+  // no caller-supplied IP, because that would make it a way to enumerate the network.
+  const ENDPOINT = 'https://api.flyitalyadsb.com/api/am_i_feeding';
+
+  const box = document.getElementById('esito');
+  const help = document.getElementById('aiuto');
+
+  const esc = (s) =>
+    String(s).replace(/[&<>"']/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
+  function row(active, name, since) {
+    const colour = active ? '#34d399' : '#64748b';
+    const label = active ? 'attivo' : 'nessuna connessione';
+    // How long WE have seen this connection, not how long the receiver has been on:
+    // it restarts from zero when our own services do. Under a minute is just noise.
+    let age = '';
+    if (active && since) {
+      const min = Math.floor((Date.now() / 1000 - since) / 60);
+      if (min >= 60) age = ` · da ${Math.floor(min / 60)} h`;
+      else if (min >= 1) age = ` · da ${min} min`;
+    }
+    return `
+      <div class="flex items-center gap-3 py-2">
+        <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${colour}"></span>
+        <span class="text-sm font-semibold text-slate-200" style="min-width:4.5rem">${name}</span>
+        <span class="text-sm" style="color:${colour}">${label}</span>
+        <span class="text-xs text-slate-600">${age}</span>
+      </div>`;
+  }
+
+  // Deliberately distinct from "you are not feeding": telling someone they are down when
+  // we simply cannot tell is exactly what makes them write in.
+  function inconclusive(title, detail, ip) {
+    box.innerHTML = `
+      <h2 class="text-lg font-semibold text-slate-100 mb-2">${esc(title)}</h2>
+      <p class="text-sm text-slate-400 leading-relaxed">${esc(detail)}</p>` +
+      (ip
+        ? `<p class="text-xs text-slate-600 mt-4 pt-4" style="border-top:1px solid #1e3048">
+             Indirizzo controllato: <span class="font-mono text-slate-500">${esc(ip)}</span>
+           </p>`
+        : '');
+  }
+
+  async function check() {
+    let res;
+    try {
+      res = await fetch(ENDPOINT, { cache: 'no-store' });
+    } catch {
+      return inconclusive(
+        'Verifica non riuscita',
+        'Non siamo riusciti a contattare il servizio. Riprova fra qualche minuto: non significa che il tuo feed sia fermo.',
+      );
+    }
+
+    if (res.status === 503) {
+      return inconclusive(
+        'Non possiamo verificare adesso',
+        'Il controllo dello stato è momentaneamente indisponibile. Il tuo feed non c’entra: riprova fra qualche minuto.',
+      );
+    }
+    if (!res.ok) {
+      return inconclusive(
+        'Verifica non riuscita',
+        `Il servizio ha risposto con un errore (${res.status}). Riprova fra qualche minuto.`,
+      );
+    }
+
+    const data = await res.json();
+
+    // Receivers always feed over IPv4 (dati.flyitalyadsb.com is an A record with no
+    // AAAA), but the API is Cloudflare-proxied and answers over IPv6 too. A browser
+    // on IPv6 therefore reaches us from an address that can never match the feed —
+    // saying "not feeding" there would be a guaranteed false negative.
+    if (data.comparable === false) {
+      inconclusive(
+        'Non possiamo confrontare questo indirizzo',
+        'Il tuo browser ci raggiunge su IPv6, mentre i ricevitori inviano i dati su IPv4: i due indirizzi non sono confrontabili. Usa il comando qui sotto direttamente sul ricevitore.',
+        data.ip,
+      );
+      help.hidden = false;
+      return;
+    }
+
+    const beast = !!(data.feeding && data.feeding.beast);
+    const mlat = !!(data.feeding && data.feeding.mlat);
+    const since = data.since || {};
+
+    const head = beast
+      ? { text: 'Sì, i tuoi dati arrivano', colour: '#34d399' }
+      : { text: 'Non riceviamo dati da questo indirizzo', colour: '#f59e0b' };
+
+    box.innerHTML = `
+      <h2 class="text-lg font-semibold mb-4" style="color:${head.colour}">${esc(head.text)}</h2>
+      ${row(beast, 'BEAST', since.beast || null)}
+      ${row(mlat, 'MLAT', since.mlat || null)}
+      <p class="text-xs text-slate-600 mt-4 pt-4" style="border-top:1px solid #1e3048">
+        Indirizzo controllato: <span class="font-mono text-slate-500">${esc(data.ip || '')}</span>
+      </p>`;
+
+    // Also shown to BEAST-only feeders: usually a deliberate choice, sometimes an
+    // MLAT config that was never finished.
+    if (!beast || !mlat) help.hidden = false;
+  }
+
+  check();
+</script>
