@@ -1,10 +1,25 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+// I numeri della rete sono aggiornati a mano: meglio una data esplicita che un
+// dato che invecchia in silenzio. Ultima misura: 9 agosto 2026.
+const AGGIORNATO = '9 agosto 2026';
+
+// Ricevitori MLAT che dichiarano la propria posizione (1635 su ~1856), classificati
+// per area dalle coordinate reali, non da geolocalizzazione dell'IP.
+const AREE = [
+  { nome: 'Resto d’Europa', n: 792, pct: 48.4 },
+  { nome: 'Nord America', n: 572, pct: 35.0 },
+  { nome: 'Italia e dintorni', n: 123, pct: 7.5, evidenzia: true },
+  { nome: 'Asia', n: 90, pct: 5.5 },
+  { nome: 'Oceania', n: 33, pct: 2.0 },
+  { nome: 'Sud America, Africa, altro', n: 25, pct: 1.5 },
+];
 ---
 
 <Layout
   title="La rete"
-  description="La rete di ricevitori ADS-B di FlyItalyADSB: feeder italiani, connessioni internazionali, copertura globale aggregata da adsb.lol e theairtraffic.com."
+  description="La rete di ricevitori ADS-B di FlyItalyADSB: oltre 3.000 feeder privati in tutto il mondo, MLAT proprio, copertura globale."
 >
   <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto">
 
@@ -12,10 +27,27 @@ import Layout from '../layouts/Layout.astro';
       <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Infrastruttura</p>
       <h1 class="text-4xl font-bold text-slate-100 mb-4">La rete</h1>
       <p class="text-slate-400 max-w-2xl leading-relaxed">
-        FlyItalyADSB aggrega dati da ricevitori privati distribuiti sul territorio italiano
-        e da reti internazionali di aggregazione. Il risultato è una copertura globale
-        con densità elevata sopra l'Italia e il Mediterraneo.
+        FlyItalyADSB è nata in Italia ed è oggi una rete globale: oltre <strong class="text-slate-200">3.000
+        ricevitori privati</strong> sparsi nel mondo inviano i loro dati <em>direttamente</em> ai nostri
+        server, non attraverso intermediari. La densità più alta resta sull'Europa e sul Mediterraneo,
+        ma più di un terzo dei ricevitori si trova in Nord America.
       </p>
+    </div>
+
+    <!-- Numeri della rete -->
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
+      {[
+        { n: '3.051', l: 'ricevitori attivi', d: 'indirizzi univoci che alimentano adesso' },
+        { n: '3.004', l: 'in BEAST', d: 'flusso ADS-B e Mode-S diretto' },
+        { n: '1.856', l: 'in MLAT', d: 'di cui 1.809 fanno anche BEAST' },
+        { n: '~11.900', l: 'aeromobili', d: 'tracciati simultaneamente' },
+      ].map(k => (
+        <div class="p-5 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+          <div class="text-3xl font-bold mb-1" style="color:#38bdf8">{k.n}</div>
+          <div class="text-sm font-semibold text-slate-200 mb-1">{k.l}</div>
+          <div class="text-xs text-slate-500 leading-relaxed">{k.d}</div>
+        </div>
+      ))}
     </div>
 
     <!-- Architettura rete -->
@@ -29,12 +61,13 @@ import Layout from '../layouts/Layout.astro';
               <path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" stroke-linecap="round"/>
             </svg>
           </div>
-          <h2 class="font-semibold text-slate-100">Feeder italiani</h2>
+          <h2 class="font-semibold text-slate-100">Feeder diretti</h2>
         </div>
         <p class="text-sm text-slate-400 leading-relaxed mb-4">
-          Ricevitori privati dislocati dal nord fino al sud Italia, Svizzera e coste tirrenica e adriatica.
-          Ogni ricevitore copre un raggio fino a 400 km e invia dati ADS-B e Mode-S in tempo reale
-          al server di ingestione centrale.
+          Ricevitori privati che inviano a noi in prima persona, dall'Italia al resto d'Europa,
+          dalle due Americhe all'Asia e all'Oceania. Ogni ricevitore copre un raggio fino a 400 km
+          e invia dati ADS-B e Mode-S in tempo reale al server di ingestione centrale.
+          <span class="text-slate-300">Sono loro la copertura globale</span>, non gli aggregatori.
         </p>
         <div class="space-y-2 text-xs">
           <div class="flex justify-between py-1 border-b" style="border-color:#1e3048">
@@ -62,10 +95,10 @@ import Layout from '../layouts/Layout.astro';
           <h2 class="font-semibold text-slate-100">Aggregatori internazionali</h2>
         </div>
         <p class="text-sm text-slate-400 leading-relaxed mb-4">
-          Il server readsb-globe si connette a <strong class="text-slate-300">adsb.lol</strong> e
-          <strong class="text-slate-300">theairtraffic.com</strong> per aggregare dati globali.
-          Questo estende la copertura a tutto il mondo, con i dati MLAT di questi network
-          integrati nel feed locale.
+          Il server readsb-globe si connette anche a <strong class="text-slate-300">adsb.lol</strong> e
+          <strong class="text-slate-300">theairtraffic.com</strong>, con i loro dati MLAT integrati nel
+          feed. Servono a <span class="text-slate-300">infittire</span> le aree dove i nostri ricevitori
+          sono radi: la portata globale ce l'abbiamo già dai feeder diretti.
         </p>
         <div class="space-y-2 text-xs">
           <div class="flex justify-between py-1 border-b" style="border-color:#1e3048">
@@ -83,6 +116,44 @@ import Layout from '../layouts/Layout.astro';
         </div>
       </div>
 
+    </div>
+
+    <!-- Distribuzione geografica -->
+    <div class="mb-16">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Da dove arrivano</p>
+      <h2 class="text-2xl font-bold text-slate-100 mb-3">Dove sono i ricevitori</h2>
+      <p class="text-slate-400 text-sm leading-relaxed max-w-2xl mb-8">
+        Posizioni dichiarate dai 1.635 ricevitori MLAT che le condividono — coordinate reali,
+        non geolocalizzazione dell'indirizzo IP. L'Italia è dove la rete è nata e dove la
+        densità per km² resta più alta, ma è ormai una piccola parte del totale.
+      </p>
+
+      <div class="rounded-xl border p-6" style="background:#0f1929;border-color:#1e3048">
+        <div class="space-y-4">
+          {AREE.map(a => (
+            <div>
+              <div class="flex items-baseline justify-between mb-1.5 gap-4">
+                <span class={a.evidenzia ? 'text-sm font-semibold text-slate-100' : 'text-sm text-slate-300'}>
+                  {a.nome}
+                </span>
+                <span class="text-xs font-mono shrink-0" style="color:#94a3b8">
+                  {a.n} · {a.pct}%
+                </span>
+              </div>
+              <div class="h-2 rounded-full overflow-hidden" style="background:#0a1320">
+                <div
+                  class="h-full rounded-full"
+                  style={`width:${a.pct}%;background:${a.evidenzia ? '#38bdf8' : '#31527a'}`}
+                ></div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p class="text-xs text-slate-600 mt-6 pt-5" style="border-top:1px solid #1e3048">
+          Conteggio per indirizzo: più ricevitori dietro la stessa connessione contano una volta
+          sola, quindi i totali sono una stima per difetto. Aggiornato al {AGGIORNATO}.
+        </p>
+      </div>
     </div>
 
     <!-- Pipeline dati -->
@@ -111,7 +182,7 @@ import Layout from '../layouts/Layout.astro';
             {
               step: '03',
               title: 'Aggregazione',
-              desc: 'readsb-globe fonde tutti i feed: feeder locali, MLAT risultante, adsb.lol, theairtraffic.com, OGN. Produce aircraft.json ogni 200ms e aggiorna lo storico heatmap.',
+              desc: 'readsb-globe fonde tutti i feed: feeder diretti, MLAT risultante, adsb.lol, theairtraffic.com, OGN. Produce aircraft.json ogni 200ms e aggiorna lo storico heatmap.',
               tags: ['aircraft.json', '0.2s', 'heatmap']
             },
             {
