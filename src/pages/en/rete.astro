@@ -1,10 +1,25 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+
+// Network figures are updated by hand: an explicit date beats a number that goes
+// stale silently. Last measured: 9 August 2026.
+const UPDATED = '9 August 2026';
+
+// MLAT receivers that share their position (1635 of ~1856), grouped by area from
+// their real coordinates — not from IP geolocation.
+const AREAS = [
+  { name: 'Rest of Europe', n: 792, pct: 48.4 },
+  { name: 'North America', n: 572, pct: 35.0 },
+  { name: 'Italy and around it', n: 123, pct: 7.5, highlight: true },
+  { name: 'Asia', n: 90, pct: 5.5 },
+  { name: 'Oceania', n: 33, pct: 2.0 },
+  { name: 'South America, Africa, other', n: 25, pct: 1.5 },
+];
 ---
 
 <Layout
   title="The network"
-  description="FlyItalyADSB's receiver network: a global grid of feeders augmented by adsb.lol and theairtraffic.com, with MLAT active over Italy."
+  description="FlyItalyADSB's receiver network: 3,000+ private feeders worldwide sending to us directly, our own MLAT, global coverage."
 >
   <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto">
 
@@ -12,10 +27,27 @@ import Layout from '../../layouts/Layout.astro';
       <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Infrastructure</p>
       <h1 class="text-4xl font-bold text-slate-100 mb-4">The network</h1>
       <p class="text-slate-400 max-w-2xl leading-relaxed">
-        FlyItalyADSB aggregates data from a worldwide network of private receivers
-        and international aggregation networks. The result is global ADS-B coverage
-        with high density over Italy and the Mediterranean, and the only active MLAT service over Italy.
+        FlyItalyADSB was born in Italy and is now a global network: more than
+        <strong class="text-slate-200">3,000 private receivers</strong> around the world send us
+        their data <em>directly</em>, not through intermediaries. Density is still highest over
+        Europe and the Mediterranean, but more than a third of the receivers are in North America.
       </p>
+    </div>
+
+    <!-- Network figures -->
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
+      {[
+        { n: '3,051', l: 'active receivers', d: 'unique addresses feeding right now' },
+        { n: '3,004', l: 'on BEAST', d: 'direct ADS-B and Mode-S stream' },
+        { n: '1,856', l: 'on MLAT', d: '1,809 of them also feed BEAST' },
+        { n: '~11,900', l: 'aircraft', d: 'tracked simultaneously' },
+      ].map(k => (
+        <div class="p-5 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+          <div class="text-3xl font-bold mb-1" style="color:#38bdf8">{k.n}</div>
+          <div class="text-sm font-semibold text-slate-200 mb-1">{k.l}</div>
+          <div class="text-xs text-slate-500 leading-relaxed">{k.d}</div>
+        </div>
+      ))}
     </div>
 
     <!-- Architecture -->
@@ -29,13 +61,13 @@ import Layout from '../../layouts/Layout.astro';
               <path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" stroke-linecap="round"/>
             </svg>
           </div>
-          <h2 class="font-semibold text-slate-100">Our receiver network</h2>
+          <h2 class="font-semibold text-slate-100">Direct feeders</h2>
         </div>
         <p class="text-sm text-slate-400 leading-relaxed mb-4">
-          Private receivers contributed by community members across Italy and beyond.
-          Coverage extends from the Alps to Sicily, from the Tyrrhenian Sea to the Adriatic coast,
-          with individual antennas reaching up to 400 km. Together they form the densest
-          ground-truth ADS-B network over Italy.
+          Private receivers that send to us first-hand, from Italy to the rest of Europe, across
+          both Americas, Asia and Oceania. Each antenna reaches up to 400 km and streams ADS-B and
+          Mode-S in real time to the central ingest server.
+          <span class="text-slate-300">They are the global coverage</span> — not the aggregators.
         </p>
         <div class="space-y-2 text-xs">
           <div class="flex justify-between py-1 border-b" style="border-color:#1e3048">
@@ -63,10 +95,10 @@ import Layout from '../../layouts/Layout.astro';
           <h2 class="font-semibold text-slate-100">International aggregators</h2>
         </div>
         <p class="text-sm text-slate-400 leading-relaxed mb-4">
-          The readsb-globe server connects to <strong class="text-slate-300">adsb.lol</strong> and
-          <strong class="text-slate-300">theairtraffic.com</strong> to aggregate global feeds.
-          This extends coverage worldwide, with MLAT data from these networks
-          merged into the local aggregated stream.
+          The readsb-globe server also connects to <strong class="text-slate-300">adsb.lol</strong> and
+          <strong class="text-slate-300">theairtraffic.com</strong>, with MLAT data from those networks
+          merged into the stream. They <span class="text-slate-300">thicken</span> the areas where our
+          own receivers are sparse: the worldwide reach already comes from the direct feeders.
         </p>
         <div class="space-y-2 text-xs">
           <div class="flex justify-between py-1 border-b" style="border-color:#1e3048">
@@ -86,6 +118,44 @@ import Layout from '../../layouts/Layout.astro';
 
     </div>
 
+    <!-- Geographic spread -->
+    <div class="mb-16">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Where they are</p>
+      <h2 class="text-2xl font-bold text-slate-100 mb-3">Where the receivers are</h2>
+      <p class="text-slate-400 text-sm leading-relaxed max-w-2xl mb-8">
+        Positions declared by the 1,635 MLAT receivers that share them — real coordinates, not IP
+        geolocation. Italy is where the network started and where density per km² is still highest,
+        but it is now a small share of the whole.
+      </p>
+
+      <div class="rounded-xl border p-6" style="background:#0f1929;border-color:#1e3048">
+        <div class="space-y-4">
+          {AREAS.map(a => (
+            <div>
+              <div class="flex items-baseline justify-between mb-1.5 gap-4">
+                <span class={a.highlight ? 'text-sm font-semibold text-slate-100' : 'text-sm text-slate-300'}>
+                  {a.name}
+                </span>
+                <span class="text-xs font-mono shrink-0" style="color:#94a3b8">
+                  {a.n} · {a.pct}%
+                </span>
+              </div>
+              <div class="h-2 rounded-full overflow-hidden" style="background:#0a1320">
+                <div
+                  class="h-full rounded-full"
+                  style={`width:${a.pct}%;background:${a.highlight ? '#38bdf8' : '#31527a'}`}
+                ></div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p class="text-xs text-slate-600 mt-6 pt-5" style="border-top:1px solid #1e3048">
+          Counted per address: several receivers behind one connection count once, so the totals are
+          a lower bound. Updated {UPDATED}.
+        </p>
+      </div>
+    </div>
+
     <!-- Pipeline -->
     <div class="mb-16">
       <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-8">Data pipeline</p>
@@ -95,7 +165,7 @@ import Layout from '../../layouts/Layout.astro';
           {[
             { step: '01', title: 'Ingestion', desc: 'Feeders send BEAST TCP data to readsb-ingest (port 4905). Simultaneously, readsb-globe receives from adsb.lol and theairtraffic.com.', tags: ['readsb-ingest', 'readsb-globe'] },
             { step: '02', title: 'MLAT', desc: 'MLAT clients (port 30100) send time-stamped measurements to mlat-server. With at least 4 synchronized receivers, the server triangulates aircraft position without GPS.', tags: ['mlat-server', 'port 30100'] },
-            { step: '03', title: 'Aggregation', desc: 'readsb-globe merges all feeds: local feeders, computed MLAT, adsb.lol, theairtraffic.com, OGN. Outputs aircraft.json every 200ms and updates heatmap history.', tags: ['aircraft.json', '0.2s', 'heatmap'] },
+            { step: '03', title: 'Aggregation', desc: 'readsb-globe merges all feeds: direct feeders, computed MLAT, adsb.lol, theairtraffic.com, OGN. Outputs aircraft.json every 200ms and updates heatmap history.', tags: ['aircraft.json', '0.2s', 'heatmap'] },
             { step: '04', title: 'Distribution', desc: 'Data is served to the tar1090 map via local Unix socket and used by the weather-32 meteorological pipeline.', tags: ['tar1090', 'weather-32'] },
           ].map(item => (
             <div class="flex gap-6 pl-12 relative">
