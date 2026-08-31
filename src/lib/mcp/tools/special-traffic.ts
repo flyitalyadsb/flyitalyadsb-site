@@ -20,7 +20,11 @@ export type SpecialTrafficInput = z.infer<typeof specialTrafficInputSchema>;
 export interface SpecialTrafficResult {
   category: SpecialTrafficInput['category'];
   now: number;
+  /** Number of records actually in `aircraft` below (i.e. `aircraft.length`) — NOT the
+   * pre-limit total, so the two fields can never disagree. See `totalMatched` for that. */
   count: number;
+  /** How many aircraft actually matched before `limit` truncated the list. */
+  totalMatched: number;
   aircraft: AircraftRecord[];
 }
 
@@ -28,10 +32,12 @@ export interface SpecialTrafficResult {
  * endpoint, there's no client-side flag to check on a generic record. */
 export async function specialTraffic(input: SpecialTrafficInput, apiKey: string): Promise<SpecialTrafficResult> {
   const result = await getSpecialTraffic(CATEGORY_MAP[input.category], apiKey);
+  const aircraft = result.ac.slice(0, input.limit);
   return {
     category: input.category,
     now: result.now,
-    count: result.count,
-    aircraft: result.ac.slice(0, input.limit),
+    count: aircraft.length,
+    totalMatched: result.count,
+    aircraft,
   };
 }

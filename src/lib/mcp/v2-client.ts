@@ -2,8 +2,9 @@
 // (api.flyitalyadsb.com/v2/*, adsb.lol-style — see the companion PR building
 // it). Every /v2/* call requires an `X-Api-Key` header; the CF edge WAF
 // blocks the request entirely if it's absent, the API itself 401s if it's
-// wrong. The key is never hardcoded — it's read from the Pages Function's
-// `env.FLYITALYADSB_V2_API_KEY` binding by the caller and passed in here.
+// wrong. There's no server-side key here: `apiKey` is the MCP caller's own
+// header value, extracted and forwarded as-is by functions/mcp.ts — never
+// hardcoded, never a shared secret.
 
 export const V2_BASE = 'https://api.flyitalyadsb.com/v2';
 
@@ -54,7 +55,7 @@ async function v2Fetch<T>(path: string, apiKey: string): Promise<T> {
     throw new V2ApiError(0, `Network error reaching the flyitalyadsb API: ${(err as Error).message}`);
   }
   if (res.status === 404) throw new V2ApiError(404, 'No matching aircraft found.');
-  if (res.status === 401) throw new V2ApiError(401, 'The flyitalyadsb API rejected the configured API key.');
+  if (res.status === 401) throw new V2ApiError(401, 'The flyitalyadsb API rejected this API key — check that your X-Api-Key is correct.');
   if (res.status === 429) throw new V2ApiError(429, 'Rate limit exceeded on the flyitalyadsb API — try again shortly.');
   if (!res.ok) throw new V2ApiError(res.status, `flyitalyadsb API returned ${res.status}.`);
   return res.json() as Promise<T>;

@@ -39,7 +39,11 @@ export interface AircraftNearResult {
   center: { label: string; lat: number; lon: number };
   radiusKm: number;
   now: number;
+  /** Number of records actually in `aircraft` below (i.e. `aircraft.length`) — NOT the
+   * pre-limit total, so the two fields can never disagree. See `totalMatched` for that. */
   count: number;
+  /** How many aircraft actually matched before `limit` truncated the list. */
+  totalMatched: number;
   aircraft: AircraftRecord[];
 }
 
@@ -66,11 +70,13 @@ export async function aircraftNear(input: AircraftNearInput, apiKey: string): Pr
   }
 
   const result = await getAircraftNear(lat, lon, input.radiusKm, apiKey);
+  const aircraft = result.ac.slice(0, input.limit);
   return {
     center: { label, lat, lon },
     radiusKm: input.radiusKm,
     now: result.now,
-    count: result.count,
-    aircraft: result.ac.slice(0, input.limit),
+    count: aircraft.length,
+    totalMatched: result.count,
+    aircraft,
   };
 }
