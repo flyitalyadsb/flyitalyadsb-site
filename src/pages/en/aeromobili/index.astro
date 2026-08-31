@@ -1,11 +1,13 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
 import AircraftTypesIndex from '../../../components/AircraftTypesIndex.astro';
+import { aircraftTypesCollectionJsonLd } from '../../../lib/aircraft-content';
 ---
 
 <Layout
   title="Aircraft types — live tracking"
   description="Specifications and live tracking of the main aircraft types: airliners, regional, business and military aircraft (via MLAT) followed by FlyItalyADSB over Italy."
+  jsonLd={aircraftTypesCollectionJsonLd('en')}
 >
   <AircraftTypesIndex lang="en" />
 </Layout>
