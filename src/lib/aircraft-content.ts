@@ -2,7 +2,7 @@
 // pages. Shared by the IT and EN variants.
 
 import type { AircraftType, CategoryKey } from '../data/aircraftTypes';
-import { fullName } from '../data/aircraftTypes';
+import { aircraftTypes, fullName } from '../data/aircraftTypes';
 
 export type Lang = 'it' | 'en';
 
@@ -101,5 +101,27 @@ export function breadcrumbJsonLd(t: AircraftType, lang: Lang): Record<string, un
       { '@type': 'ListItem', position: 2, name: lang === 'en' ? 'Aircraft' : 'Aeromobili', item: index },
       { '@type': 'ListItem', position: 3, name: `${fullName(t)} (${t.code})`, item: typeUrl(t, lang) },
     ],
+  };
+}
+
+/** CollectionPage/ItemList for the /aeromobili (or /en/aeromobili) index —
+ * built from the same `aircraftTypes` dataset the index page already renders. */
+export function aircraftTypesCollectionJsonLd(lang: Lang): Record<string, unknown> {
+  const index = lang === 'en' ? `${SITE}/en/aeromobili/` : `${SITE}/aeromobili/`;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: lang === 'en' ? 'Aircraft types — live tracking' : 'Tipi di aeromobile — tracciamento in tempo reale',
+    url: index,
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: aircraftTypes.length,
+      itemListElement: aircraftTypes.map((t, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: `${fullName(t)} (${t.code})`,
+        url: typeUrl(t, lang),
+      })),
+    },
   };
 }

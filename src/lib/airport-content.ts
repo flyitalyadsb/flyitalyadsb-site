@@ -2,7 +2,7 @@
 // Shared by the IT and EN page variants so wording stays in one place.
 
 import type { Airport } from '../data/airports';
-import { fullName, RADIUS_KM } from '../data/airports';
+import { airports, fullName, RADIUS_KM } from '../data/airports';
 
 export type Lang = 'it' | 'en';
 
@@ -119,5 +119,27 @@ export function breadcrumbJsonLd(a: Airport, lang: Lang): Record<string, unknown
       { '@type': 'ListItem', position: 2, name: lang === 'en' ? 'Airports' : 'Aeroporti', item: index },
       { '@type': 'ListItem', position: 3, name: fullName(a), item: airportUrl(a, lang) },
     ],
+  };
+}
+
+/** CollectionPage/ItemList for the /aeroporti (or /en/aeroporti) index — built
+ * from the same `airports` dataset the index page already renders. */
+export function airportsCollectionJsonLd(lang: Lang): Record<string, unknown> {
+  const index = lang === 'en' ? `${SITE}/en/aeroporti/` : `${SITE}/aeroporti/`;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: lang === 'en' ? 'Italian airports — live flights' : 'Aeroporti italiani — voli in tempo reale',
+    url: index,
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: airports.length,
+      itemListElement: airports.map((a, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: fullName(a),
+        url: airportUrl(a, lang),
+      })),
+    },
   };
 }

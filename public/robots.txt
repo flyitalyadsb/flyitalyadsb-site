@@ -1,5 +1,30 @@
 # FlyItalyADSB — https://flyitalyadsb.com
 User-agent: *
 Allow: /
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
+
+# AI crawlers named explicitly (same reasoning as nessodigitale.it): the data
+# is CC BY-SA 4.0 and the project's own positioning is "open, unfiltered
+# data" — no content here needs hiding from training, citation, or agents.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
 
 Sitemap: https://flyitalyadsb.com/sitemap.xml
