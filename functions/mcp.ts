@@ -13,20 +13,35 @@ import { initializeMcpServer } from '../src/lib/mcp/server';
  * there's no session store to stand up here — matches nessodigitale.it's
  * `/mcp` (nesso-digitale-frontend#171), same dependency versions.
  *
- * The v2 API key is a Pages Function environment secret
- * (`FLYITALYADSB_V2_API_KEY`), never hardcoded — see `.env.example`. If it's
- * unset, tool calls return a clear `isError` result instead of crashing the
- * endpoint (see `initializeMcpServer`).
+ * Auth: same `X-Api-Key` convention as `api.flyitalyadsb.com/v2/*`, checked
+ * here — not via `mcp-handler`'s OAuth-oriented `withMcpAuth`, which assumes
+ * a real authorization server behind it (DCR/CIMD discovery, WWW-Authenticate
+ * challenges) that doesn't exist for a static per-caller API key. A missing
+ * header is rejected before the MCP protocol even starts; a present-but-wrong
+ * key is the v2 API's problem (401), not decided here. There's no shared
+ * server-side secret — every caller's own key is forwarded straight through,
+ * so the v2 API's own rate limit/abuse accounting stays per real caller
+ * instead of being pooled behind one fixed credential.
  */
 interface PagesFunctionContext {
   request: Request;
-  env: { FLYITALYADSB_V2_API_KEY?: string };
+  env: Record<string, string | undefined>;
 }
 
-export function onRequest(context: PagesFunctionContext): Promise<Response> {
-  const handler = createMcpHandler(
-    (server) => initializeMcpServer(server, context.env.FLYITALYADSB_V2_API_KEY),
-    { serverInfo: { name: 'flyitalyadsb', version: '1.0.0' } },
-  );
+const MISSING_KEY_BODY = JSON.stringify({
+  error: 'missing_api_key',
+  message:
+    'This MCP server requires an X-Api-Key header — the same key used for api.flyitalyadsb.com/v2/*. Request one the same way you would for the REST API.',
+});
+
+export function onRequest(context: PagesFunctionContext): Promise<Response> | Response {
+  const apiKey = context.request.headers.get('X-Api-Key');
+  if (!apiKey) {
+    return new Response(MISSING_KEY_BODY, { status: 401, headers: { 'Content-Type': 'application/json' } });
+  }
+
+  const handler = createMcpHandler((server) => initializeMcpServer(server, apiKey), {
+    serverInfo: { name: 'flyitalyadsb', version: '1.0.0' },
+  });
   return handler(context.request);
 }

@@ -23,7 +23,7 @@ export const TOOLS = {
   aircraft_near: {
     title: 'Aircraft near a location',
     description:
-      'List every aircraft the FlyItalyADSB network currently sees within a radius of an Italian airport or a lat/lon point — full live records (position, altitude, speed, type), not just a count.',
+      'List every aircraft the FlyItalyADSB network currently sees within a radius of any lat/lon point worldwide — full live records (position, altitude, speed, type), not just a count. Also accepts a shortcut name for one of FlyItalyADSB\'s curated Italian airports.',
     inputSchema: aircraftNearInputSchema,
     annotations: {
       readOnlyHint: true,
@@ -55,12 +55,19 @@ function errorResult(err: unknown) {
   return { content: [{ type: 'text' as const, text: message }], isError: true as const };
 }
 
-/** Registers all three tools on a fresh `McpServer` instance. `apiKey` comes
- * from the Pages Function's `env.FLYITALYADSB_V2_API_KEY` binding — never
- * hardcoded, never echoed back in any tool response or error. */
-export function initializeMcpServer(server: McpServer, apiKey: string | undefined): void {
+/**
+ * Registers all three tools on a fresh `McpServer` instance. `apiKey` is the
+ * CALLER's own `X-Api-Key` — the same key issued for `api.flyitalyadsb.com/v2/*`
+ * — extracted from the request header by `functions/mcp.ts` before this runs.
+ * There's no shared server-side secret: every caller brings their own key, so
+ * rate limiting and abuse accountability at the v2 API happen per real caller
+ * instead of being pooled behind one fixed credential. `functions/mcp.ts`
+ * rejects the request before reaching here if the header is missing, so
+ * `apiKey` is always a non-empty string by the time a tool actually runs —
+ * whether it's a *valid* key is the v2 API's call (401 if not), not ours.
+ */
+export function initializeMcpServer(server: McpServer, apiKey: string): void {
   server.registerTool('find_aircraft', TOOLS.find_aircraft, async (args) => {
-    if (!apiKey) return errorResult(new Error('The flyitalyadsb API key is not configured on this deployment.'));
     try {
       const result = await findAircraft(args, apiKey);
       return { content: [{ type: 'text', text: JSON.stringify(result) }] };
@@ -70,7 +77,6 @@ export function initializeMcpServer(server: McpServer, apiKey: string | undefine
   });
 
   server.registerTool('aircraft_near', TOOLS.aircraft_near, async (args) => {
-    if (!apiKey) return errorResult(new Error('The flyitalyadsb API key is not configured on this deployment.'));
     try {
       const result = await aircraftNear(args, apiKey);
       return { content: [{ type: 'text', text: JSON.stringify(result) }] };
@@ -80,7 +86,6 @@ export function initializeMcpServer(server: McpServer, apiKey: string | undefine
   });
 
   server.registerTool('special_traffic', TOOLS.special_traffic, async (args) => {
-    if (!apiKey) return errorResult(new Error('The flyitalyadsb API key is not configured on this deployment.'));
     try {
       const result = await specialTraffic(args, apiKey);
       return { content: [{ type: 'text', text: JSON.stringify(result) }] };
