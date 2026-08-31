@@ -11,6 +11,7 @@ const staticPaths = [
   '/aeromobili',
   '/dati',
   '/dati/archivio',
+  '/dati/api',
   '/rete',
   '/ricerca',
   '/ricerca/weather',

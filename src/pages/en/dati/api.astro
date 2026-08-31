@@ -1,0 +1,150 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+
+const SITE = 'https://flyitalyadsb.com';
+
+const faqs = [
+  {
+    q: 'Do I need an API key?',
+    a: 'Yes, for both the REST API (api.flyitalyadsb.com/v2/*) and the MCP server (flyitalyadsb.com/mcp) — same key for both, passed in the X-Api-Key header. There is no self-service signup yet: request one from the people running the project.',
+  },
+  {
+    q: 'How do I use the MCP server with Claude or ChatGPT?',
+    a: 'Add https://flyitalyadsb.com/mcp as a connector/MCP server in your client\'s settings (e.g. Claude.ai → Settings → Connectors), supplying your X-Api-Key when asked. Then just ask things like "what\'s flying over Fiumicino right now?" or "any military traffic over Rome?" and the agent will call the tools automatically.',
+  },
+  {
+    q: 'What can the MCP server do that the map can\'t?',
+    a: 'It returns structured data (JSON) instead of a web page: look up one aircraft by ICAO hex/callsign/registration, list every aircraft within a radius of any point on the planet with full records, and pull filtered lists of military, PIA (privacy), or LADD traffic.',
+  },
+  {
+    q: 'Is the network limited to Italy?',
+    a: 'No. FlyItalyADSB was born in Italy but is a global network with 3,000+ direct feeders worldwide — both the REST API and the MCP tools accept coordinates anywhere on the planet, not just Italy.',
+  },
+];
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE}/en/` },
+    { '@type': 'ListItem', position: 2, name: 'Data', item: `${SITE}/en/dati/` },
+    { '@type': 'ListItem', position: 3, name: 'API and AI agents', item: `${SITE}/en/dati/api/` },
+  ],
+};
+
+const mcpCallExample = `POST https://flyitalyadsb.com/mcp
+Content-Type: application/json
+X-Api-Key: <your-key>
+
+{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"aircraft_near","arguments":{"airport":"FCO","limit":5}}}`;
+---
+
+<Layout
+  title="API and AI agents"
+  description="FlyItalyADSB's REST API v2 and MCP server: how to query live aircraft data, for developers and for AI agents like Claude or ChatGPT."
+  jsonLd={[faqJsonLd, breadcrumbJsonLd]}
+>
+  <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-4xl mx-auto">
+
+    <div class="mb-14">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
+        <a href="/en/dati" class="text-slate-600 hover:text-slate-400 no-underline">Data</a>
+        <span class="mx-2">/</span>
+        <span class="text-slate-500">API and AI agents</span>
+      </p>
+      <h1 class="text-4xl font-bold text-slate-100 mb-4">API and AI agents</h1>
+      <p class="text-slate-400 max-w-2xl leading-relaxed">
+        Beyond the map, FlyItalyADSB's data can be queried programmatically: a REST API for
+        developers, and an MCP (Model Context Protocol) server that lets AI agents like Claude or
+        ChatGPT answer questions about live air traffic anywhere in the world.
+      </p>
+    </div>
+
+    <!-- REST API -->
+    <section class="mb-14">
+      <h2 class="text-2xl font-bold text-slate-100 mb-4">REST API</h2>
+      <p class="text-slate-400 text-sm leading-relaxed mb-6">
+        Base URL <code class="text-xs px-1.5 py-0.5 rounded" style="background:#111e30;color:#7dd3fc">https://api.flyitalyadsb.com/v2</code>,
+        JSON responses, authenticated via the <code class="text-xs px-1.5 py-0.5 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> header.
+      </p>
+      <div class="space-y-3">
+        {[
+          { path: '/icao/{hex}', desc: 'One aircraft by 24-bit ICAO address.' },
+          { path: '/callsign/{callsign}', desc: 'One aircraft by callsign/flight number.' },
+          { path: '/reg/{reg}', desc: 'One aircraft by tail registration.' },
+          { path: '/lat/{lat}/lon/{lon}/dist/{km}', desc: 'Every aircraft within a radius of a point, full records — works anywhere in the world, not just Italy.' },
+          { path: '/mil', desc: 'Currently tracked military traffic.' },
+          { path: '/pia', desc: 'Aircraft with a Privacy ICAO Address.' },
+          { path: '/ladd', desc: 'Aircraft in the FAA Limiting Aircraft Data Displayed program.' },
+        ].map((e) => (
+          <div class="p-4 rounded-lg border flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4" style="background:#0f1929;border-color:#1e3048">
+            <code class="text-xs font-mono shrink-0" style="color:#7dd3fc">GET {e.path}</code>
+            <span class="text-sm text-slate-400">{e.desc}</span>
+          </div>
+        ))}
+      </div>
+      <p class="text-xs text-slate-500 mt-4">
+        Limit: 300 requests/minute per IP. Requests without <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> are rejected at the edge.
+      </p>
+    </section>
+
+    <!-- MCP -->
+    <section class="mb-14">
+      <h2 class="text-2xl font-bold text-slate-100 mb-4">MCP server for AI agents</h2>
+      <p class="text-slate-400 text-sm leading-relaxed mb-6">
+        The <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener" class="text-sky-400 no-underline">Model Context Protocol</a>
+        is the standard assistants like Claude or ChatGPT use to call external tools. Our server exposes
+        three read-only tools at
+        <code class="text-xs px-1.5 py-0.5 rounded" style="background:#111e30;color:#7dd3fc">https://flyitalyadsb.com/mcp</code>:
+      </p>
+      <div class="space-y-3 mb-6">
+        {[
+          { name: 'find_aircraft', desc: 'Look up one aircraft by ICAO hex, callsign, or registration.' },
+          { name: 'aircraft_near', desc: 'Every aircraft within a radius of a point (or an Italian airport by name), full records — the most useful one.' },
+          { name: 'special_traffic', desc: 'Currently tracked military, PIA (privacy), or LADD traffic.' },
+        ].map((t) => (
+          <div class="p-4 rounded-lg border" style="background:#0f1929;border-color:#1e3048">
+            <code class="text-xs font-mono" style="color:#a78bfa">{t.name}</code>
+            <span class="text-sm text-slate-400 ml-2">{t.desc}</span>
+          </div>
+        ))}
+      </div>
+      <p class="text-slate-400 text-sm leading-relaxed mb-3">
+        To connect it, add the URL as a connector in your MCP client (e.g. Claude.ai → Settings → Connectors),
+        with your <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> when asked:
+      </p>
+      <pre class="p-4 rounded-lg text-xs overflow-auto leading-relaxed" style="background:#0a1320;color:#94a3b8;border:1px solid #1e3048"><code>{mcpCallExample}</code></pre>
+    </section>
+
+    <!-- Auth CTA -->
+    <div class="rounded-xl p-8 border" style="background:#0a1320;border-color:#1e3048">
+      <div class="flex flex-col sm:flex-row gap-6 items-start">
+        <div class="flex-1">
+          <h3 class="font-semibold text-slate-100 mb-2">Need an API key?</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            The REST API and the MCP server share the same key, passed in the <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> header.
+            There's no self-service yet — reach out to request one.
+          </p>
+        </div>
+        <a href="/en/chi-siamo#contatti"
+           class="shrink-0 px-5 py-2.5 rounded-lg font-medium text-sm no-underline transition-all"
+           style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
+           onmouseover="this.style.background='#38bdf825'"
+           onmouseout="this.style.background='#38bdf815'">
+          Request a key →
+        </a>
+      </div>
+    </div>
+
+  </div>
+</Layout>

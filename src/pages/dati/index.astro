@@ -91,7 +91,7 @@ import Layout from '../../layouts/Layout.astro';
     <!-- Come vengono usati -->
     <div class="mb-16">
       <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-6">Utilizzo</p>
-      <div class="grid sm:grid-cols-3 gap-6">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
           <h3 class="font-semibold text-slate-100 mb-2">Mappa in tempo reale</h3>
           <p class="text-sm text-slate-500">Tutti i voli sopra l'Italia visualizzati su <a href="https://mappa.flyitalyadsb.com" target="_blank" rel="noopener" class="text-sky-400 no-underline">mappa.flyitalyadsb.com</a> con storico tracce e heatmap.</p>
@@ -103,6 +103,10 @@ import Layout from '../../layouts/Layout.astro';
         <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
           <h3 class="font-semibold text-slate-100 mb-2">Archive storico</h3>
           <p class="text-sm text-slate-500">Globe history: tracce per aeromobile, heatmap e statistiche di copertura disponibili tramite <a href="https://dati.flyitalyadsb.com" target="_blank" rel="noopener" class="text-sky-400 no-underline">dati.flyitalyadsb.com →</a></p>
+        </div>
+        <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+          <h3 class="font-semibold text-slate-100 mb-2">API e agenti AI</h3>
+          <p class="text-sm text-slate-500">REST API e server MCP per interrogare gli aeromobili tracciati in tempo reale, anche da Claude o ChatGPT. <a href="/dati/api" class="text-sky-400 no-underline">Documentazione →</a></p>
         </div>
       </div>
     </div>
