@@ -140,11 +140,11 @@ X-Api-Key: <la-tua-chiave>
           <input type="email" id="key-email" name="email" required placeholder="la-tua-email@esempio.com"
                  class="px-3 py-2.5 rounded-lg text-sm w-full"
                  style="background:#111e30;color:#e2e8f0;border:1px solid #1e3048" />
-          <input type="text" id="key-name" name="name" placeholder="Nome o progetto (opzionale)"
+          <input type="text" id="key-name" name="name" maxlength="200" placeholder="Nome o progetto (opzionale)"
                  class="px-3 py-2.5 rounded-lg text-sm w-full"
                  style="background:#111e30;color:#e2e8f0;border:1px solid #1e3048" />
         </div>
-        <input type="text" id="key-use-case" name="use_case" placeholder="A cosa la usi? (opzionale)"
+        <input type="text" id="key-use-case" name="use_case" maxlength="500" placeholder="A cosa la usi? (opzionale)"
                class="px-3 py-2.5 rounded-lg text-sm w-full"
                style="background:#111e30;color:#e2e8f0;border:1px solid #1e3048" />
         <div class="flex items-center gap-4">
@@ -192,6 +192,10 @@ X-Api-Key: <la-tua-chiave>
           form.reset();
         } else if (res.status === 429) {
           setStatus('Hai già richiesto una chiave di recente — riprova tra qualche minuto.', '#fbbf24');
+        } else if (res.status === 409) {
+          setStatus('Richiesta già in corso per questa email — riprova tra un istante.', '#fbbf24');
+        } else if (res.status === 413) {
+          setStatus('Nome o descrizione troppo lunghi, accorciali e riprova.', '#f87171');
         } else {
           const body = await res.json().catch(() => null);
           setStatus(body?.error || 'Qualcosa è andato storto, riprova.', '#f87171');

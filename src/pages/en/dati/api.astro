@@ -140,11 +140,11 @@ X-Api-Key: <your-key>
           <input type="email" id="key-email" name="email" required placeholder="you@example.com"
                  class="px-3 py-2.5 rounded-lg text-sm w-full"
                  style="background:#111e30;color:#e2e8f0;border:1px solid #1e3048" />
-          <input type="text" id="key-name" name="name" placeholder="Name or project (optional)"
+          <input type="text" id="key-name" name="name" maxlength="200" placeholder="Name or project (optional)"
                  class="px-3 py-2.5 rounded-lg text-sm w-full"
                  style="background:#111e30;color:#e2e8f0;border:1px solid #1e3048" />
         </div>
-        <input type="text" id="key-use-case" name="use_case" placeholder="What will you use it for? (optional)"
+        <input type="text" id="key-use-case" name="use_case" maxlength="500" placeholder="What will you use it for? (optional)"
                class="px-3 py-2.5 rounded-lg text-sm w-full"
                style="background:#111e30;color:#e2e8f0;border:1px solid #1e3048" />
         <div class="flex items-center gap-4">
@@ -192,6 +192,10 @@ X-Api-Key: <your-key>
           form.reset();
         } else if (res.status === 429) {
           setStatus('You already requested a key recently — try again in a few minutes.', '#fbbf24');
+        } else if (res.status === 409) {
+          setStatus('A request for this email is already in progress — try again in a moment.', '#fbbf24');
+        } else if (res.status === 413) {
+          setStatus('Name or use case is too long — shorten it and try again.', '#f87171');
         } else {
           const body = await res.json().catch(() => null);
           setStatus(body?.error || 'Something went wrong, please try again.', '#f87171');
