@@ -6,7 +6,7 @@ const SITE = 'https://flyitalyadsb.com';
 const faqs = [
   {
     q: 'Serve una API key?',
-    a: 'Sì, sia per la REST API (api.flyitalyadsb.com/v2/*) sia per il server MCP (flyitalyadsb.com/mcp): stessa chiave per entrambi, passata nell\'header X-Api-Key. Non c\'è un self-service di registrazione al momento: si richiede scrivendo a chi gestisce il progetto.',
+    a: 'Sì, sia per la REST API (api.flyitalyadsb.com/v2/*) sia per il server MCP (flyitalyadsb.com/mcp): stessa chiave per entrambi, passata nell\'header X-Api-Key. È self-service e istantanea: basta un indirizzo email, la chiave arriva via email in pochi secondi, senza approvazione manuale.',
   },
   {
     q: 'Come uso il server MCP con Claude o ChatGPT?',
@@ -126,25 +126,81 @@ X-Api-Key: <la-tua-chiave>
       <pre class="p-4 rounded-lg text-xs overflow-auto leading-relaxed" style="background:#0a1320;color:#94a3b8;border:1px solid #1e3048"><code>{mcpCallExample}</code></pre>
     </section>
 
-    <!-- Auth CTA -->
+    <!-- Auth signup -->
     <div class="rounded-xl p-8 border" style="background:#0a1320;border-color:#1e3048">
-      <div class="flex flex-col sm:flex-row gap-6 items-start">
-        <div class="flex-1">
-          <h3 class="font-semibold text-slate-100 mb-2">Ti serve una API key?</h3>
-          <p class="text-sm text-slate-400 leading-relaxed">
-            REST API e server MCP condividono la stessa chiave, passata nell'header <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code>.
-            Non c'è ancora un self-service: scrivici per richiederne una.
-          </p>
+      <h3 class="font-semibold text-slate-100 mb-2">Ottieni una API key</h3>
+      <p class="text-sm text-slate-400 leading-relaxed mb-6">
+        REST API e server MCP condividono la stessa chiave, passata nell'header <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code>.
+        Istantanea e gratuita: inserisci un'email, la chiave arriva lì — non compare mai in questa pagina.
+        Se richiedi di nuovo con la stessa email, quella vecchia smette di funzionare e ne ricevi una nuova
+        (è anche il modo per recuperarla se l'hai persa).
+      </p>
+      <form id="key-form" class="space-y-3" novalidate>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <input type="email" id="key-email" name="email" required placeholder="la-tua-email@esempio.com"
+                 class="px-3 py-2.5 rounded-lg text-sm w-full"
+                 style="background:#111e30;color:#e2e8f0;border:1px solid #1e3048" />
+          <input type="text" id="key-name" name="name" placeholder="Nome o progetto (opzionale)"
+                 class="px-3 py-2.5 rounded-lg text-sm w-full"
+                 style="background:#111e30;color:#e2e8f0;border:1px solid #1e3048" />
         </div>
-        <a href="/chi-siamo#contatti"
-           class="shrink-0 px-5 py-2.5 rounded-lg font-medium text-sm no-underline transition-all"
-           style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
-           onmouseover="this.style.background='#38bdf825'"
-           onmouseout="this.style.background='#38bdf815'">
-          Richiedi una chiave →
-        </a>
-      </div>
+        <input type="text" id="key-use-case" name="use_case" placeholder="A cosa la usi? (opzionale)"
+               class="px-3 py-2.5 rounded-lg text-sm w-full"
+               style="background:#111e30;color:#e2e8f0;border:1px solid #1e3048" />
+        <div class="flex items-center gap-4">
+          <button type="submit" id="key-submit"
+                  class="px-5 py-2.5 rounded-lg font-medium text-sm transition-all"
+                  style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
+                  onmouseover="this.style.background='#38bdf825'"
+                  onmouseout="this.style.background='#38bdf815'">
+            Invia chiave via email →
+          </button>
+          <p id="key-status" class="text-sm" role="status"></p>
+        </div>
+      </form>
     </div>
 
   </div>
+
+  <script>
+    const form = document.getElementById('key-form') as HTMLFormElement;
+    const submitBtn = document.getElementById('key-submit') as HTMLButtonElement;
+    const status = document.getElementById('key-status') as HTMLParagraphElement;
+
+    function setStatus(text: string, color: string) {
+      status.textContent = text;
+      status.style.color = color;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = (document.getElementById('key-email') as HTMLInputElement).value.trim();
+      const name = (document.getElementById('key-name') as HTMLInputElement).value.trim();
+      const useCase = (document.getElementById('key-use-case') as HTMLInputElement).value.trim();
+
+      submitBtn.disabled = true;
+      setStatus('Invio in corso…', '#94a3b8');
+
+      try {
+        const res = await fetch('https://api.flyitalyadsb.com/v2/keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, name: name || undefined, use_case: useCase || undefined }),
+        });
+        if (res.status === 202) {
+          setStatus('Fatto — controlla la tua email per la chiave.', '#34d399');
+          form.reset();
+        } else if (res.status === 429) {
+          setStatus('Hai già richiesto una chiave di recente — riprova tra qualche minuto.', '#fbbf24');
+        } else {
+          const body = await res.json().catch(() => null);
+          setStatus(body?.error || 'Qualcosa è andato storto, riprova.', '#f87171');
+        }
+      } catch {
+        setStatus('Impossibile contattare il servizio, riprova tra poco.', '#f87171');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
 </Layout>

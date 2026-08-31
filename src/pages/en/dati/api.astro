@@ -6,7 +6,7 @@ const SITE = 'https://flyitalyadsb.com';
 const faqs = [
   {
     q: 'Do I need an API key?',
-    a: 'Yes, for both the REST API (api.flyitalyadsb.com/v2/*) and the MCP server (flyitalyadsb.com/mcp) — same key for both, passed in the X-Api-Key header. There is no self-service signup yet: request one from the people running the project.',
+    a: 'Yes, for both the REST API (api.flyitalyadsb.com/v2/*) and the MCP server (flyitalyadsb.com/mcp) — same key for both, passed in the X-Api-Key header. It\'s self-service and instant: just an email address, the key arrives by email within seconds, no manual approval.',
   },
   {
     q: 'How do I use the MCP server with Claude or ChatGPT?',
@@ -126,25 +126,81 @@ X-Api-Key: <your-key>
       <pre class="p-4 rounded-lg text-xs overflow-auto leading-relaxed" style="background:#0a1320;color:#94a3b8;border:1px solid #1e3048"><code>{mcpCallExample}</code></pre>
     </section>
 
-    <!-- Auth CTA -->
+    <!-- Auth signup -->
     <div class="rounded-xl p-8 border" style="background:#0a1320;border-color:#1e3048">
-      <div class="flex flex-col sm:flex-row gap-6 items-start">
-        <div class="flex-1">
-          <h3 class="font-semibold text-slate-100 mb-2">Need an API key?</h3>
-          <p class="text-sm text-slate-400 leading-relaxed">
-            The REST API and the MCP server share the same key, passed in the <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> header.
-            There's no self-service yet — reach out to request one.
-          </p>
+      <h3 class="font-semibold text-slate-100 mb-2">Get an API key</h3>
+      <p class="text-sm text-slate-400 leading-relaxed mb-6">
+        The REST API and the MCP server share the same key, passed in the <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> header.
+        Instant and free: enter an email, the key arrives there — it's never shown on this page.
+        Requesting again with the same email retires the old key and issues a new one
+        (also how to recover a lost key).
+      </p>
+      <form id="key-form" class="space-y-3" novalidate>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <input type="email" id="key-email" name="email" required placeholder="you@example.com"
+                 class="px-3 py-2.5 rounded-lg text-sm w-full"
+                 style="background:#111e30;color:#e2e8f0;border:1px solid #1e3048" />
+          <input type="text" id="key-name" name="name" placeholder="Name or project (optional)"
+                 class="px-3 py-2.5 rounded-lg text-sm w-full"
+                 style="background:#111e30;color:#e2e8f0;border:1px solid #1e3048" />
         </div>
-        <a href="/en/chi-siamo#contatti"
-           class="shrink-0 px-5 py-2.5 rounded-lg font-medium text-sm no-underline transition-all"
-           style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
-           onmouseover="this.style.background='#38bdf825'"
-           onmouseout="this.style.background='#38bdf815'">
-          Request a key →
-        </a>
-      </div>
+        <input type="text" id="key-use-case" name="use_case" placeholder="What will you use it for? (optional)"
+               class="px-3 py-2.5 rounded-lg text-sm w-full"
+               style="background:#111e30;color:#e2e8f0;border:1px solid #1e3048" />
+        <div class="flex items-center gap-4">
+          <button type="submit" id="key-submit"
+                  class="px-5 py-2.5 rounded-lg font-medium text-sm transition-all"
+                  style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
+                  onmouseover="this.style.background='#38bdf825'"
+                  onmouseout="this.style.background='#38bdf815'">
+            Email me a key →
+          </button>
+          <p id="key-status" class="text-sm" role="status"></p>
+        </div>
+      </form>
     </div>
 
   </div>
+
+  <script>
+    const form = document.getElementById('key-form') as HTMLFormElement;
+    const submitBtn = document.getElementById('key-submit') as HTMLButtonElement;
+    const status = document.getElementById('key-status') as HTMLParagraphElement;
+
+    function setStatus(text: string, color: string) {
+      status.textContent = text;
+      status.style.color = color;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = (document.getElementById('key-email') as HTMLInputElement).value.trim();
+      const name = (document.getElementById('key-name') as HTMLInputElement).value.trim();
+      const useCase = (document.getElementById('key-use-case') as HTMLInputElement).value.trim();
+
+      submitBtn.disabled = true;
+      setStatus('Sending…', '#94a3b8');
+
+      try {
+        const res = await fetch('https://api.flyitalyadsb.com/v2/keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, name: name || undefined, use_case: useCase || undefined }),
+        });
+        if (res.status === 202) {
+          setStatus('Done — check your email for the key.', '#34d399');
+          form.reset();
+        } else if (res.status === 429) {
+          setStatus('You already requested a key recently — try again in a few minutes.', '#fbbf24');
+        } else {
+          const body = await res.json().catch(() => null);
+          setStatus(body?.error || 'Something went wrong, please try again.', '#f87171');
+        }
+      } catch {
+        setStatus('Could not reach the service, try again shortly.', '#f87171');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
 </Layout>
