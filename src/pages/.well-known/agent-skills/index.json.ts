@@ -1,6 +1,8 @@
 import type { APIRoute } from 'astro';
 import { SKILLS, skillDigest } from '../../../lib/mcp/skills';
 
+const SITE = 'https://flyitalyadsb.com';
+
 /**
  * Serves `/.well-known/agent-skills/index.json` — the Agent Readiness
  * scanner's `agentSkills` check. Shape mirrors nessodigitale.it's own
@@ -14,7 +16,10 @@ export const GET: APIRoute = () => {
       name: skill.name,
       type: 'skill-md',
       description: skill.description,
-      url: `/.well-known/agent-skills/${skill.name}/SKILL.md`,
+      // Absolute, matching server-card.json's convention — a machine
+      // consumer that cached this JSON out of its original fetch context
+      // shouldn't have to guess the origin for a relative URL.
+      url: `${SITE}/.well-known/agent-skills/${skill.name}/SKILL.md`,
       digest: skillDigest(skill.markdown),
     })),
   });

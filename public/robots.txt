@@ -6,25 +6,39 @@ Content-Signal: ai-train=yes, search=yes, ai-input=yes
 # AI crawlers named explicitly (same reasoning as nessodigitale.it): the data
 # is CC BY-SA 4.0 and the project's own positioning is "open, unfiltered
 # data" — no content here needs hiding from training, citation, or agents.
+#
+# Content-Signal is repeated in every named group below, not just declared
+# once under `*`: per normal robots.txt group-scoping (RFC 9309), a crawler
+# matching its own named User-agent group reads ONLY that group — it does
+# not fall through to `*` for anything, Content-Signal included. Without
+# this repetition, none of GPTBot/ClaudeBot/etc. would ever see the signal
+# meant specifically for them.
 User-agent: GPTBot
 Allow: /
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
 
 User-agent: ChatGPT-User
 Allow: /
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
 
 User-agent: ClaudeBot
 Allow: /
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
 
 User-agent: anthropic-ai
 Allow: /
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
 
 User-agent: PerplexityBot
 Allow: /
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
 
 User-agent: Google-Extended
 Allow: /
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
 
 User-agent: CCBot
 Allow: /
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
 
 Sitemap: https://flyitalyadsb.com/sitemap.xml

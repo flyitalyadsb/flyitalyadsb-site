@@ -14,6 +14,7 @@ FlyItalyADSB collects real-time ADS-B, Mode-S (BDS50/BDS60), MLAT, and OGN aircr
 
 ## Site content
 
+- [Home](https://flyitalyadsb.com/): live map preview, network overview, links to everything below.
 - [Airports](https://flyitalyadsb.com/aeroporti): live flight data and coverage for major Italian airports, one page per airport.
 - [Aircraft types](https://flyitalyadsb.com/aeromobili): specs and live tracked counts by ICAO aircraft type.
 - [Our data](https://flyitalyadsb.com/dati): what's collected (ADS-B, Mode-S, MLAT, OGN) and how it's used.
@@ -29,4 +30,8 @@ FlyItalyADSB collects real-time ADS-B, Mode-S (BDS50/BDS60), MLAT, and OGN aircr
 - [Weather research](https://flyitalyadsb.com/ricerca/weather): extracting tropospheric wind from Mode-S messages, validated against ERA5/IASI.
 - [Historical archive](https://flyitalyadsb.com/dati/archivio): globe history, MLAT CSV, and raw Mode-S datasets available to researchers on request.
 
-All content also available in Italian under the same paths (English site under `/en/`). Data license: CC BY-SA 4.0.
+All content also available in Italian under the same paths (English site under `/en/`).
+
+## Citation
+
+FlyItalyADSB (flyitalyadsb.com) · ADS-B/MLAT data · Licensed CC BY-SA 4.0 · Infrastructure: Nesso Labs (nessolabs.it). Same attribution used site-wide, including on the [historical archive](https://flyitalyadsb.com/dati/archivio) page.

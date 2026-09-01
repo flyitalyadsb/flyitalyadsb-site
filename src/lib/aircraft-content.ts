@@ -29,10 +29,11 @@ export function typeUrl(t: AircraftType, lang: Lang): string {
     : `${SITE}/aeromobili/${t.slug}/`;
 }
 
+// No " — <tail>" here: Layout.astro's <title> already appends " — FlyItalyADSB",
+// and stacking a second em dash both reads oddly and pushed some titles
+// (e.g. "Boeing 787-8 Dreamliner (B788)") past Google's ~60-char SERP budget.
 export function pageTitle(t: AircraftType, lang: Lang): string {
-  return lang === 'en'
-    ? `${fullName(t)} (${t.code}) — aircraft flying now`
-    : `${fullName(t)} (${t.code}) — aerei in volo ora`;
+  return `${fullName(t)} (${t.code})`;
 }
 
 export function metaDescription(t: AircraftType, lang: Lang): string {

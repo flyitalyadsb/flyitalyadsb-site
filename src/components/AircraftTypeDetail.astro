@@ -119,7 +119,7 @@ const t = isEn
   <!-- Specs + about -->
   <div class="grid lg:grid-cols-3 gap-6 mb-16">
     <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
-      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">{t.specsTitle}</p>
+      <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">{t.specsTitle}</h2>
       <dl class="space-y-3 text-sm">
         <div class="flex justify-between gap-4"><dt class="text-slate-500">{t.manufacturer}</dt><dd class="text-slate-200">{type.manufacturer}</dd></div>
         <div class="flex justify-between gap-4"><dt class="text-slate-500">{t.code}</dt><dd class="text-slate-200 font-mono">{type.code}</dd></div>
@@ -141,7 +141,7 @@ const t = isEn
 
   <!-- FAQ -->
   <div class="mb-16">
-    <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-6">{isEn ? 'Frequently asked questions' : 'Domande frequenti'}</p>
+    <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-6">{isEn ? 'Frequently asked questions' : 'Domande frequenti'}</h2>
     <div class="space-y-3">
       {localFaqs.map((f) => (
         <details class="group rounded-xl border" style="background:#0f1929;border-color:#1e3048">
@@ -159,7 +159,7 @@ const t = isEn
   {related.length > 0 && (
     <div class="mb-4">
       <div class="flex items-end justify-between gap-4 mb-6">
-        <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest">{t.relatedTitle}</p>
+        <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest">{t.relatedTitle}</h2>
         <a href={`${base}/aeromobili`} class="text-sm text-sky-400 hover:text-sky-300 no-underline">{t.allTypes} →</a>
       </div>
       <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
