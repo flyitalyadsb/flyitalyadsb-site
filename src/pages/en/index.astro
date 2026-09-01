@@ -10,11 +10,13 @@ import Layout from '../../layouts/Layout.astro';
   <!-- HERO -->
   <section class="relative" style="height:90vh;min-height:560px">
 
+    <!-- Not lazy: this iframe fills the hero, which is on-screen at first
+         paint (height:90vh) — it's the likely LCP element, and `loading="lazy"`
+         was actively delaying exactly the content guaranteed to be visible. -->
     <iframe
       src="https://mappa.flyitalyadsb.com"
       title="Live ADS-B map"
       class="absolute inset-0 w-full h-full border-0"
-      loading="lazy"
       sandbox="allow-scripts allow-same-origin allow-popups"
     ></iframe>
 

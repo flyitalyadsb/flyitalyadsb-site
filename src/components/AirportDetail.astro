@@ -109,7 +109,7 @@ const t = isEn
   <!-- Facts + what you can track -->
   <div class="grid lg:grid-cols-3 gap-6 mb-16">
     <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
-      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">{t.factsTitle}</p>
+      <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">{t.factsTitle}</h2>
       <dl class="space-y-3 text-sm">
         <div class="flex justify-between gap-4"><dt class="text-slate-500">{t.iata}</dt><dd class="text-slate-200 font-mono">{airport.iata}</dd></div>
         <div class="flex justify-between gap-4"><dt class="text-slate-500">{t.icao}</dt><dd class="text-slate-200 font-mono">{airport.icao}</dd></div>
@@ -126,7 +126,7 @@ const t = isEn
 
   <!-- FAQ -->
   <div class="mb-16">
-    <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-6">{t.faqTitle}</p>
+    <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-6">{t.faqTitle}</h2>
     <div class="space-y-3">
       {localFaqs.map((f) => (
         <details class="group rounded-xl border" style="background:#0f1929;border-color:#1e3048">
@@ -143,7 +143,7 @@ const t = isEn
   <!-- Nearby airports -->
   <div class="mb-16">
     <div class="flex items-end justify-between gap-4 mb-6">
-      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest">{t.nearbyTitle}</p>
+      <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest">{t.nearbyTitle}</h2>
       <a href={`${base}/aeroporti`} class="text-sm text-sky-400 hover:text-sky-300 no-underline">{t.allAirports} →</a>
     </div>
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">

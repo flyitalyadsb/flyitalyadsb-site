@@ -78,7 +78,13 @@ function aircraftNearSkillMd(): string {
     '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"aircraft_near","arguments":{"airport":"roma-fiumicino","limit":5}}}',
     '```',
     '',
-    'Check that `result.content[0].text` parses as JSON with a `count` and an `aircraft` array.',
+    'Check that `result.content[0].text` parses as JSON with:',
+    '',
+    '- `aircraft` — the array of full records, truncated to `limit`',
+    '- `count` — always equal to `aircraft.length` (never the pre-limit total)',
+    '- `totalMatched` — the real, pre-limit count; read this, not `count`, to know if more',
+    '  aircraft exist than were returned',
+    '- `center` (`{label, lat, lon}`), `radiusKm`, `now` (unix seconds) — echo of the query',
     '',
   ].join('\n');
 }
@@ -109,7 +115,13 @@ function specialTrafficSkillMd(): string {
     '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"special_traffic","arguments":{"category":"military","limit":5}}}',
     '```',
     '',
-    'Check that `result.content[0].text` parses as JSON with a `count` and an `aircraft` array.',
+    'Check that `result.content[0].text` parses as JSON with:',
+    '',
+    '- `aircraft` — the array of full records, truncated to `limit`',
+    '- `count` — always equal to `aircraft.length` (never the pre-limit total)',
+    '- `totalMatched` — the real, pre-limit count; read this, not `count`, to know if more',
+    '  aircraft exist than were returned',
+    '- `category`, `now` (unix seconds) — echo of the query',
     '',
   ].join('\n');
 }

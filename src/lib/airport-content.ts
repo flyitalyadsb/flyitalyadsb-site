@@ -115,7 +115,10 @@ export function breadcrumbJsonLd(a: Airport, lang: Lang): Record<string, unknown
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: lang === 'en' ? 'Home' : 'Home', item: home },
+      // 'Home' is used unconditionally, not a missed IT translation: it's the
+      // same label the visible breadcrumb nav in AirportDetail.astro uses for
+      // both languages (crumbHome), and this schema must match that.
+      { '@type': 'ListItem', position: 1, name: 'Home', item: home },
       { '@type': 'ListItem', position: 2, name: lang === 'en' ? 'Airports' : 'Aeroporti', item: index },
       { '@type': 'ListItem', position: 3, name: fullName(a), item: airportUrl(a, lang) },
     ],

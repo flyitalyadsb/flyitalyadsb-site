@@ -34,6 +34,11 @@ export const GET: APIRoute = () => {
     ...aircraftTypes.map((t) => `/aeromobili/${t.slug}`),
   ];
 
+  // No per-page content-change tracking exists (static data files, no CMS
+  // timestamps) — build time is still an honest signal here, since the whole
+  // site is regenerated and redeployed together on every change.
+  const lastmod = new Date().toISOString();
+
   const body = paths
     .map((p) => {
       const it = itUrl(p);
@@ -44,8 +49,8 @@ export const GET: APIRoute = () => {
         `    <xhtml:link rel="alternate" hreflang="x-default" href="${it}"/>`,
       ].join('\n');
       return [
-        `  <url>\n    <loc>${it}</loc>\n${alternates}\n  </url>`,
-        `  <url>\n    <loc>${en}</loc>\n${alternates}\n  </url>`,
+        `  <url>\n    <loc>${it}</loc>\n    <lastmod>${lastmod}</lastmod>\n${alternates}\n  </url>`,
+        `  <url>\n    <loc>${en}</loc>\n    <lastmod>${lastmod}</lastmod>\n${alternates}\n  </url>`,
       ].join('\n');
     })
     .join('\n');
