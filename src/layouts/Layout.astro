@@ -101,6 +101,13 @@ const navLinks = isEn
       { href: '/ricerca', label: nav.research, external: false },
       { href: '/chi-siamo', label: nav.about, external: false },
     ];
+
+// Called out separately from navLinks (own accent styling, not a plain text
+// link) so the API/MCP docs — the thing an adsb.lol-style visitor actively
+// looks for — read as a distinct destination instead of blending into the
+// content nav next to "Rete" or "Ricerca".
+const apiHref = isEn ? '/en/dati/api' : '/dati/api';
+const apiLabel = 'API';
 ---
 
 <!doctype html>
@@ -170,6 +177,13 @@ const navLinks = isEn
               {link.label}
             </a>
           ))}
+          <a href={apiHref}
+             class="ml-1 px-3 py-1.5 rounded text-sm font-semibold no-underline transition-colors"
+             style="color:#7dd3fc;border:1px solid #38bdf840;background:#38bdf812"
+             onmouseover="this.style.background='#38bdf822'"
+             onmouseout="this.style.background='#38bdf812'">
+            {apiLabel}
+          </a>
           <!-- Language switcher -->
           <a href={altHref}
              class="ml-3 px-2.5 py-1 rounded text-xs font-mono font-semibold transition-colors no-underline"
