@@ -1,6 +1,6 @@
 # FlyItalyADSB
 
-> Open, unfiltered global ADS-B/MLAT flight-tracking network born in Italy — 3,000+ direct feeders worldwide, non-profit, data licensed CC BY-SA 4.0. Programmatically queryable via a REST API and an MCP server built for AI agents.
+> Open, unfiltered global ADS-B/MLAT flight-tracking network born in Italy — 3,200+ direct feeders worldwide, non-profit, data licensed CC BY-SA 4.0. Programmatically queryable via a REST API and an MCP server built for AI agents.
 
 FlyItalyADSB collects real-time ADS-B, Mode-S (BDS50/BDS60), MLAT, and OGN aircraft data worldwide — not limited to Italy — from a community-run feeder network, and republishes it openly with no FAA/LADD/BARR filtering (military and state aircraft included via its own MLAT triangulation, the only such service active over Italy). Infrastructure is run by Nesso Labs.
 

@@ -56,7 +56,7 @@ function aircraftNearSkillMd(): string {
     '',
     'List every aircraft the FlyItalyADSB network currently sees within a radius of any point',
     'worldwide, via the `aircraft_near` MCP tool — full live records, not just a count. The',
-    'network is global (3,000+ feeders), not limited to Italy.',
+    'network is global (3,200+ feeders), not limited to Italy.',
     '',
     '## Requirements',
     '',
