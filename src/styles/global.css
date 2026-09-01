@@ -216,3 +216,39 @@
   color: #e2e8f0;
   font-weight: 600;
 }
+
+/* On-page index for long reference pages — a docs page with several
+   sections needs a way to jump around it, not just scroll. */
+.page-index {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  padding: 4px 0;
+}
+.page-index a {
+  font: 500 12px/1 "JetBrains Mono", monospace;
+  color: #64748b;
+  text-decoration: none;
+  padding: 10px 16px;
+  border-right: 1px solid var(--color-border);
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+.page-index a:last-child {
+  border-right: none;
+}
+.page-index a:hover {
+  color: var(--color-sky-accent);
+}
+.page-index a span {
+  color: #3a4a5e;
+  margin-right: 8px;
+}
+@media (max-width: 640px) {
+  .page-index a {
+    padding: 8px 12px 8px 0;
+    border-right: none;
+  }
+}

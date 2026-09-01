@@ -70,6 +70,14 @@ X-Api-Key: <la-tua-chiave>
       </p>
     </div>
 
+    <nav class="page-index mb-10" aria-label="Indice della pagina">
+      <a href="#rest-api"><span>01</span>REST API</a>
+      <a href="#mcp"><span>02</span>Server MCP</a>
+      <a href="#come-collegarlo"><span>03</span>Come collegarlo a Claude</a>
+      <a href="#faq"><span>04</span>FAQ</a>
+      <a href="#api-key"><span>05</span>Ottieni una chiave</a>
+    </nav>
+
     <!-- At-a-glance readout — the reference specs a developer scans for
          first, before reading any prose. -->
     <div class="hud-panel rounded-lg overflow-hidden mb-14">
@@ -82,7 +90,7 @@ X-Api-Key: <la-tua-chiave>
     </div>
 
     <!-- REST API -->
-    <section class="mb-14">
+    <section id="rest-api" class="mb-14 scroll-mt-24">
       <h2 class="text-2xl font-bold text-slate-100 mb-4">REST API</h2>
       <p class="text-slate-400 text-sm leading-relaxed mb-6">
         Base URL <code class="text-xs px-1.5 py-0.5 rounded" style="background:#111e30;color:#7dd3fc">https://api.flyitalyadsb.com/v2</code>,
@@ -110,7 +118,7 @@ X-Api-Key: <la-tua-chiave>
     </section>
 
     <!-- MCP -->
-    <section class="mb-14">
+    <section id="mcp" class="mb-14 scroll-mt-24">
       <h2 class="text-2xl font-bold text-slate-100 mb-4">Server MCP per agenti AI</h2>
       <p class="text-slate-400 text-sm leading-relaxed mb-6">
         Il <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener" class="text-sky-400 no-underline">Model Context Protocol</a>
@@ -130,7 +138,7 @@ X-Api-Key: <la-tua-chiave>
           </tr>
         ))}
       </table>
-      <h3 class="text-lg font-semibold text-slate-100 mb-3 mt-8">Come collegarlo a Claude</h3>
+      <h3 id="come-collegarlo" class="text-lg font-semibold text-slate-100 mb-3 mt-8 scroll-mt-24">Come collegarlo a Claude</h3>
       <ol class="space-y-2 mb-6 text-sm text-slate-400 list-decimal list-inside marker:text-slate-600">
         <li>Su <a href="https://claude.ai" target="_blank" rel="noopener" class="text-sky-400 no-underline">claude.ai</a>, apri <strong class="text-slate-300">Impostazioni → Connettori</strong> (dal menu del tuo profilo).</li>
         <li>Clicca <strong class="text-slate-300">"Aggiungi connettore personalizzato"</strong>.</li>
@@ -178,7 +186,7 @@ X-Api-Key: <la-tua-chiave>
     <!-- FAQ — same content as faqJsonLd above; that structured data must
          match what's actually visible on the page, and until now it had no
          visible counterpart at all. -->
-    <section class="mb-14">
+    <section id="faq" class="mb-14 scroll-mt-24">
       <h2 class="text-2xl font-bold text-slate-100 mb-6">Domande frequenti</h2>
       <div class="divide-y" style="border-color:#1e3048;border-top:1px solid #1e3048;border-bottom:1px solid #1e3048">
         {faqs.map((f) => (
@@ -196,7 +204,7 @@ X-Api-Key: <la-tua-chiave>
     </section>
 
     <!-- Auth signup -->
-    <div class="rounded-xl p-8 border" style="background:#0a1320;border-color:#1e3048">
+    <div id="api-key" class="rounded-xl p-8 border scroll-mt-24" style="background:#0a1320;border-color:#1e3048">
       <h3 class="font-semibold text-slate-100 mb-2">Ottieni una API key</h3>
       <p class="text-sm text-slate-400 leading-relaxed mb-6">
         REST API e server MCP condividono la stessa chiave, passata nell'header <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code>.
