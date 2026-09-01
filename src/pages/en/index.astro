@@ -187,6 +187,38 @@ import Layout from '../../layouts/Layout.astro';
     </a>
   </section>
 
+  <!-- DEVELOPERS & AI AGENTS -->
+  <section class="py-20 px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto border-t" style="border-color:#1e3048">
+    <div class="rounded-2xl p-8 sm:p-12" style="background:linear-gradient(135deg,#0f1929 0%,#111e30 100%);border:1px solid #1e3048">
+      <div class="flex flex-col lg:flex-row gap-8 lg:items-center justify-between mb-8">
+        <div class="max-w-lg">
+          <p class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:#38bdf8">Developers & AI agents</p>
+          <h2 class="text-2xl font-bold text-slate-100 mb-3">Query the data via API or from your AI</h2>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Public REST API and an MCP server for Claude, ChatGPT and other agents — a free,
+            instant key by email, no manual approval. See also
+            <a href="/llms.txt" class="text-sky-400 no-underline hover:text-sky-300">llms.txt</a>.
+          </p>
+        </div>
+        <a href="/en/dati/api" class="shrink-0 px-6 py-3 rounded-lg font-medium text-sm text-center no-underline transition-all" style="background:#38bdf8;color:#070d1a"
+           onmouseover="this.style.background='#7dd3fc'"
+           onmouseout="this.style.background='#38bdf8'">API documentation →</a>
+      </div>
+      <div class="grid sm:grid-cols-3 gap-4">
+        {[
+          { label: 'find_aircraft', desc: 'Look up by ICAO hex, callsign or registration' },
+          { label: 'aircraft_near', desc: 'Aircraft within a radius, anywhere in the world' },
+          { label: 'special_traffic', desc: 'Military, PIA or LADD traffic' },
+        ].map(t => (
+          <div class="p-4 rounded-lg" style="background:#0a1320;border:1px solid #1e3048">
+            <code class="text-xs font-mono" style="color:#a78bfa">{t.label}</code>
+            <p class="text-xs text-slate-500 mt-1">{t.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
   <!-- CTA -->
   <section class="py-20 px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto border-t" style="border-color:#1e3048">
     <div class="rounded-2xl p-8 sm:p-12 flex flex-col sm:flex-row gap-8 items-start sm:items-center justify-between"
