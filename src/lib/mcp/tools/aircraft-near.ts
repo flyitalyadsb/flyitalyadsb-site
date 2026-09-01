@@ -5,7 +5,7 @@ import { getAircraftNear, type AircraftRecord } from '../v2-client';
 /** Resolves a free-text identifier against FlyItalyADSB's own curated Italian
  * airport list (the same 28 airports its /aeroporti pages cover) by slug,
  * IATA, or ICAO code (case-insensitive) — a shortcut for those airports only.
- * The FlyItalyADSB network itself is global (3,000+ feeders worldwide, not
+ * The FlyItalyADSB network itself is global (3,200+ feeders worldwide, not
  * an Italy-only project), so anywhere else is reached via `lat`/`lon`
  * directly, not through this resolver. */
 function resolveAirport(identifier: string) {
