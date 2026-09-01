@@ -198,6 +198,44 @@ import Layout from '../layouts/Layout.astro';
 
   </section>
 
+  <!-- SVILUPPATORI & AGENTI AI -->
+  <section class="py-20 px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto border-t" style="border-color:#1e3048">
+
+    <div class="rounded-2xl p-8 sm:p-12" style="background:linear-gradient(135deg,#0f1929 0%,#111e30 100%);border:1px solid #1e3048">
+      <div class="flex flex-col lg:flex-row gap-8 lg:items-center justify-between mb-8">
+        <div class="max-w-lg">
+          <p class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:#38bdf8">Sviluppatori & agenti AI</p>
+          <h2 class="text-2xl font-bold text-slate-100 mb-3">Interroga i dati via API o dalla tua AI</h2>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            REST API pubblica e server MCP per Claude, ChatGPT e altri agenti — chiave gratuita e
+            istantanea via email, nessuna approvazione manuale. Vedi anche
+            <a href="/llms.txt" class="text-sky-400 no-underline hover:text-sky-300">llms.txt</a>.
+          </p>
+        </div>
+        <a href="/dati/api"
+           class="shrink-0 px-6 py-3 rounded-lg font-medium text-sm text-center no-underline transition-all"
+           style="background:#38bdf8;color:#070d1a"
+           onmouseover="this.style.background='#7dd3fc'"
+           onmouseout="this.style.background='#38bdf8'">
+          Documentazione API →
+        </a>
+      </div>
+      <div class="grid sm:grid-cols-3 gap-4">
+        {[
+          { label: 'find_aircraft', desc: 'Cerca per hex ICAO, callsign o registrazione' },
+          { label: 'aircraft_near', desc: 'Aerei in un raggio, ovunque nel mondo' },
+          { label: 'special_traffic', desc: 'Traffico militare, PIA o LADD' },
+        ].map(t => (
+          <div class="p-4 rounded-lg" style="background:#0a1320;border:1px solid #1e3048">
+            <code class="text-xs font-mono" style="color:#a78bfa">{t.label}</code>
+            <p class="text-xs text-slate-500 mt-1">{t.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+  </section>
+
   <!-- COMMUNITY CTA -->
   <section class="py-20 px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto border-t" style="border-color:#1e3048">
 

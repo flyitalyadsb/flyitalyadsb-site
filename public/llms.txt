@@ -1,0 +1,32 @@
+# FlyItalyADSB
+
+> Open, unfiltered global ADS-B/MLAT flight-tracking network born in Italy — 3,000+ direct feeders worldwide, non-profit, data licensed CC BY-SA 4.0. Programmatically queryable via a REST API and an MCP server built for AI agents.
+
+FlyItalyADSB collects real-time ADS-B, Mode-S (BDS50/BDS60), MLAT, and OGN aircraft data worldwide — not limited to Italy — from a community-run feeder network, and republishes it openly with no FAA/LADD/BARR filtering (military and state aircraft included via its own MLAT triangulation, the only such service active over Italy). Infrastructure is run by Nesso Labs.
+
+## For AI agents
+
+- [API & AI agents documentation](https://flyitalyadsb.com/dati/api): human-readable reference for both the REST API and the MCP tools below, including how to get an API key (self-serve, instant, free — just an email address).
+- [MCP server](https://flyitalyadsb.com/mcp): Streamable HTTP JSON-RPC endpoint. Tools: `find_aircraft` (by ICAO hex/callsign/registration), `aircraft_near` (full live records within a radius of any point worldwide — the flagship tool), `special_traffic` (military/PIA/LADD). Requires an `X-Api-Key` header, same key as the REST API.
+- [MCP server card](https://flyitalyadsb.com/.well-known/mcp/server-card.json): machine-readable description of the server.
+- [Agent skills index](https://flyitalyadsb.com/.well-known/agent-skills/index.json): per-tool `SKILL.md` files with concrete request/response examples.
+- REST API base URL: `https://api.flyitalyadsb.com/v2` — `GET /icao/{hex}`, `/callsign/{callsign}`, `/reg/{reg}`, `/lat/{lat}/lon/{lon}/dist/{km}`, `/mil`, `/pia`, `/ladd`. All require `X-Api-Key`. `POST /v2/keys {email}` issues a key instantly.
+
+## Site content
+
+- [Airports](https://flyitalyadsb.com/aeroporti): live flight data and coverage for major Italian airports, one page per airport.
+- [Aircraft types](https://flyitalyadsb.com/aeromobili): specs and live tracked counts by ICAO aircraft type.
+- [Our data](https://flyitalyadsb.com/dati): what's collected (ADS-B, Mode-S, MLAT, OGN) and how it's used.
+- [The network](https://flyitalyadsb.com/rete): coverage and feeder network overview.
+- [About](https://flyitalyadsb.com/chi-siamo): the project's history, values, and how to get in touch.
+- [Live map](https://mappa.flyitalyadsb.com): the real-time map (separate subdomain).
+
+## Optional
+
+- [Become a feeder](https://flyitalyadsb.com/community/feeder): hardware and software setup to contribute a receiver (~€55–110, Raspberry Pi + RTL-SDR).
+- [How MLAT works](https://flyitalyadsb.com/community/mlat): the TDOA triangulation technique behind the network's non-ADS-B tracking.
+- [Is my feeder data arriving?](https://flyitalyadsb.com/community/stato-feeder): a live, no-login check for existing feeders.
+- [Weather research](https://flyitalyadsb.com/ricerca/weather): extracting tropospheric wind from Mode-S messages, validated against ERA5/IASI.
+- [Historical archive](https://flyitalyadsb.com/dati/archivio): globe history, MLAT CSV, and raw Mode-S datasets available to researchers on request.
+
+All content also available in Italian under the same paths (English site under `/en/`). Data license: CC BY-SA 4.0.
