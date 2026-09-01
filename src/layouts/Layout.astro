@@ -149,6 +149,14 @@ const apiLabel = 'API';
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
+    <!-- global.css's `code, pre` rule has named "JetBrains Mono" as the
+         monospace face since before this pass, but nothing ever loaded it —
+         every code block on the site has silently been rendering in the
+         system monospace fallback. Also used directly (not just code/pre)
+         by the .hud-readout/.spec-table/.timeline/.tag-row primitives. -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" />
+
     {jsonLdBlocks.map((block) => (
       <script type="application/ld+json" set:html={JSON.stringify(block)} />
     ))}

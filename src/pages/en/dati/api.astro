@@ -54,9 +54,9 @@ X-Api-Key: <your-key>
   description="FlyItalyADSB's REST API v2 and MCP server: how to query live aircraft data, for developers and for AI agents like Claude or ChatGPT."
   jsonLd={[faqJsonLd, breadcrumbJsonLd]}
 >
-  <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-4xl mx-auto">
+  <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-5xl mx-auto">
 
-    <div class="mb-14">
+    <div class="mb-10">
       <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
         <a href="/en/dati" class="text-slate-600 hover:text-slate-400 no-underline">Data</a>
         <span class="mx-2">/</span>
@@ -70,14 +70,33 @@ X-Api-Key: <your-key>
       </p>
     </div>
 
+    <nav class="page-index mb-10" aria-label="Page index">
+      <a href="#rest-api"><span>01</span>REST API</a>
+      <a href="#mcp"><span>02</span>MCP server</a>
+      <a href="#connect-claude"><span>03</span>Connect to Claude</a>
+      <a href="#faq"><span>04</span>FAQ</a>
+      <a href="#api-key"><span>05</span>Get a key</a>
+    </nav>
+
+    <!-- At-a-glance readout — the reference specs a developer scans for
+         first, before reading any prose. -->
+    <div class="hud-panel rounded-lg overflow-hidden mb-14">
+      <div class="hud-readout">
+        <div><div class="k">rest base url</div><div class="v" style="font-size:13px">api.flyitalyadsb.com/v2</div></div>
+        <div><div class="k">mcp endpoint</div><div class="v" style="font-size:13px">flyitalyadsb.com/mcp</div></div>
+        <div><div class="k">auth</div><div class="v accent">X-Api-Key</div></div>
+        <div><div class="k">rate limit</div><div class="v">300<span style="font-size:11px;color:#64748b">/min/ip</span></div></div>
+      </div>
+    </div>
+
     <!-- REST API -->
-    <section class="mb-14">
+    <section id="rest-api" class="mb-14 scroll-mt-24">
       <h2 class="text-2xl font-bold text-slate-100 mb-4">REST API</h2>
       <p class="text-slate-400 text-sm leading-relaxed mb-6">
         Base URL <code class="text-xs px-1.5 py-0.5 rounded" style="background:#111e30;color:#7dd3fc">https://api.flyitalyadsb.com/v2</code>,
         JSON responses, authenticated via the <code class="text-xs px-1.5 py-0.5 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> header.
       </p>
-      <div class="space-y-3">
+      <table class="spec-table">
         {[
           { path: '/icao/{hex}', desc: 'One aircraft by 24-bit ICAO address.' },
           { path: '/callsign/{callsign}', desc: 'One aircraft by callsign/flight number.' },
@@ -87,19 +106,19 @@ X-Api-Key: <your-key>
           { path: '/pia', desc: 'Aircraft with a Privacy ICAO Address.' },
           { path: '/ladd', desc: 'Aircraft in the FAA Limiting Aircraft Data Displayed program.' },
         ].map((e) => (
-          <div class="p-4 rounded-lg border flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4" style="background:#0f1929;border-color:#1e3048">
-            <code class="text-xs font-mono shrink-0" style="color:#7dd3fc">GET {e.path}</code>
-            <span class="text-sm text-slate-400">{e.desc}</span>
-          </div>
+          <tr>
+            <td class="k">GET {e.path}</td>
+            <td class="d">{e.desc}</td>
+          </tr>
         ))}
-      </div>
+      </table>
       <p class="text-xs text-slate-500 mt-4">
         Limit: 300 requests/minute per IP. Requests without <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> are rejected at the edge.
       </p>
     </section>
 
     <!-- MCP -->
-    <section class="mb-14">
+    <section id="mcp" class="mb-14 scroll-mt-24">
       <h2 class="text-2xl font-bold text-slate-100 mb-4">MCP server for AI agents</h2>
       <p class="text-slate-400 text-sm leading-relaxed mb-6">
         The <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener" class="text-sky-400 no-underline">Model Context Protocol</a>
@@ -107,19 +126,19 @@ X-Api-Key: <your-key>
         three read-only tools at
         <code class="text-xs px-1.5 py-0.5 rounded" style="background:#111e30;color:#7dd3fc">https://flyitalyadsb.com/mcp</code>:
       </p>
-      <div class="space-y-3 mb-6">
+      <table class="spec-table" style="margin-bottom:1.5rem">
         {[
           { name: 'find_aircraft', desc: 'Look up one aircraft by ICAO hex, callsign, or registration.' },
           { name: 'aircraft_near', desc: 'Every aircraft within a radius of a point (or an Italian airport by name), full records — the most useful one.' },
           { name: 'special_traffic', desc: 'Currently tracked military, PIA (privacy), or LADD traffic.' },
         ].map((t) => (
-          <div class="p-4 rounded-lg border" style="background:#0f1929;border-color:#1e3048">
-            <code class="text-xs font-mono" style="color:#a78bfa">{t.name}</code>
-            <span class="text-sm text-slate-400 ml-2">{t.desc}</span>
-          </div>
+          <tr>
+            <td class="k" style="color:#a78bfa">{t.name}</td>
+            <td class="d">{t.desc}</td>
+          </tr>
         ))}
-      </div>
-      <h3 class="text-lg font-semibold text-slate-100 mb-3 mt-8">How to connect it to Claude</h3>
+      </table>
+      <h3 id="connect-claude" class="text-lg font-semibold text-slate-100 mb-3 mt-8 scroll-mt-24">How to connect it to Claude</h3>
       <ol class="space-y-2 mb-6 text-sm text-slate-400 list-decimal list-inside marker:text-slate-600">
         <li>On <a href="https://claude.ai" target="_blank" rel="noopener" class="text-sky-400 no-underline">claude.ai</a>, open <strong class="text-slate-300">Settings → Connectors</strong> (from your profile menu).</li>
         <li>Click <strong class="text-slate-300">"Add custom connector"</strong>.</li>
@@ -164,8 +183,28 @@ X-Api-Key: <your-key>
       <pre class="p-4 rounded-lg text-xs overflow-auto leading-relaxed" style="background:#0a1320;color:#94a3b8;border:1px solid #1e3048"><code>{mcpCallExample}</code></pre>
     </section>
 
+    <!-- FAQ — same content as faqJsonLd above; that structured data must
+         match what's actually visible on the page, and until now it had no
+         visible counterpart at all. -->
+    <section id="faq" class="mb-14 scroll-mt-24">
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">Frequently asked questions</h2>
+      <div class="divide-y" style="border-color:#1e3048;border-top:1px solid #1e3048;border-bottom:1px solid #1e3048">
+        {faqs.map((f) => (
+          <details class="group" style="border-color:#1e3048">
+            <summary class="py-4 cursor-pointer list-none flex items-center justify-between gap-4 text-sm font-semibold text-slate-200 hover:text-white">
+              {f.q}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" class="shrink-0 transition-transform group-open:rotate-45">
+                <path d="M12 5v14m-7-7h14" stroke-linecap="round"/>
+              </svg>
+            </summary>
+            <p class="text-sm text-slate-400 leading-relaxed pb-4 pr-8">{f.a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+
     <!-- Auth signup -->
-    <div class="rounded-xl p-8 border" style="background:#0a1320;border-color:#1e3048">
+    <div id="api-key" class="rounded-xl p-8 border scroll-mt-24" style="background:#0a1320;border-color:#1e3048">
       <h3 class="font-semibold text-slate-100 mb-2">Get an API key</h3>
       <p class="text-sm text-slate-400 leading-relaxed mb-6">
         The REST API and the MCP server share the same key, passed in the <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> header.
