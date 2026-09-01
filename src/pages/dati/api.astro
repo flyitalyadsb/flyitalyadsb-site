@@ -119,9 +119,47 @@ X-Api-Key: <la-tua-chiave>
           </div>
         ))}
       </div>
+      <h3 class="text-lg font-semibold text-slate-100 mb-3 mt-8">Come collegarlo a Claude</h3>
+      <ol class="space-y-2 mb-6 text-sm text-slate-400 list-decimal list-inside marker:text-slate-600">
+        <li>Su <a href="https://claude.ai" target="_blank" rel="noopener" class="text-sky-400 no-underline">claude.ai</a>, apri <strong class="text-slate-300">Impostazioni → Connettori</strong> (dal menu del tuo profilo).</li>
+        <li>Clicca <strong class="text-slate-300">"Aggiungi connettore personalizzato"</strong>.</li>
+        <li>Incolla l'URL <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">https://flyitalyadsb.com/mcp</code> e dagli un nome, es. "FlyItalyADSB".</li>
+        <li>Nelle impostazioni avanzate del connettore, aggiungi un'intestazione personalizzata: <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> con la chiave ricevuta via email.</li>
+        <li>Salva e prova chiedendo a Claude qualcosa come <em>"che aerei ci sono ora vicino a Roma Fiumicino?"</em></li>
+      </ol>
+
+      <!-- Illustrative mockup, not a literal screenshot: Claude's actual UI can
+           differ slightly and would go stale fast if copied pixel-for-pixel. -->
+      <div class="rounded-xl border overflow-hidden mb-2" style="border-color:#1e3048">
+        <div class="px-4 py-2 flex items-center gap-2" style="background:#111e30;border-bottom:1px solid #1e3048">
+          <span class="w-2 h-2 rounded-full" style="background:#f87171"></span>
+          <span class="w-2 h-2 rounded-full" style="background:#fbbf24"></span>
+          <span class="w-2 h-2 rounded-full" style="background:#34d399"></span>
+          <span class="ml-2 text-xs font-semibold text-slate-500">claude.ai — Impostazioni → Connettori</span>
+        </div>
+        <div class="p-5 space-y-3" style="background:#0a1320">
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Nome</div>
+            <div class="px-3 py-2 rounded text-sm text-slate-300" style="background:#111e30;border:1px solid #1e3048">FlyItalyADSB</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">URL server MCP remoto</div>
+            <div class="px-3 py-2 rounded text-sm font-mono" style="background:#111e30;border:1px solid #1e3048;color:#7dd3fc">https://flyitalyadsb.com/mcp</div>
+          </div>
+          <div>
+            <div class="text-xs text-slate-500 mb-1">Intestazioni personalizzate (avanzate)</div>
+            <div class="px-3 py-2 rounded text-sm font-mono flex gap-2 items-baseline" style="background:#111e30;border:1px solid #1e3048">
+              <span style="color:#a78bfa">X-Api-Key</span><span class="text-slate-600">:</span><span class="text-slate-500">‹la-tua-chiave›</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="text-xs text-slate-600 mb-8">Mockup illustrativo — l'interfaccia reale del tuo client può variare leggermente.</p>
+
+      <h3 class="text-lg font-semibold text-slate-100 mb-3">Per altri client MCP</h3>
       <p class="text-slate-400 text-sm leading-relaxed mb-3">
-        Per collegarlo, aggiungi l'URL come connector nel tuo client MCP (es. Claude.ai → Settings → Connectors),
-        con la tua <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> quando richiesta:
+        Qualunque client MCP che supporti Streamable HTTP con intestazioni personalizzate (ChatGPT, altri assistenti,
+        codice tuo) funziona allo stesso modo — anche via chiamata raw:
       </p>
       <pre class="p-4 rounded-lg text-xs overflow-auto leading-relaxed" style="background:#0a1320;color:#94a3b8;border:1px solid #1e3048"><code>{mcpCallExample}</code></pre>
     </section>
