@@ -20,52 +20,54 @@ import Layout from '../../layouts/Layout.astro';
 
     <!-- Values -->
     <section class="mb-16">
-      <div class="grid sm:grid-cols-3 gap-5">
-        {[
-          { icon: `<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-linecap="round" stroke-linejoin="round"/>`, title: 'Non-profit', desc: 'No commercial objective. The infrastructure is maintained by volunteers and Nesso Labs at no cost to users.' },
-          { icon: `<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20" stroke-linecap="round"/>`, title: 'Unfiltered data', desc: 'No FAA, LADD or BARR filters. Data is transmitted as received — including military aircraft via MLAT.' },
-          { icon: `<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75" stroke-linecap="round"/>`, title: 'Open source', desc: 'Stack based on readsb/tar1090/mlat-server by wiedehopf. All core software is public and freely reusable.' },
-        ].map(item => (
-          <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
-            <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background:#38bdf815;border:1px solid #38bdf830">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5" set:html={item.icon}/>
-            </div>
-            <h3 class="font-semibold text-slate-100 mb-2">{item.title}</h3>
-            <p class="text-sm text-slate-500 leading-relaxed">{item.desc}</p>
-          </div>
-        ))}
+      <div class="tag-row">
+        <span><b>Non-profit</b> · volunteers + Nesso Labs, no cost to users</span>
+        <span><b>Unfiltered data</b> · no FAA/LADD/BARR, military included via MLAT</span>
+        <span><b>Open source</b> · readsb/tar1090/mlat-server, all freely reusable</span>
       </div>
     </section>
 
     <!-- History -->
     <section class="mb-16">
-      <h2 class="text-2xl font-bold text-slate-100 mb-6">History</h2>
-      <div class="space-y-6 text-slate-400 leading-relaxed">
-        <p>
-          FlyItalyADSB was founded as a community of flight tracking enthusiasts in Italy.
-          The network expanded progressively across the country — from the Alps to Sicily,
-          from the Tyrrhenian Sea to the Adriatic coast — with receivers covering up to 400 km each.
-          Over time, the feeder community grew beyond Italy to include receivers across Europe and beyond,
-          giving FlyItalyADSB a genuinely global ground network.
-        </p>
-        <p>
-          In 2023, following the acquisition of ADS-B Exchange by JETNET (private equity),
-          the non-profit tracking community fragmented. FlyItalyADSB maintained its independence
-          and positioned itself alongside new community players such as adsb.lol, adsb.fi
-          and airplanes.live — all based on the same open source stack, all non-profit, all unfiltered.
-        </p>
-        <p>
-          Coverage today is global: beyond the ground network, the aggregation server
-          receives data from adsb.lol and theairtraffic.com, extending the map worldwide.
-          Italian MLAT remains a unique feature: FlyItalyADSB is the only network
-          with active MLAT triangulation over Italy, including military flights.
-        </p>
-        <p>
-          In 2025, Mode-S data collected by the network became the foundation of the
-          <a href="/en/ricerca/weather" class="text-sky-400 no-underline hover:text-sky-300">Weather 3.2</a>
-          meteorological research project, which uses aircraft as high-altitude wind sensors
-          to validate ERA5 reanalyses and IASI profiles.
-        </p>
+      <h2 class="text-2xl font-bold text-slate-100 mb-8">History</h2>
+      <div class="timeline">
+        <div class="row">
+          <span class="dot"></span><span class="year">Origin</span>
+          <p>
+            FlyItalyADSB was founded as a community of flight tracking enthusiasts in Italy.
+            The network expanded progressively across the country — from the Alps to Sicily,
+            from the Tyrrhenian Sea to the Adriatic coast — with receivers covering up to 400 km each.
+            Over time, the feeder community grew beyond Italy to include receivers across Europe and beyond,
+            giving FlyItalyADSB a genuinely global ground network.
+          </p>
+        </div>
+        <div class="row">
+          <span class="dot"></span><span class="year">2023</span>
+          <p>
+            Following the acquisition of ADS-B Exchange by JETNET (private equity),
+            the non-profit tracking community fragmented. FlyItalyADSB maintained its independence
+            and positioned itself alongside new community players such as adsb.lol, adsb.fi
+            and airplanes.live — all based on the same open source stack, all non-profit, all unfiltered.
+          </p>
+        </div>
+        <div class="row">
+          <span class="dot"></span><span class="year">Today</span>
+          <p>
+            Coverage is global: beyond the ground network, the aggregation server
+            receives data from adsb.lol and theairtraffic.com, extending the map worldwide.
+            Italian MLAT remains a unique feature: FlyItalyADSB is the only network
+            with active MLAT triangulation over Italy, including military flights.
+          </p>
+        </div>
+        <div class="row">
+          <span class="dot"></span><span class="year">2025</span>
+          <p>
+            Mode-S data collected by the network became the foundation of the
+            <a href="/en/ricerca/weather" class="text-sky-400 no-underline hover:text-sky-300">Weather 3.2</a>
+            meteorological research project, which uses aircraft as high-altitude wind sensors
+            to validate ERA5 reanalyses and IASI profiles.
+          </p>
+        </div>
       </div>
     </section>
 

@@ -13,6 +13,14 @@
     background-color: #070d1a;
     color: #cbd5e1;
     scroll-behavior: smooth;
+    /* Faint instrument-panel grid — the site's content is live telemetry
+       (aircraft counts, message rates, coverage), not a marketing product;
+       this reads closer to that than a flat marketing gradient. Kept at
+       1px/40px and very low contrast so it never competes with content. */
+    background-image:
+      linear-gradient(#101c2e 1px, transparent 1px),
+      linear-gradient(90deg, #101c2e 1px, transparent 1px);
+    background-size: 40px 40px;
   }
 
   ::selection {
@@ -35,4 +43,176 @@
   code, pre {
     font-family: "JetBrains Mono", "Fira Mono", ui-monospace, monospace;
   }
+}
+
+/* ------------------------------------------------------------------
+   Layout primitives (2026-09-01 layout pass)
+
+   The site had exactly one section layout — a grid of identically
+   bordered cards — used for hero stats, feature lists, spec sheets and
+   values alike. These replace that single primitive with a few shapes
+   suited to what the content actually is: live numbers, a label+value
+   spec list, and a chronological story. Built on the existing @theme
+   tokens above, not a new palette.
+   ------------------------------------------------------------------ */
+
+.hud-panel {
+  border: 1px solid var(--color-border);
+  background: #080e1aee;
+  backdrop-filter: blur(6px);
+}
+
+.hud-readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  border-top: 1px solid var(--color-border);
+}
+.hud-readout > div {
+  padding: 14px 16px;
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+.hud-readout > div:last-child {
+  border-right: none;
+}
+.hud-readout .k {
+  font: 500 10px/1 "JetBrains Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+.hud-readout .v {
+  font: 600 20px/1 "JetBrains Mono", monospace;
+  color: #e2e8f0;
+  font-variant-numeric: tabular-nums;
+}
+.hud-readout .v.accent {
+  color: var(--color-sky-accent);
+}
+
+.spec-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.spec-table tr {
+  border-top: 1px solid var(--color-border);
+}
+.spec-table tr:last-child {
+  border-bottom: 1px solid var(--color-border);
+}
+.spec-table td {
+  padding: 16px 14px;
+  vertical-align: top;
+}
+.spec-table td.k {
+  font: 600 13px/1.4 "JetBrains Mono", monospace;
+  color: var(--color-sky-accent);
+  width: 220px;
+  white-space: nowrap;
+}
+.spec-table td.d {
+  color: #94a3b8;
+  line-height: 1.55;
+}
+.spec-table td.tag {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  white-space: nowrap;
+  width: 1%;
+}
+@media (max-width: 640px) {
+  .spec-table, .spec-table tbody, .spec-table tr, .spec-table td {
+    display: block;
+    white-space: normal;
+  }
+  .spec-table td.k {
+    width: auto;
+    padding-bottom: 2px;
+  }
+  .spec-table tr {
+    padding: 14px 0;
+  }
+  .spec-table td {
+    padding: 0 14px;
+  }
+  .spec-table td.tag {
+    display: none;
+  }
+}
+
+.timeline .row {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 20px;
+  position: relative;
+  padding-bottom: 32px;
+}
+.timeline .row::before {
+  content: "";
+  position: absolute;
+  left: 40px;
+  top: 8px;
+  bottom: -2px;
+  width: 1px;
+  background: var(--color-border);
+}
+.timeline .row:last-child::before {
+  display: none;
+}
+.timeline .row:last-child {
+  padding-bottom: 0;
+}
+.timeline .dot {
+  position: absolute;
+  left: 37px;
+  top: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a78bfa;
+}
+.timeline .year {
+  font: 600 14px/1.4 "JetBrains Mono", monospace;
+  color: #a78bfa;
+  text-align: right;
+  padding-top: 1px;
+}
+.timeline .row p {
+  margin: 0;
+  color: #94a3b8;
+  line-height: 1.65;
+}
+@media (max-width: 560px) {
+  .timeline .row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .timeline .row::before {
+    left: 5px;
+  }
+  .timeline .dot {
+    left: 2px;
+  }
+  .timeline .year {
+    text-align: left;
+    padding-left: 20px;
+  }
+}
+
+.tag-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.tag-row span {
+  font: 500 12px/1 "JetBrains Mono", monospace;
+  border: 1px solid var(--color-border);
+  padding: 9px 13px;
+  color: #94a3b8;
+}
+.tag-row span b {
+  color: #e2e8f0;
+  font-weight: 600;
 }

@@ -25,15 +25,12 @@ import Layout from '../../layouts/Layout.astro';
          style="background:linear-gradient(to right, #070d1acc 0%, transparent 60%)">
     </div>
 
-    <div class="absolute inset-0 flex items-center px-6 sm:px-12 lg:px-20 pt-14">
+    <div class="absolute inset-0 flex items-center px-6 sm:px-12 lg:px-20 pt-14 pb-28">
       <div class="max-w-xl">
 
-        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium mb-5"
-             style="background:#38bdf815;border:1px solid #38bdf830;color:#7dd3fc">
-          <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block"></span>
-          Live ·
-          <span id="live-count-en">—</span> aircraft now
-        </div>
+        <p class="text-xs font-semibold uppercase tracking-widest mb-4" style="color:#7dd3fc;font-family:'JetBrains Mono',monospace">
+          global network · unfiltered data
+        </p>
 
         <h1 class="text-4xl sm:text-5xl font-bold leading-tight mb-4" style="color:#f0f9ff">
           Open ADS-B data<br />
@@ -66,61 +63,55 @@ import Layout from '../../layouts/Layout.astro';
       </div>
     </div>
 
-    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-slate-600 pointer-events-none">
-      <span class="text-xs">scroll</span>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="animate-bounce">
-        <path d="M12 5v14m0 0l-7-7m7 7l7-7" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+    <!-- Live readout: aircraft-now and msg/sec are real values from the same
+         stats.json this page already polled for the old badge; msg/sec is
+         derived client-side from the delta of the cumulative counter, not
+         invented. Feeder count and coverage are the same static claims used
+         in copy elsewhere on the site (never presented as live). -->
+    <div class="hud-panel absolute left-0 right-0 bottom-0 mx-6 sm:mx-12 lg:mx-20 mb-6 sm:mb-8 rounded-lg overflow-hidden">
+      <div class="hud-readout">
+        <div>
+          <div class="k">aircraft now</div>
+          <div class="v accent"><span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block mr-1.5" style="margin-bottom:2px"></span><span id="live-count-en">—</span></div>
+        </div>
+        <div>
+          <div class="k">msg/sec</div>
+          <div class="v" id="live-mps-en">—</div>
+        </div>
+        <div>
+          <div class="k">direct feeders</div>
+          <div class="v">3,000+</div>
+        </div>
+        <div>
+          <div class="k">coverage</div>
+          <div class="v">global</div>
+        </div>
+      </div>
     </div>
 
   </section>
 
   <!-- 3 PILLARS -->
   <section class="py-20 px-6 sm:px-12 lg:px-20 max-w-7xl mx-auto">
-    <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-10">What we collect</p>
-    <div class="grid md:grid-cols-3 gap-6">
+    <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-8">What we collect</p>
 
-      <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
-        <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background:#38bdf815;border:1px solid #38bdf830">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5">
-            <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
-            <path d="M12 2v3m0 14v3M2 12h3m14 0h3" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <h3 class="font-semibold text-slate-100 mb-2">Global ADS-B coverage</h3>
-        <p class="text-sm text-slate-500 leading-relaxed">
-          Feed from 3,000+ receivers that send to us first-hand, across Europe, the Americas, Asia and Oceania, plus adsb.lol and theairtraffic.com.
-        </p>
-        <div class="mt-4 text-xs font-mono text-slate-600">aircraft.json · 0.2s</div>
-      </div>
-
-      <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
-        <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background:#38bdf815;border:1px solid #38bdf830">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <h3 class="font-semibold text-slate-100 mb-2">Our own MLAT</h3>
-        <p class="text-sm text-slate-500 leading-relaxed">
-          Multilateration on aircraft without full ADS-B transponders, military included. Our own server, 1,856 synchronised receivers.
-        </p>
-        <div class="mt-4 text-xs font-mono text-slate-600">mlat-server · port 30100</div>
-      </div>
-
-      <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
-        <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background:#38bdf815;border:1px solid #38bdf830">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5">
-            <path d="M3 3h18v18H3zM3 9h18M9 21V9" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <h3 class="font-semibold text-slate-100 mb-2">Mode-S BDS50/BDS60</h3>
-        <p class="text-sm text-slate-500 leading-relaxed">
-          True Air Speed, magnetic heading and Mach number via Mode-S Comm-B. Used to reconstruct upper-troposphere wind profiles.
-        </p>
-        <div class="mt-4 text-xs font-mono text-slate-600">Mode-S EHS · BDS50 · BDS60</div>
-      </div>
-
-    </div>
+    <table class="spec-table">
+      <tr>
+        <td class="k">Global ADS-B</td>
+        <td class="d">Feed from 3,000+ receivers that send to us first-hand, across Europe, the Americas, Asia and Oceania, plus adsb.lol and theairtraffic.com.</td>
+        <td class="tag" style="color:#475569">aircraft.json · 0.2s</td>
+      </tr>
+      <tr>
+        <td class="k">Our own MLAT</td>
+        <td class="d">Multilateration on aircraft without full ADS-B transponders, military included. Our own server, 1,856 synchronised receivers.</td>
+        <td class="tag" style="color:#475569">mlat-server · port 30100</td>
+      </tr>
+      <tr>
+        <td class="k">Mode-S BDS50/BDS60</td>
+        <td class="d">True Air Speed, magnetic heading and Mach number via Mode-S Comm-B. Used to reconstruct upper-troposphere wind profiles.</td>
+        <td class="tag" style="color:#475569">BDS50 · BDS60</td>
+      </tr>
+    </table>
   </section>
 
   <!-- FEATURED RESEARCH -->
@@ -251,6 +242,12 @@ import Layout from '../../layouts/Layout.astro';
   </section>
 
 <script>
+// stats.json's `messages` field is readsb's cumulative message counter, not
+// a rate — msg/sec is derived from the delta between two polls, same way
+// tar1090's own stats panel computes it. Left as "—" until a second sample
+// exists rather than showing a made-up number on first paint.
+let prevSampleEn: { messages: number; now: number } | null = null;
+
 async function updateLiveCountEn() {
   try {
     const res = await fetch('https://api.flyitalyadsb.com/api/stats.json', { cache: 'no-store' });
@@ -259,6 +256,18 @@ async function updateLiveCountEn() {
     const n = typeof data.aircraft === 'number' ? data.aircraft : null;
     const el = document.getElementById('live-count-en');
     if (el && n !== null) el.textContent = n.toLocaleString('en-US');
+
+    if (typeof data.messages === 'number' && typeof data.now === 'number') {
+      const mpsEl = document.getElementById('live-mps-en');
+      if (prevSampleEn && mpsEl) {
+        const dMsg = data.messages - prevSampleEn.messages;
+        const dt = data.now - prevSampleEn.now;
+        if (dt > 0 && dMsg >= 0) {
+          mpsEl.textContent = Math.round(dMsg / dt).toLocaleString('en-US');
+        }
+      }
+      prevSampleEn = { messages: data.messages, now: data.now };
+    }
   } catch {}
 }
 updateLiveCountEn();
