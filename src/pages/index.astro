@@ -293,5 +293,10 @@ async function updateLiveCount() {
   } catch {}
 }
 updateLiveCount();
+// A visitor who glances at the hero in the first few seconds would see
+// msg/sec stuck on its placeholder for the full 10s until the regular
+// interval's second sample — one quick early follow-up gets a real
+// reading in ~2s instead, then the normal cadence takes over.
+setTimeout(updateLiveCount, 2000);
 setInterval(updateLiveCount, 10000);
 </script>
