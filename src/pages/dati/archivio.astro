@@ -32,7 +32,7 @@ import Layout from '../../layouts/Layout.astro';
             tag: 'Globe history',
             color: 'purple',
             title: 'Storico posizioni per aeromobile',
-            desc: 'Un file JSON per aeromobile per giorno, generato da readsb: traccia completa di posizione, quota, velocità e prua durante la giornata (formato JSON semplice, non compresso). Gli ultimi giorni sono self-serve via API — vedi sotto; quelli più vecchi vengono spostati su storage privato, non ancora self-serve.',
+            desc: "Un file JSON per aeromobile per giorno, generato da readsb: traccia completa di posizione, quota, velocità e prua durante la giornata (compresso gzip su disco; l'API restituisce sempre JSON semplice, decompresso). Gli ultimi giorni sono self-serve via API — vedi sotto; quelli più vecchi vengono spostati su storage privato, non ancora self-serve.",
             size: '~60 GB attuali · crescita ~2,5 GB/giorno · ultimi ~18-20 giorni self-serve',
           },
           {
