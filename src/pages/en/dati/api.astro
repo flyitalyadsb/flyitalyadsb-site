@@ -262,7 +262,7 @@ X-Api-Key: <your-key>
         const res = await fetch('https://api.flyitalyadsb.com/v2/keys', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, name: name || undefined, use_case: useCase || undefined }),
+          body: JSON.stringify({ email, name: name || undefined, use_case: useCase || undefined, lang: 'en' }),
         });
         if (res.status === 202) {
           setStatus('Done — check your email for the key.', '#34d399');
