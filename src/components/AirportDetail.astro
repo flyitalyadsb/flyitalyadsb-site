@@ -14,7 +14,11 @@ const name = fullName(airport);
 const nearby = nearbyAirports(airport, 4);
 const localFaqs = faqs(airport, lang);
 const base = isEn ? '/en' : '';
+// mapSrc is also the "open full map" outbound link target (below) — someone
+// clicking through explicitly wants the real interactive tool, sidebar and
+// all, so the hide params live only on the embed's own src, not this one.
 const mapSrc = `https://mappa.flyitalyadsb.com/?lat=${airport.lat}&lon=${airport.lon}&zoom=10`;
+const embedMapSrc = `${mapSrc}&hideSidebar&hideButtons`;
 
 const t = isEn
   ? {
@@ -94,7 +98,7 @@ const t = isEn
   <div class="rounded-2xl overflow-hidden border mb-4" style="border-color:#1e3048;background:#0f1929">
     <div class="relative" style="height:60vh;min-height:420px">
       <iframe
-        src={mapSrc}
+        src={embedMapSrc}
         title={t.mapTitle}
         class="absolute inset-0 w-full h-full border-0"
         loading="lazy"
