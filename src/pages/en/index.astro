@@ -197,11 +197,12 @@ import Layout from '../../layouts/Layout.astro';
            onmouseover="this.style.background='#7dd3fc'"
            onmouseout="this.style.background='#38bdf8'">API documentation →</a>
       </div>
-      <div class="grid sm:grid-cols-3 gap-4">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'find_aircraft', desc: 'Look up by ICAO hex, callsign or registration' },
           { label: 'aircraft_near', desc: 'Aircraft within a radius, anywhere in the world' },
           { label: 'special_traffic', desc: 'Military, PIA or LADD traffic' },
+          { label: 'GET /v2/history', desc: 'Self-serve per-aircraft history (REST only, not yet an MCP tool)' },
         ].map(t => (
           <div class="p-4 rounded-lg" style="background:#0a1320;border:1px solid #1e3048">
             <code class="text-xs font-mono" style="color:#a78bfa">{t.label}</code>
