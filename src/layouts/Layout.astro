@@ -165,12 +165,12 @@ const apiLabel = 'API';
 
     <!-- Nav -->
     <!-- Never fully transparent: the homepage hero is a live, busy map
-         (magenta/purple aircraft icons), and plain text on top of it was
-         unreadable before any scroll happened. A permanent scrim keeps the
-         nav legible over any hero; the scroll listener below still swaps in
-         a solid blurred bar once scrolled, unchanged. -->
+         (magenta/purple aircraft icons). A soft transparent-at-the-bottom
+         gradient scrim fixed the legibility bug but still let the map's
+         colors compete with the text — solid + blurred from the start,
+         same as the scroll-triggered state below, reads much cleaner. -->
     <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
-         style="background:linear-gradient(to bottom, rgba(7,13,26,0.8) 0%, rgba(7,13,26,0.45) 70%, transparent 100%)">
+         style="background:#070d1aee;backdrop-filter:blur(12px)">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
 
         <a href={isEn ? '/en' : '/'} class="flex items-center gap-2 no-underline group">
@@ -289,20 +289,14 @@ const apiLabel = 'API';
       </div>
     </footer>
 
-    <!-- Nav scroll behavior -->
+    <!-- Nav scroll behavior: background+blur are now constant (see the nav's
+         own style attribute) — only the border is a scroll cue, a bit of
+         separation once there's page content above to separate from. -->
     <script>
       const navbar = document.getElementById('navbar');
       window.addEventListener('scroll', () => {
         if (!navbar) return;
-        if (window.scrollY > 20) {
-          navbar.style.background = '#070d1aee';
-          navbar.style.backdropFilter = 'blur(12px)';
-          navbar.style.borderBottom = '1px solid #1e3048';
-        } else {
-          navbar.style.background = 'linear-gradient(to bottom, rgba(7,13,26,0.8) 0%, rgba(7,13,26,0.45) 70%, transparent 100%)';
-          navbar.style.backdropFilter = 'none';
-          navbar.style.borderBottom = 'none';
-        }
+        navbar.style.borderBottom = window.scrollY > 20 ? '1px solid #1e3048' : 'none';
       }, { passive: true });
     </script>
 
