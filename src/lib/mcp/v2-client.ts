@@ -48,7 +48,18 @@ async function v2Fetch<T>(path: string, apiKey: string): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`${V2_BASE}${path}`, {
-      headers: { 'X-Api-Key': apiKey },
+      // Lowercase name required: this call runs inside a Cloudflare Pages
+      // Function, and a Worker's fetch() to another zone on the SAME
+      // Cloudflare account apparently doesn't get re-lowercased the way a
+      // real internet-arriving HTTP/2 request always is (HTTP/2 mandates
+      // lowercase header names in transit) — the edge WAF's exact-match
+      // `http.request.headers.names[*] eq "x-api-key"` then sees the
+      // mixed-case name as absent and blocks with a 403, even though the
+      // header genuinely was set. A real external client (curl, a browser,
+      // any HTTP library) is unaffected: their own stack lowercases the
+      // name before it ever reaches Cloudflare, so this only bit our own
+      // MCP server calling our own REST API. Verified live 2026-09-02.
+      headers: { 'x-api-key': apiKey },
       signal: AbortSignal.timeout(8000),
     });
   } catch (err) {
@@ -107,7 +118,8 @@ async function v2FetchHistory<T>(path: string, apiKey: string): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`${V2_BASE}${path}`, {
-      headers: { 'X-Api-Key': apiKey },
+      // Lowercase name required — see the comment in v2Fetch above.
+      headers: { 'x-api-key': apiKey },
       signal: AbortSignal.timeout(8000),
     });
   } catch (err) {
