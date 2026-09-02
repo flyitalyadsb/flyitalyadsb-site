@@ -20,6 +20,10 @@ const faqs = [
     q: 'La rete copre solo l\'Italia?',
     a: 'No. FlyItalyADSB è nata in Italia ma è una rete globale con oltre 3.200 feeder diretti nel mondo: sia la REST API sia l\'MCP accettano coordinate ovunque sul pianeta, non solo in Italia.',
   },
+  {
+    q: 'Come si confronta con altre API ADS-B aperte (adsb.fi, airplanes.live, adsb.lol...)?',
+    a: 'Vedi il confronto fattuale su flyitalyadsb.com/dati/confronto: rate limit, requisito feeder e uso commerciale di ciascuna, messi a confronto senza giudizi di merito.',
+  },
 ];
 
 const faqJsonLd = {
@@ -85,7 +89,7 @@ X-Api-Key: <la-tua-chiave>
         <div><div class="k">rest base url</div><div class="v" style="font-size:13px">api.flyitalyadsb.com/v2</div></div>
         <div><div class="k">mcp endpoint</div><div class="v" style="font-size:13px">flyitalyadsb.com/mcp</div></div>
         <div><div class="k">auth</div><div class="v accent">X-Api-Key</div></div>
-        <div><div class="k">rate limit</div><div class="v">300<span style="font-size:11px;color:#64748b">/min/ip</span></div></div>
+        <div><div class="k">rate limit</div><div class="v">100<span style="font-size:11px;color:#64748b">/min/ip</span></div></div>
       </div>
     </div>
 
@@ -113,7 +117,11 @@ X-Api-Key: <la-tua-chiave>
         ))}
       </table>
       <p class="text-xs text-slate-500 mt-4">
-        Limite: 300 richieste/minuto per IP. Le richieste senza <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> vengono respinte a livello edge.
+        Limite: 100 richieste/minuto per IP. Le richieste senza <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> vengono respinte a livello edge.
+      </p>
+      <p class="text-xs text-slate-500 mt-2">
+        Uso commerciale consentito entro questo limite. Per volumi più alti, SLA o rivendita dei
+        dati serve un accordo enterprise — <a href="/contatti" class="text-sky-400 no-underline hover:text-sky-300">contattaci</a>.
       </p>
     </section>
 
