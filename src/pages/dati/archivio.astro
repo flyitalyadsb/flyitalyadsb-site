@@ -4,7 +4,7 @@ import Layout from '../../layouts/Layout.astro';
 
 <Layout
   title="Archivio storico"
-  description="Archivio storico dei dati ADS-B raccolti da FlyItalyADSB: heatmap, state history, tracce. Disponibile per ricercatori su richiesta."
+  description="Archivio storico ADS-B di FlyItalyADSB: tracce di volo per aeromobile, self-serve via API REST. Include il progetto di ricerca weather-32 su vento e temperatura da Mode-S."
 >
   <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-4xl mx-auto">
 
@@ -16,9 +16,9 @@ import Layout from '../../layouts/Layout.astro';
       </p>
       <h1 class="text-4xl font-bold text-slate-100 mb-4">Archivio storico</h1>
       <p class="text-slate-400 max-w-2xl leading-relaxed">
-        FlyItalyADSB mantiene un archivio continuo dei dati ADS-B raccolti dalla rete.
-        Lo storico include heatmap di densità, state history delle tracce e i dati Mode-S grezzi
-        usati per la ricerca meteorologica.
+        FlyItalyADSB conserva uno storico rolling delle tracce di volo raccolte dalla rete: posizione,
+        quota, velocità e prua di ogni aeromobile nel tempo. I dati recenti sono disponibili in
+        self-serve tramite la REST API, senza bisogno di richiedere l'accesso.
       </p>
     </div>
 
@@ -31,23 +31,17 @@ import Layout from '../../layouts/Layout.astro';
           {
             tag: 'Globe history',
             color: 'purple',
-            title: 'Heatmap e state history',
-            desc: 'File giornalieri in formato JSON compresso (.gz). Ogni file contiene la densità di traffico per cella geografica e le ultime posizioni note degli aeromobili. Generati da readsb ogni 30 minuti, conservati in archivio rolling.',
-            size: '~20 GB totali · crescita ~100 MB/giorno',
+            title: 'Storico posizioni per aeromobile',
+            desc: 'Un file JSON per aeromobile per giorno, generato da readsb: traccia completa di posizione, quota, velocità e prua durante la giornata (formato JSON semplice, non compresso). Gli ultimi giorni sono self-serve via API — vedi sotto; quelli più vecchi vengono spostati su storage privato, non ancora self-serve.',
+            size: '~60 GB attuali · crescita ~2,5 GB/giorno · ultimi ~18-20 giorni self-serve',
           },
           {
-            tag: 'MLAT CSV',
-            color: 'yellow',
-            title: 'Triangolazioni MLAT',
-            desc: 'File CSV con i risultati del server di multilateration: timestamp, ICAO hex, lat, lon, altitudine, velocità ground. Include tracce militari e aerei Mode-S senza ADS-B.',
-            size: 'variabile · dipende dalla densità della rete',
-          },
-          {
-            tag: 'Mode-S raw',
+            tag: 'Ricerca meteo',
             color: 'green',
-            title: 'Messaggi Mode-S grezzi',
-            desc: 'Dataset Mode-S BDS50/BDS60 usati dal progetto weather-32: True Air Speed, Magnetic Heading, IAS, Mach number. Strutturati in PostgreSQL, esportabili su richiesta.',
-            size: 'PostgreSQL · misurazioni + posizioni',
+            title: 'Vento e temperatura da Mode-S (weather-32)',
+            desc: "Il progetto weather-32 deriva vento e temperatura in quota dai messaggi Mode-S BDS50/60 (True Air Speed, prua magnetica, IAS, numero di Mach), validati contro ERA5/IASI. È un'analisi di ricerca, non un archivio esportabile: i dati grezzi non sono organizzati in un dataset scaricabile su richiesta.",
+            size: null,
+            link: { href: '/ricerca/weather', label: 'Vedi i risultati della ricerca →' },
           },
         ].map(item => (
           <div class="p-6 rounded-xl border flex flex-col sm:flex-row gap-5" style="background:#0f1929;border-color:#1e3048">
@@ -60,16 +54,40 @@ import Layout from '../../layouts/Layout.astro';
             <div class="flex-1">
               <h3 class="font-semibold text-slate-100 mb-1">{item.title}</h3>
               <p class="text-sm text-slate-400 leading-relaxed mb-2">{item.desc}</p>
-              <span class="text-xs font-mono text-slate-600">{item.size}</span>
+              {item.size && <span class="text-xs font-mono text-slate-600">{item.size}</span>}
+              {item.link && (
+                <a href={item.link.href} class="block text-xs font-mono text-sky-400 hover:text-sky-300 no-underline">{item.link.label}</a>
+              )}
             </div>
           </div>
         ))}
       </div>
     </section>
 
+    <!-- Self-serve -->
+    <section class="mb-14">
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">Come accedere allo storico Globe history</h2>
+      <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
+        <table class="spec-table" style="margin-bottom:1rem">
+          <tr>
+            <td class="k">GET /v2/history/{'{icao}'}</td>
+            <td class="d">Date con storico disponibile per un aeromobile.</td>
+          </tr>
+          <tr>
+            <td class="k">GET /v2/history/{'{icao}'}/{'{data}'}</td>
+            <td class="d">Traccia completa (posizione, quota, velocità, prua) di un aeromobile in un giorno.</td>
+          </tr>
+        </table>
+        <p class="text-sm text-slate-400 leading-relaxed">
+          Stessa API key e stesso limite (100 richieste/minuto) del resto di <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">/v2/*</code> —
+          vedi la <a href="/dati/api#rest-api" class="text-sky-400 no-underline hover:text-sky-300">documentazione API</a> per come ottenere una chiave.
+        </p>
+      </div>
+    </section>
+
     <!-- Accesso -->
     <section class="mb-14">
-      <h2 class="text-2xl font-bold text-slate-100 mb-6">Accesso</h2>
+      <h2 class="text-2xl font-bold text-slate-100 mb-6">Estrazioni più ampie o dati più vecchi</h2>
 
       <div class="grid sm:grid-cols-2 gap-5">
 
@@ -78,18 +96,18 @@ import Layout from '../../layouts/Layout.astro';
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span class="text-sm font-semibold text-slate-100">Accesso per ricercatori</span>
+            <span class="text-sm font-semibold text-slate-100">Ricerca e casi particolari</span>
           </div>
           <p class="text-sm text-slate-400 leading-relaxed mb-4">
-            I dataset storici sono disponibili per ricerca universitaria o istituzionale.
-            Invia una richiesta con descrizione del progetto e dell'istituzione.
+            Per storico oltre la finestra self-serve, estrazioni bulk o progetti di ricerca
+            universitaria/istituzionale, scrivici con una descrizione del progetto.
           </p>
-          <a href="/chi-siamo#contatti"
+          <a href="/contatti"
              class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium no-underline transition-all"
              style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
              onmouseover="this.style.background='#38bdf825'"
              onmouseout="this.style.background='#38bdf815'">
-            Richiedi accesso →
+            Contattaci →
           </a>
         </div>
 

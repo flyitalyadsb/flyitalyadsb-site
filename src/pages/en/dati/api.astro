@@ -109,6 +109,8 @@ X-Api-Key: <your-key>
           { path: '/mil', desc: 'Currently tracked military traffic.' },
           { path: '/pia', desc: 'Aircraft with a Privacy ICAO Address.' },
           { path: '/ladd', desc: 'Aircraft in the FAA Limiting Aircraft Data Displayed program.' },
+          { path: '/history/{icao}', desc: 'Dates with available history for an aircraft — see the historical archive.' },
+          { path: '/history/{icao}/{date}', desc: 'Full track (position, altitude, speed, heading) for one aircraft on one day.' },
         ].map((e) => (
           <tr>
             <td class="k">GET {e.path}</td>

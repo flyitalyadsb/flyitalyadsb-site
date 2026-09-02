@@ -109,6 +109,8 @@ X-Api-Key: <la-tua-chiave>
           { path: '/mil', desc: 'Traffico militare attualmente tracciato.' },
           { path: '/pia', desc: 'Aeromobili con indirizzo ICAO privato (Privacy ICAO Address).' },
           { path: '/ladd', desc: 'Aeromobili nel programma FAA Limiting Aircraft Data Displayed.' },
+          { path: '/history/{icao}', desc: "Date con storico disponibile per un aeromobile — vedi l'archivio storico." },
+          { path: '/history/{icao}/{data}', desc: 'Traccia completa (posizione, quota, velocità, prua) di un aeromobile in un giorno.' },
         ].map((e) => (
           <tr>
             <td class="k">GET {e.path}</td>
