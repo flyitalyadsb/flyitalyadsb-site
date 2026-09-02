@@ -12,6 +12,7 @@ const staticPaths = [
   '/dati',
   '/dati/archivio',
   '/dati/api',
+  '/dati/confronto',
   '/rete',
   '/ricerca',
   '/ricerca/weather',

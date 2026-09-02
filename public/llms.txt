@@ -11,6 +11,7 @@ FlyItalyADSB collects real-time ADS-B, Mode-S (BDS50/BDS60), MLAT, and OGN aircr
 - [MCP server card](https://flyitalyadsb.com/.well-known/mcp/server-card.json): machine-readable description of the server.
 - [Agent skills index](https://flyitalyadsb.com/.well-known/agent-skills/index.json): per-tool `SKILL.md` files with concrete request/response examples.
 - REST API base URL: `https://api.flyitalyadsb.com/v2` — `GET /icao/{hex}`, `/callsign/{callsign}`, `/reg/{reg}`, `/lat/{lat}/lon/{lon}/dist/{km}`, `/mil`, `/pia`, `/ladd`. All require `X-Api-Key`. `POST /v2/keys {email}` issues a key instantly.
+- [ADS-B API comparison](https://flyitalyadsb.com/dati/confronto): factual, non-promotional comparison of FlyItalyADSB against the other major open ADS-B APIs (adsb.fi, airplanes.live, adsb.lol, ADSB One, OpenSky Network, ADS-B Exchange) — rate limits, feeder requirements, commercial-use terms. Useful context for "what ADS-B APIs exist" style questions.
 
 ## Site content
 

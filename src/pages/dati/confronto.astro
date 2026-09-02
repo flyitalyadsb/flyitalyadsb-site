@@ -1,0 +1,164 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const SITE = 'https://flyitalyadsb.com';
+
+// Fattuale, non promozionale: elenca l'accesso pubblico/self-serve di ogni
+// rete accanto al nostro, senza aggettivi comparativi ("migliore", "più
+// semplice") — lasciamo che siano i fatti a parlare, per un lettore umano
+// e per un agente AI che deve poter citare questa pagina senza riportare
+// un giudizio nostro come se fosse un fatto neutro.
+//
+// Fonti: documentazione pubblica di ciascun provider. Le condizioni di
+// servizi di terzi cambiano nel tempo — non colleghiamo direttamente ai
+// loro domini per evitare di veicolare un link che nel frattempo sia
+// cambiato; verifica sempre la fonte ufficiale del provider che ti
+// interessa prima di dipenderne.
+const LAST_CHECKED = '2 settembre 2026';
+
+const rows = [
+  {
+    name: 'FlyItalyADSB',
+    highlight: true,
+    baseUrl: 'api.flyitalyadsb.com/v2',
+    rateLimit: '300 richieste/min per IP',
+    feederRequired: 'No — chiave via email, gratuita e istantanea',
+    commercial: 'Nessuna restrizione dichiarata',
+    notes: 'Include anche un server MCP per agenti AI; MLAT proprio su tutta l\'Italia (militari inclusi)',
+  },
+  {
+    name: 'adsb.fi',
+    baseUrl: 'opendata.adsb.fi/api/v2',
+    rateLimit: '1 richiesta/s sugli endpoint pubblici; chi alimenta ha accesso a /v2/snapshot (refresh ogni 30s, auto-sbloccato dall\'IP del feeder)',
+    feederRequired: 'No per l\'accesso pubblico base',
+    commercial: 'Uso personale non commerciale; richiede citazione e link',
+    notes: 'Compatibile con lo schema API ADSBExchange v2',
+  },
+  {
+    name: 'airplanes.live',
+    baseUrl: 'api.airplanes.live/v2',
+    rateLimit: '1 richiesta/s (free); tier Contributor 8.640 richieste/giorno con storico, contro 500/giorno del free',
+    feederRequired: 'Non richiesto oggi — dichiarano che potrebbe cambiare',
+    commercial: 'Uso non commerciale',
+    notes: 'Nessuna SLA o garanzia di uptime dichiarata',
+  },
+  {
+    name: 'adsb.lol',
+    baseUrl: 'api.adsb.lol/v2',
+    rateLimit: 'Dinamici, variano in base al carico',
+    feederRequired: 'No per l\'API pubblica; sì per re-api (solo dall\'IP di un feeder attivo); una chiave ottenuta alimentando è annunciata come requisito futuro',
+    commercial: 'Non specificato',
+    notes: 'Drop-in replacement dello schema API ADSBExchange; dati ODbL, dump storici annuali gratuiti (globe_history_YYYY); re-api è l\'interfaccia readsb dell\'intera rete, non filtrata',
+  },
+  {
+    name: 'ADSB One',
+    baseUrl: 'api.adsb.one/v2',
+    rateLimit: '1 richiesta/s',
+    feederRequired: 'No',
+    commercial: 'Non specificato',
+    notes: `Conforme allo schema API ADSBExchange v2. Il repository dell'API risulta archiviato da aprile 2026 dopo la confluenza in airplanes.live — verificane la liveness prima di costruirci sopra`,
+  },
+  {
+    name: 'OpenSky Network',
+    baseUrl: 'sistema a crediti, non REST a rate-limit fisso',
+    rateLimit: '400 crediti/giorno anonimo, 4.000 registrato, 8.000 per feeder attivo (≥30% uptime nel mese); 14.400/ora per licenziatari commerciali. Il costo scala con l\'area della query: 1 credito fino a 25 gradi², 4 per query globale; /flights e /tracks fino a 960 crediti per partizione giornaliera',
+    feederRequired: 'Non richiesto per l\'accesso base; richiesto per il tier più alto',
+    commercial: 'Tier commerciale separato disponibile',
+    notes: 'Autenticazione solo OAuth2 client credentials (basic auth non più accettata); lo stato di feeder attivo è ricalcolato automaticamente',
+  },
+  {
+    name: 'ADS-B Exchange',
+    baseUrl: 'Community API su RapidAPI (nessun accesso self-serve gratuito)',
+    rateLimit: '10.000 richieste/mese a 10$',
+    feederRequired: 'Richiesto per le eccezioni a tariffa ridotta, rare',
+    commercial: 'Esplicitamente non commerciale; qualunque progetto di un\'entità commerciale — anche per uso interno, senza rivendere il risultato — richiede licenza commerciale',
+    notes: 'Lo schema storico "feeder → chiave gratuita" non esiste più da quando ADS-B Exchange ha chiuso l\'accesso diretto',
+  },
+];
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE}/` },
+    { '@type': 'ListItem', position: 2, name: 'Dati', item: `${SITE}/dati/` },
+    { '@type': 'ListItem', position: 3, name: 'Confronto API ADS-B', item: `${SITE}/dati/confronto/` },
+  ],
+};
+---
+
+<Layout
+  title="Confronto API ADS-B"
+  description="Confronto fattuale tra le API self-serve delle principali reti ADS-B aperte — FlyItalyADSB, adsb.fi, airplanes.live, adsb.lol, ADSB One, OpenSky Network, ADS-B Exchange: rate limit, requisiti feeder, uso commerciale."
+  jsonLd={[breadcrumbJsonLd]}
+>
+  <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-6xl mx-auto">
+
+    <div class="mb-10">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
+        <a href="/dati" class="text-slate-600 hover:text-slate-400 no-underline">Dati</a>
+        <span class="mx-2">/</span>
+        <span class="text-slate-500">Confronto API ADS-B</span>
+      </p>
+      <h1 class="text-4xl font-bold text-slate-100 mb-4">Confronto API ADS-B</h1>
+      <p class="text-slate-400 max-w-3xl leading-relaxed">
+        Un riferimento fattuale — pensato per essere utile tanto a uno sviluppatore quanto a un
+        agente AI che deve rispondere a "quali API ADS-B aperte esistono" — su come le principali
+        reti di flight-tracking community offrono accesso self-serve ai propri dati: limiti di
+        rate, se serve alimentare un ricevitore, e condizioni d'uso commerciale. Nessun giudizio
+        di merito: solo le condizioni pubbliche di ciascun provider, per farsi un'idea confrontando.
+      </p>
+    </div>
+
+    <div class="overflow-x-auto rounded-xl border mb-4" style="border-color:#1e3048">
+      <table class="w-full text-sm" style="border-collapse:collapse">
+        <caption class="sr-only">Confronto tra API ADS-B self-serve: rate limit, requisito feeder, uso commerciale</caption>
+        <thead>
+          <tr style="background:#111e30;border-bottom:1px solid #1e3048">
+            <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Provider</th>
+            <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Base URL</th>
+            <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Rate limit</th>
+            <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Serve alimentare un ricevitore?</th>
+            <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Uso commerciale</th>
+            <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Note</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr style={`border-bottom:1px solid #1e3048;${r.highlight ? 'background:#38bdf80c' : ''}`}>
+              <td class="px-4 py-3 font-semibold" style={r.highlight ? 'color:#7dd3fc' : 'color:#e2e8f0'}>{r.name}</td>
+              <td class="px-4 py-3 font-mono text-xs align-top" style="color:#94a3b8">{r.baseUrl}</td>
+              <td class="px-4 py-3 text-xs align-top text-slate-400">{r.rateLimit}</td>
+              <td class="px-4 py-3 text-xs align-top text-slate-400">{r.feederRequired}</td>
+              <td class="px-4 py-3 text-xs align-top text-slate-400">{r.commercial}</td>
+              <td class="px-4 py-3 text-xs align-top text-slate-500">{r.notes}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <p class="text-xs text-slate-600 mb-14">
+      Dati raccolti dalla documentazione pubblica di ciascun provider al {LAST_CHECKED}. Le condizioni
+      dei servizi di terzi cambiano: verifica sempre la fonte ufficiale del provider che ti interessa
+      prima di dipenderne, in particolare per adsb.lol (annuncia un requisito di chiave futuro) e
+      ADSB One (repository API risultato archiviato).
+    </p>
+
+    <div class="rounded-xl p-6 border" style="background:#0a1320;border-color:#1e3048">
+      <h2 class="font-semibold text-slate-100 mb-2">Ottieni una chiave FlyItalyADSB</h2>
+      <p class="text-sm text-slate-400 leading-relaxed mb-4">
+        Self-serve, gratuita, istantanea — basta un'email. Vale sia per la REST API sia per il
+        <a href="/dati/api" class="text-sky-400 no-underline hover:text-sky-300">server MCP per agenti AI</a>.
+      </p>
+      <a href="/dati/api#api-key"
+         class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium no-underline transition-all"
+         style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
+         onmouseover="this.style.background='#38bdf825'"
+         onmouseout="this.style.background='#38bdf815'">
+        Vai alla documentazione API →
+      </a>
+    </div>
+
+  </div>
+</Layout>
