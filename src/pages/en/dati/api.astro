@@ -89,7 +89,7 @@ X-Api-Key: <your-key>
         <div><div class="k">rest base url</div><div class="v" style="font-size:13px">api.flyitalyadsb.com/v2</div></div>
         <div><div class="k">mcp endpoint</div><div class="v" style="font-size:13px">flyitalyadsb.com/mcp</div></div>
         <div><div class="k">auth</div><div class="v accent">X-Api-Key</div></div>
-        <div><div class="k">rate limit</div><div class="v">300<span style="font-size:11px;color:#64748b">/min/ip</span></div></div>
+        <div><div class="k">rate limit</div><div class="v">100<span style="font-size:11px;color:#64748b">/min/ip</span></div></div>
       </div>
     </div>
 
@@ -117,7 +117,11 @@ X-Api-Key: <your-key>
         ))}
       </table>
       <p class="text-xs text-slate-500 mt-4">
-        Limit: 300 requests/minute per IP. Requests without <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> are rejected at the edge.
+        Limit: 100 requests/minute per IP. Requests without <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> are rejected at the edge.
+      </p>
+      <p class="text-xs text-slate-500 mt-2">
+        Commercial use is allowed within this limit. For higher volume, an SLA, or data resale
+        you'll need an enterprise agreement — <a href="/en/contatti" class="text-sky-400 no-underline hover:text-sky-300">contact us</a>.
       </p>
     </section>
 
