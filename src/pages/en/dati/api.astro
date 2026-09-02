@@ -133,7 +133,7 @@ X-Api-Key: <your-key>
       <p class="text-slate-400 text-sm leading-relaxed mb-6">
         The <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener" class="text-sky-400 no-underline">Model Context Protocol</a>
         is the standard assistants like Claude or ChatGPT use to call external tools. Our server exposes
-        three read-only tools at
+        four read-only tools at
         <code class="text-xs px-1.5 py-0.5 rounded" style="background:#111e30;color:#7dd3fc">https://flyitalyadsb.com/mcp</code>:
       </p>
       <table class="spec-table" style="margin-bottom:1.5rem">
@@ -141,6 +141,7 @@ X-Api-Key: <your-key>
           { name: 'find_aircraft', desc: 'Look up one aircraft by ICAO hex, callsign, or registration.' },
           { name: 'aircraft_near', desc: 'Every aircraft within a radius of a point (or an Italian airport by name), full records — the most useful one.' },
           { name: 'special_traffic', desc: 'Currently tracked military, PIA (privacy), or LADD traffic.' },
+          { name: 'aircraft_history', desc: "One aircraft's historical track for a day, or the dates available — self-serve, recent days only." },
         ].map((t) => (
           <tr>
             <td class="k" style="color:#a78bfa">{t.name}</td>

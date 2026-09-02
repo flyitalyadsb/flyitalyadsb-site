@@ -7,7 +7,7 @@ FlyItalyADSB collects real-time ADS-B, Mode-S (BDS50/BDS60), MLAT, and OGN aircr
 ## For AI agents
 
 - [API & AI agents documentation](https://flyitalyadsb.com/dati/api): human-readable reference for both the REST API and the MCP tools below, including how to get an API key (self-serve, instant, free — just an email address).
-- [MCP server](https://flyitalyadsb.com/mcp): Streamable HTTP JSON-RPC endpoint. Tools: `find_aircraft` (by ICAO hex/callsign/registration), `aircraft_near` (full live records within a radius of any point worldwide — the flagship tool), `special_traffic` (military/PIA/LADD). Requires an `X-Api-Key` header, same key as the REST API.
+- [MCP server](https://flyitalyadsb.com/mcp): Streamable HTTP JSON-RPC endpoint. Tools: `find_aircraft` (by ICAO hex/callsign/registration), `aircraft_near` (full live records within a radius of any point worldwide — the flagship tool), `special_traffic` (military/PIA/LADD), `aircraft_history` (a day's position track for one aircraft, or the dates available — self-serve, recent days only). Requires an `X-Api-Key` header, same key as the REST API.
 - [MCP server card](https://flyitalyadsb.com/.well-known/mcp/server-card.json): machine-readable description of the server.
 - [Agent skills index](https://flyitalyadsb.com/.well-known/agent-skills/index.json): per-tool `SKILL.md` files with concrete request/response examples.
 - REST API base URL: `https://api.flyitalyadsb.com/v2` — `GET /icao/{hex}`, `/callsign/{callsign}`, `/reg/{reg}`, `/lat/{lat}/lon/{lon}/dist/{km}`, `/mil`, `/pia`, `/ladd`, `/history/{icao}[/{date}]` (self-serve historical per-aircraft position tracks). All require `X-Api-Key`. `POST /v2/keys {email}` issues a key instantly.

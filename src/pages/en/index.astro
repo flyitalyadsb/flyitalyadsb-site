@@ -202,7 +202,7 @@ import Layout from '../../layouts/Layout.astro';
           { label: 'find_aircraft', desc: 'Look up by ICAO hex, callsign or registration' },
           { label: 'aircraft_near', desc: 'Aircraft within a radius, anywhere in the world' },
           { label: 'special_traffic', desc: 'Military, PIA or LADD traffic' },
-          { label: 'GET /v2/history', desc: 'Self-serve per-aircraft history (REST only, not yet an MCP tool)' },
+          { label: 'aircraft_history', desc: "One aircraft's historical track for a day — self-serve, recent days only" },
         ].map(t => (
           <div class="p-4 rounded-lg" style="background:#0a1320;border:1px solid #1e3048">
             <code class="text-xs font-mono" style="color:#a78bfa">{t.label}</code>

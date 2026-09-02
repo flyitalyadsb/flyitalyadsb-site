@@ -214,7 +214,7 @@ import Layout from '../layouts/Layout.astro';
           { label: 'find_aircraft', desc: 'Cerca per hex ICAO, callsign o registrazione' },
           { label: 'aircraft_near', desc: 'Aerei in un raggio, ovunque nel mondo' },
           { label: 'special_traffic', desc: 'Traffico militare, PIA o LADD' },
-          { label: 'GET /v2/history', desc: 'Storico self-serve per aeromobile (solo REST, non ancora un tool MCP)' },
+          { label: 'aircraft_history', desc: 'Traccia storica per aeromobile in un giorno — self-serve, solo giorni recenti' },
         ].map(t => (
           <div class="p-4 rounded-lg" style="background:#0a1320;border:1px solid #1e3048">
             <code class="text-xs font-mono" style="color:#a78bfa">{t.label}</code>
