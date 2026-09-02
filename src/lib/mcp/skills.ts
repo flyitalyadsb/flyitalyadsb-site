@@ -126,6 +126,43 @@ function specialTrafficSkillMd(): string {
   ].join('\n');
 }
 
+function aircraftHistorySkillMd(): string {
+  return [
+    '# Historical position track for an aircraft',
+    '',
+    'Get one aircraft\'s historical position track for a specific day, or list which dates have',
+    'history available for it, via the `aircraft_history` MCP tool. Distinct from the other three',
+    'tools, which are live-only: this reads self-serve historical data — recent days only, older',
+    'history is not yet self-serve.',
+    '',
+    '## Requirements',
+    '',
+    `- Connect to the MCP server at \`${MCP_URL}\` (Streamable HTTP, stateless).`,
+    '- Every request needs an `X-Api-Key` header — the same key issued for `api.flyitalyadsb.com/v2/*`.',
+    '  A missing header is rejected before the MCP session even starts.',
+    '- Call `aircraft_history` with `icao24`. Omit `date` to list available dates first if unsure',
+    '  what\'s covered; pass `date` (`YYYY-MM-DD`) to fetch that day\'s track.',
+    '- Optional `limit` (default 200, max 2000) evenly samples a busy aircraft\'s day down — a full',
+    '  day can be 1,000+ raw position points.',
+    '',
+    '## Validate',
+    '',
+    '```',
+    `POST ${MCP_URL}`,
+    'Content-Type: application/json',
+    'X-Api-Key: <your-key>',
+    '',
+    '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"aircraft_history","arguments":{"icao24":"c04662"}}}',
+    '```',
+    '',
+    'Check that `result.content[0].text` parses as JSON. With no `date`: `mode: "dates"` and a',
+    '`datesAvailable` array. With `date` set: `mode: "track"` and either `found: true` with',
+    '`aircraft` (metadata), `points` (sampled track), `totalPoints`, and `sampled` — or',
+    '`found: false` with a `reason` (e.g. never seen that day, or older than what\'s self-serve).',
+    '',
+  ].join('\n');
+}
+
 export const SKILLS: Record<string, SkillDefinition> = {
   'find-aircraft': {
     name: 'find-aircraft',
@@ -141,6 +178,11 @@ export const SKILLS: Record<string, SkillDefinition> = {
     name: 'special-traffic',
     description: 'List currently tracked military, privacy (PIA), or LADD aircraft.',
     markdown: specialTrafficSkillMd(),
+  },
+  'aircraft-history': {
+    name: 'aircraft-history',
+    description: 'Get an aircraft\'s historical position track for a day, or list available dates.',
+    markdown: aircraftHistorySkillMd(),
   },
 };
 

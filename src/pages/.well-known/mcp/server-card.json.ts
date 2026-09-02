@@ -13,7 +13,7 @@ export const GET: APIRoute = () => {
   return Response.json({
     serverInfo: { name: 'flyitalyadsb', version: '1.0.0' },
     description:
-      'MCP server for flyitalyadsb.com: read-only live aircraft-tracking queries (by identifier, by location, or by military/privacy/LADD category) over the FlyItalyADSB open ADS-B/MLAT network. Requires an X-Api-Key header — same key as api.flyitalyadsb.com/v2/*.',
+      'MCP server for flyitalyadsb.com: read-only aircraft-tracking queries over the FlyItalyADSB open ADS-B/MLAT network — live (by identifier, by location, or by military/privacy/LADD category) and historical (a day\'s position track for one aircraft, self-serve for recent days). Requires an X-Api-Key header — same key as api.flyitalyadsb.com/v2/*.',
     url: `${SITE}/mcp`,
     transport: { type: 'streamable-http' },
     capabilities: { tools: true },

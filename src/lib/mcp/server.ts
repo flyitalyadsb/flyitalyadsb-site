@@ -1,4 +1,5 @@
 import type { McpServer, ToolAnnotations } from '@modelcontextprotocol/server';
+import { aircraftHistory, aircraftHistoryInputSchema } from './tools/aircraft-history';
 import { aircraftNear, aircraftNearInputSchema } from './tools/aircraft-near';
 import { findAircraft, findAircraftInputSchema } from './tools/find-aircraft';
 import { specialTraffic, specialTrafficInputSchema } from './tools/special-traffic';
@@ -37,6 +38,18 @@ export const TOOLS = {
     description:
       'List aircraft currently tracked network-wide that are flagged military, PIA (Privacy ICAO Address), or LADD (FAA Limiting Aircraft Data Displayed) — thanks to FlyItalyADSB\'s own MLAT, this includes aircraft without full ADS-B.',
     inputSchema: specialTrafficInputSchema,
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    } satisfies ToolAnnotations,
+  },
+  aircraft_history: {
+    title: 'Historical position track for an aircraft',
+    description:
+      'Get one aircraft\'s historical position track for a specific day (position, altitude, speed, heading over time), or list which dates have history available for it. Self-serve historical data, distinct from the live-only tools above — recent days only (older history is not yet self-serve).',
+    inputSchema: aircraftHistoryInputSchema,
     annotations: {
       readOnlyHint: true,
       destructiveHint: false,
@@ -88,6 +101,15 @@ export function initializeMcpServer(server: McpServer, apiKey: string): void {
   server.registerTool('special_traffic', TOOLS.special_traffic, async (args) => {
     try {
       const result = await specialTraffic(args, apiKey);
+      return { content: [{ type: 'text', text: JSON.stringify(result) }] };
+    } catch (err) {
+      return errorResult(err);
+    }
+  });
+
+  server.registerTool('aircraft_history', TOOLS.aircraft_history, async (args) => {
+    try {
+      const result = await aircraftHistory(args, apiKey);
       return { content: [{ type: 'text', text: JSON.stringify(result) }] };
     } catch (err) {
       return errorResult(err);
