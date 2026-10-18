@@ -120,7 +120,7 @@ import Layout from '../../../layouts/Layout.astro';
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
   function row(active, name, since) {
-    const colour = active ? '#34d399' : '#64748b';
+    const colour = active ? '#34d399' : '#8391a7';
     const label = active ? 'active' : 'no connection';
     // How long WE have seen this connection, not how long the receiver has been on:
     // it restarts from zero when our own services do. Under a minute is just noise.

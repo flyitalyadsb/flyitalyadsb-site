@@ -99,7 +99,7 @@ X-Api-Key: <la-tua-chiave>
         <div><div class="k">rest base url</div><div class="v" style="font-size:13px">api.flyitalyadsb.com/v2</div></div>
         <div><div class="k">mcp endpoint</div><div class="v" style="font-size:13px">flyitalyadsb.com/mcp</div></div>
         <div><div class="k">auth</div><div class="v accent">X-Api-Key</div></div>
-        <div><div class="k">piani</div><div class="v">free<span style="font-size:11px;color:#64748b"> · da 9 €</span></div></div>
+        <div><div class="k">piani</div><div class="v">free<span style="font-size:11px;color:#8391a7"> · da 9 €</span></div></div>
       </div>
     </div>
 
@@ -239,16 +239,25 @@ X-Api-Key: <la-tua-chiave>
       </p>
       <form id="key-form" class="space-y-3" novalidate>
         <div class="grid sm:grid-cols-2 gap-3">
-          <input type="email" id="key-email" name="email" required placeholder="la-tua-email@esempio.com"
+          <div>
+            <label for="key-email" class="block text-xs text-slate-400 mb-1.5">Email</label>
+            <input type="email" id="key-email" name="email" required autocomplete="email" aria-describedby="key-status" placeholder="la-tua-email@esempio.com"
                  class="px-3 py-2.5 rounded-lg text-sm w-full"
-                 style="background:#111e30;color:#e2e8f0;border:1px solid #1e3048" />
-          <input type="text" id="key-name" name="name" maxlength="200" placeholder="Nome o progetto (opzionale)"
+                 style="background:#111e30;color:#e2e8f0;border:1px solid var(--color-input-border)" />
+          </div>
+          <div>
+            <label for="key-name" class="block text-xs text-slate-400 mb-1.5">Nome o progetto <span class="text-slate-500">(opzionale)</span></label>
+            <input type="text" id="key-name" name="name" maxlength="200"
                  class="px-3 py-2.5 rounded-lg text-sm w-full"
-                 style="background:#111e30;color:#e2e8f0;border:1px solid #1e3048" />
+                 style="background:#111e30;color:#e2e8f0;border:1px solid var(--color-input-border)" />
+          </div>
         </div>
-        <input type="text" id="key-use-case" name="use_case" maxlength="500" placeholder="A cosa la usi? (opzionale)"
-               class="px-3 py-2.5 rounded-lg text-sm w-full"
-               style="background:#111e30;color:#e2e8f0;border:1px solid #1e3048" />
+        <div>
+          <label for="key-use-case" class="block text-xs text-slate-400 mb-1.5">A cosa la usi? <span class="text-slate-500">(opzionale)</span></label>
+          <input type="text" id="key-use-case" name="use_case" maxlength="500"
+                 class="px-3 py-2.5 rounded-lg text-sm w-full"
+                 style="background:#111e30;color:#e2e8f0;border:1px solid var(--color-input-border)" />
+        </div>
         <div class="flex items-center gap-4">
           <button type="submit" id="key-submit"
                   class="px-5 py-2.5 rounded-lg font-medium text-sm transition-all"
