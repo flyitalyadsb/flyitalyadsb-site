@@ -1,5 +1,5 @@
 // Curated dataset of major Italian airports.
-// Powers the programmatic SEO pages under /aeroporti and /en/aeroporti.
+// Powers the programmatic SEO pages under /aeroporti and /en/airports.
 // Coordinates are used to center the live map and to count aircraft within a
 // radius (server-side, via api.flyitalyadsb.com/api/count?lat&lon&radius).
 
@@ -195,7 +195,8 @@ const norm = (s: string) =>
   s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 export function fullName(a: Airport): string {
-  return `${a.city} ${a.name}`;
+  // Some airports are named after their city (Lamezia Terme): don't say it twice.
+  return a.name.toLowerCase().includes(a.city.toLowerCase()) ? a.name : `${a.city} ${a.name}`;
 }
 
 export function getAirport(slug: string): Airport | undefined {

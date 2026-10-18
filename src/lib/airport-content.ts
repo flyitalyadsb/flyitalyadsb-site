@@ -11,7 +11,7 @@ const SITE = 'https://flyitalyadsb.com';
 /** Canonical URL of an airport page (trailing slash = directory build format). */
 export function airportUrl(a: Airport, lang: Lang): string {
   return lang === 'en'
-    ? `${SITE}/en/aeroporti/${a.slug}/`
+    ? `${SITE}/en/airports/${a.slug}/`
     : `${SITE}/aeroporti/${a.slug}/`;
 }
 
@@ -110,7 +110,7 @@ export function faqJsonLd(a: Airport, lang: Lang): Record<string, unknown> {
 
 export function breadcrumbJsonLd(a: Airport, lang: Lang): Record<string, unknown> {
   const home = lang === 'en' ? `${SITE}/en/` : `${SITE}/`;
-  const index = lang === 'en' ? `${SITE}/en/aeroporti/` : `${SITE}/aeroporti/`;
+  const index = lang === 'en' ? `${SITE}/en/airports/` : `${SITE}/aeroporti/`;
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -125,10 +125,10 @@ export function breadcrumbJsonLd(a: Airport, lang: Lang): Record<string, unknown
   };
 }
 
-/** CollectionPage/ItemList for the /aeroporti (or /en/aeroporti) index — built
+/** CollectionPage/ItemList for the /aeroporti (or /en/airports) index — built
  * from the same `airports` dataset the index page already renders. */
 export function airportsCollectionJsonLd(lang: Lang): Record<string, unknown> {
-  const index = lang === 'en' ? `${SITE}/en/aeroporti/` : `${SITE}/aeroporti/`;
+  const index = lang === 'en' ? `${SITE}/en/airports/` : `${SITE}/aeroporti/`;
   return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',

@@ -120,7 +120,7 @@ import Layout from '../../../layouts/Layout.astro';
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
   function row(active, name, since) {
-    const colour = active ? '#34d399' : '#64748b';
+    const colour = active ? '#34d399' : '#8391a7';
     const label = active ? 'active' : 'no connection';
     // How long WE have seen this connection, not how long the receiver has been on:
     // it restarts from zero when our own services do. Under a minute is just noise.
@@ -178,14 +178,14 @@ import Layout from '../../../layouts/Layout.astro';
 
     const data = await res.json();
 
-    // Receivers always feed over IPv4 (dati.flyitalyadsb.com is an A record with no
-    // AAAA), but the API is Cloudflare-proxied and answers over IPv6 too. A browser
-    // on IPv6 therefore reaches us from an address that can never match the feed —
-    // saying "not feeding" there would be a guaranteed false negative.
+    // IPv6 visitor: stats-api matches the visitor's /64 (2026-10-18), because in
+    // IPv6 the browser and the receiver never share an address. No receiver in that
+    // /64 comes back as comparable:false — the receiver almost always sends over
+    // IPv4 (99% of feeders), which a browser on IPv6 can't be compared with.
     if (data.comparable === false) {
       inconclusive(
         'We cannot compare this address',
-        'Your browser reaches us over IPv6, while receivers send their data over IPv4: the two addresses are not comparable. Use the command below directly on the receiver.',
+        'Your browser reaches us over IPv6 and we see no receiver on your IPv6 network: yours most likely sends over IPv4, which we cannot compare from here. Run the command below directly on the receiver.',
         data.ip,
       );
       help.hidden = false;

@@ -1,4 +1,5 @@
 ---
+import { otherLanguagePath } from '../lib/routes';
 import '../styles/global.css';
 
 interface Props {
@@ -39,13 +40,10 @@ const abs = (p: string) => new URL(p, siteOrigin).href;
 const canonicalURL = abs(path);
 const imageURL = new URL(image, siteOrigin).href;
 
-// Language switcher: swap the /en prefix while preserving the trailing slash.
-function altLangPath(p: string): string {
-  if (p === '/en' || p === '/en/') return '/';
-  if (p.startsWith('/en/')) return p.replace(/^\/en/, '');
-  if (p === '/') return '/en/';
-  return `/en${p}`;
-}
+// Language switcher + hreflang: the same page in the other language. English
+// pages have English paths since 2026-10-18 (src/lib/routes.ts), so this is a
+// mapping, not just adding/removing the /en prefix. Trailing slash preserved.
+const altLangPath = otherLanguagePath;
 const altHref = altLangPath(path);
 const altLabel = isEn ? 'IT' : 'EN';
 
@@ -85,12 +83,12 @@ const nav = isEn
 const navLinks = isEn
   ? [
       { href: 'https://mappa.flyitalyadsb.com', label: nav.map, external: true },
-      { href: '/en/aeroporti', label: nav.airports, external: false },
-      { href: '/en/aeromobili', label: nav.aircraft, external: false },
-      { href: '/en/dati', label: nav.data, external: false },
-      { href: '/en/rete', label: nav.network, external: false },
-      { href: '/en/ricerca', label: nav.research, external: false },
-      { href: '/en/chi-siamo', label: nav.about, external: false },
+      { href: '/en/airports', label: nav.airports, external: false },
+      { href: '/en/aircraft', label: nav.aircraft, external: false },
+      { href: '/en/data', label: nav.data, external: false },
+      { href: '/en/network', label: nav.network, external: false },
+      { href: '/en/research', label: nav.research, external: false },
+      { href: '/en/about', label: nav.about, external: false },
     ]
   : [
       { href: 'https://mappa.flyitalyadsb.com', label: nav.map, external: true },
@@ -106,7 +104,15 @@ const navLinks = isEn
 // link) so the API/MCP docs — the thing an adsb.lol-style visitor actively
 // looks for — read as a distinct destination instead of blending into the
 // content nav next to "Rete" or "Ricerca".
-const apiHref = isEn ? '/en/dati/api' : '/dati/api';
+const apiHref = isEn ? '/en/data/api' : '/dati/api';
+// Section of the current page, for aria-current on the nav (a section link
+// stays current on its sub-pages: /aeroporti/pisa/ → Aeroporti).
+const here = Astro.url.pathname.replace(/\/+$/, '');
+const isCurrent = (href: string) => {
+  if (href.startsWith('http')) return false;
+  const h = href.replace(/\/+$/, '');
+  return here === h || here.startsWith(h + '/');
+};
 const apiLabel = 'API';
 ---
 
@@ -154,8 +160,10 @@ const apiLabel = 'API';
          every code block on the site has silently been rendering in the
          system monospace fallback. Also used directly (not just code/pre)
          by the .hud-readout/.spec-table/.timeline/.tag-row primitives. -->
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" />
+    <!-- Self-hosted since 2026-10-18 (global.css @font-face): no third-party
+         stylesheet blocking the first paint. Preload the latin subset, the
+         one every page uses above the fold (HUD, eyebrow labels). -->
+    <link rel="preload" href="/fonts/jetbrains-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
 
     {jsonLdBlocks.map((block) => (
       <script type="application/ld+json" set:html={JSON.stringify(block)} />
@@ -169,7 +177,10 @@ const apiLabel = 'API';
          gradient scrim fixed the legibility bug but still let the map's
          colors compete with the text — solid + blurred from the start,
          same as the scroll-triggered state below, reads much cleaner. -->
-    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:px-3 focus:py-2 focus:rounded focus:text-sm"
+       style="background:#111e30;color:#e2e8f0">{isEn ? 'Skip to content' : 'Salta al contenuto'}</a>
+
+    <nav id="navbar" aria-label={isEn ? 'Main' : 'Principale'} class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
          style="background:#070d1aee;backdrop-filter:blur(12px)">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
 
@@ -182,13 +193,18 @@ const apiLabel = 'API';
           </span>
         </a>
 
-        <div class="flex items-center gap-1 text-sm">
+        <!-- Full row from lg (1024px) up. Below that the seven links + API +
+             language did not fit and pushed the whole page wider than the
+             phone (390px: everything cut on the right, 2026-10-18): they move
+             into the #nav-menu panel, API and language stay in the bar. -->
+        <div class="hidden lg:flex items-center gap-1 text-sm">
           {navLinks.map(link => (
             <a href={link.href}
                target={link.external ? '_blank' : undefined}
                rel={link.external ? 'noopener' : undefined}
-               class="px-3 py-1.5 rounded text-slate-400 hover:text-slate-100 hover:bg-white/5 transition-colors no-underline">
-              {link.label}
+               aria-current={isCurrent(link.href) ? 'page' : undefined}
+               class={`px-3 py-1.5 rounded hover:text-slate-100 hover:bg-white/5 transition-colors no-underline ${isCurrent(link.href) ? 'text-slate-100 bg-white/5' : 'text-slate-400'}`}>
+              {link.label}{link.external ? ' ↗' : ''}
             </a>
           ))}
           <a href={apiHref}
@@ -199,20 +215,57 @@ const apiLabel = 'API';
             {apiLabel}
           </a>
           <!-- Language switcher -->
-          <a href={altHref}
+          <a href={altHref} hreflang={isEn ? 'it' : 'en'} lang={isEn ? 'it' : 'en'} aria-label={isEn ? 'Italiano' : 'English'}
              class="ml-3 px-2.5 py-1 rounded text-xs font-mono font-semibold transition-colors no-underline"
-             style="background:#ffffff08;color:#64748b;border:1px solid #ffffff12"
+             style="background:#ffffff08;color:#8391a7;border:1px solid #ffffff12"
              onmouseover="this.style.color='#94a3b8'"
-             onmouseout="this.style.color='#64748b'">
+             onmouseout="this.style.color='#8391a7'">
             {altLabel}
           </a>
         </div>
 
+        <div class="flex lg:hidden items-center gap-2 text-sm">
+          <a href={apiHref}
+             class="px-3 py-1.5 rounded text-sm font-semibold no-underline"
+             style="color:#7dd3fc;border:1px solid #38bdf840;background:#38bdf812">
+            {apiLabel}
+          </a>
+          <a href={altHref} hreflang={isEn ? 'it' : 'en'} lang={isEn ? 'it' : 'en'} aria-label={isEn ? 'Italiano' : 'English'}
+             class="px-2.5 py-1 rounded text-xs font-mono font-semibold no-underline"
+             style="background:#ffffff08;color:#94a3b8;border:1px solid #ffffff12">
+            {altLabel}
+          </a>
+          <button type="button" id="nav-toggle" aria-controls="nav-menu" aria-expanded="false"
+                  aria-label={isEn ? 'Open menu' : 'Apri il menu'}
+                  data-label-open={isEn ? 'Open menu' : 'Apri il menu'}
+                  data-label-close={isEn ? 'Close menu' : 'Chiudi il menu'}
+                  class="p-2 -mr-2 rounded text-slate-300 hover:text-white hover:bg-white/5 transition-colors">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path class="nav-icon-open" d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round" />
+              <path class="nav-icon-close hidden" d="M6 6l12 12M18 6L6 18" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+
+      </div>
+
+      <div id="nav-menu" class="lg:hidden hidden border-t" style="border-color:#1e3048">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-col">
+          {navLinks.map(link => (
+            <a href={link.href}
+               target={link.external ? '_blank' : undefined}
+               rel={link.external ? 'noopener' : undefined}
+               aria-current={isCurrent(link.href) ? 'page' : undefined}
+               class={`px-3 py-3 rounded text-base hover:text-white hover:bg-white/5 transition-colors no-underline ${isCurrent(link.href) ? 'text-white bg-white/5' : 'text-slate-300'}`}>
+              {link.label}{link.external ? ' ↗' : ''}
+            </a>
+          ))}
+        </div>
       </div>
     </nav>
 
     <!-- Slot content -->
-    <main class="flex-1">
+    <main id="main" tabindex="-1" class="flex-1 focus:outline-none">
       <slot />
     </main>
 
@@ -236,30 +289,30 @@ const apiLabel = 'API';
           <div>
             <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">{isEn ? 'Data' : 'Dati'}</div>
             <ul class="space-y-2 text-sm">
-              <li><a href={isEn ? '/en/dati' : '/dati'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'About our data' : 'I nostri dati'}</a></li>
-              <li><a href={isEn ? '/en/aeroporti' : '/aeroporti'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Airports' : 'Aeroporti'}</a></li>
-              <li><a href={isEn ? '/en/aeromobili' : '/aeromobili'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Aircraft types' : 'Aeromobili'}</a></li>
-              <li><a href={isEn ? '/en/dati/archivio' : '/dati/archivio'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Archive' : 'Archivio storico'}</a></li>
-              <li><a href={isEn ? '/en/dati/api' : '/dati/api'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'API & AI agents' : 'API e agenti AI'}</a></li>
+              <li><a href={isEn ? '/en/data' : '/dati'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'About our data' : 'I nostri dati'}</a></li>
+              <li><a href={isEn ? '/en/airports' : '/aeroporti'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Airports' : 'Aeroporti'}</a></li>
+              <li><a href={isEn ? '/en/aircraft' : '/aeromobili'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Aircraft types' : 'Aeromobili'}</a></li>
+              <li><a href={isEn ? '/en/data/archive' : '/dati/archivio'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Archive' : 'Archivio storico'}</a></li>
+              <li><a href={isEn ? '/en/data/api' : '/dati/api'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'API & AI agents' : 'API e agenti AI'}</a></li>
             </ul>
           </div>
 
           <div>
             <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">{isEn ? 'Community' : 'Community'}</div>
             <ul class="space-y-2 text-sm">
-              <li><a href={isEn ? '/en/rete' : '/rete'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'The network' : 'La rete'}</a></li>
+              <li><a href={isEn ? '/en/network' : '/rete'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'The network' : 'La rete'}</a></li>
               <li><a href={isEn ? '/en/community/feeder' : '/community/feeder'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Become a feeder' : 'Diventa feeder'}</a></li>
-              <li><a href={isEn ? '/en/community/stato-feeder' : '/community/stato-feeder'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Is my data arriving?' : 'I miei dati arrivano?'}</a></li>
+              <li><a href={isEn ? '/en/community/feeder-status' : '/community/stato-feeder'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Is my data arriving?' : 'I miei dati arrivano?'}</a></li>
               <li><a href={isEn ? '/en/community/mlat' : '/community/mlat'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'How MLAT works' : 'Come funziona MLAT'}</a></li>
-              <li><a href={isEn ? '/en/ricerca' : '/ricerca'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Research' : 'Ricerca'}</a></li>
+              <li><a href={isEn ? '/en/research' : '/ricerca'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Research' : 'Ricerca'}</a></li>
             </ul>
           </div>
 
           <div>
             <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">{isEn ? 'Project' : 'Progetto'}</div>
             <ul class="space-y-2 text-sm">
-              <li><a href={isEn ? '/en/chi-siamo' : '/chi-siamo'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'About' : 'Chi siamo'}</a></li>
-              <li><a href={isEn ? '/en/contatti' : '/contatti'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Contact us' : 'Contattaci'}</a></li>
+              <li><a href={isEn ? '/en/about' : '/chi-siamo'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'About' : 'Chi siamo'}</a></li>
+              <li><a href={isEn ? '/en/contact' : '/contatti'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Contact us' : 'Contattaci'}</a></li>
               <li>
                 <a href="https://github.com/flyitalyadsb" target="_blank" rel="noopener"
                    class="text-slate-500 hover:text-slate-300 no-underline">GitHub ↗</a>
@@ -293,6 +346,23 @@ const apiLabel = 'API';
          own style attribute) — only the border is a scroll cue, a bit of
          separation once there's page content above to separate from. -->
     <script>
+      // Mobile menu (below lg): toggle, close on a link, on Escape, and when
+      // the window grows past lg (the panel is lg:hidden anyway).
+      const navToggle = document.getElementById('nav-toggle');
+      const navMenu = document.getElementById('nav-menu');
+      const setMenu = (open: boolean) => {
+        if (!navToggle || !navMenu) return;
+        navMenu.classList.toggle('hidden', !open);
+        navToggle.setAttribute('aria-expanded', String(open));
+        navToggle.setAttribute('aria-label', (open ? navToggle.dataset.labelClose : navToggle.dataset.labelOpen) || '');
+        navToggle.querySelector('.nav-icon-open')?.classList.toggle('hidden', open);
+        navToggle.querySelector('.nav-icon-close')?.classList.toggle('hidden', !open);
+      };
+      navToggle?.addEventListener('click', () => setMenu(navMenu?.classList.contains('hidden') ?? false));
+      navMenu?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
+      window.matchMedia('(min-width: 1024px)').addEventListener('change', (e) => { if (e.matches) setMenu(false); });
+
       const navbar = document.getElementById('navbar');
       window.addEventListener('scroll', () => {
         if (!navbar) return;

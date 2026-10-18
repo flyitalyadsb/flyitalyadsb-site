@@ -1,0 +1,32 @@
+# English slugs since 2026-10-18 (English SEO): the old /en/<italian-slug>
+# URLs move permanently to the English ones. Same table as src/lib/routes.ts
+# — keep the two in sync. Most specific first: Cloudflare Pages applies the
+# first rule that matches.
+/en/community/stato-feeder /en/community/feeder-status/ 301
+/en/community/stato-feeder/* /en/community/feeder-status/:splat 301
+/en/dati/api/account /en/data/api/account/ 301
+/en/dati/api/account/* /en/data/api/account/:splat 301
+/en/dati/api/grazie /en/data/api/thanks/ 301
+/en/dati/api/grazie/* /en/data/api/thanks/:splat 301
+/en/dati/confronto /en/data/comparison/ 301
+/en/dati/confronto/* /en/data/comparison/:splat 301
+/en/dati/archivio /en/data/archive/ 301
+/en/dati/archivio/* /en/data/archive/:splat 301
+/en/aeromobili /en/aircraft/ 301
+/en/aeromobili/* /en/aircraft/:splat 301
+/en/aeroporti /en/airports/ 301
+/en/aeroporti/* /en/airports/:splat 301
+/en/chi-siamo /en/about/ 301
+/en/chi-siamo/* /en/about/:splat 301
+/en/dati/api /en/data/api/ 301
+/en/dati/api/* /en/data/api/:splat 301
+/en/contatti /en/contact/ 301
+/en/contatti/* /en/contact/:splat 301
+/en/ricerca /en/research/ 301
+/en/ricerca/* /en/research/:splat 301
+/en/termini /en/terms/ 301
+/en/termini/* /en/terms/:splat 301
+/en/dati /en/data/ 301
+/en/dati/* /en/data/:splat 301
+/en/rete /en/network/ 301
+/en/rete/* /en/network/:splat 301

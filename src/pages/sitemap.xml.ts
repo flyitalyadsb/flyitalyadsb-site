@@ -1,10 +1,12 @@
 import type { APIRoute } from 'astro';
 import { airports } from '../data/airports';
 import { aircraftTypes } from '../data/aircraftTypes';
+import { localePath } from '../lib/routes';
 
 const SITE = 'https://flyitalyadsb.com';
 
-// IT-relative paths; the EN variant of each is `/en` + path.
+// IT-relative paths; the EN variant of each is localePath('en', path) —
+// English slugs since 2026-10-18 (src/lib/routes.ts), not just `/en` + path.
 const staticPaths = [
   '/',
   '/aeroporti',
@@ -27,7 +29,7 @@ const staticPaths = [
 // canonical (non-redirecting) URLs so crawlers index the 200 response directly.
 const slash = (p: string) => (p === '/' ? '/' : `${p}/`);
 const itUrl = (p: string) => `${SITE}${slash(p)}`;
-const enUrl = (p: string) => `${SITE}/en${slash(p)}`;
+const enUrl = (p: string) => `${SITE}${localePath('en', slash(p))}`;
 
 export const GET: APIRoute = () => {
   const paths = [

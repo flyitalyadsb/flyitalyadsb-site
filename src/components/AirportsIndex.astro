@@ -1,4 +1,5 @@
 ---
+import { localePath } from '../lib/routes';
 import { airportsByRegion, fullName, airports } from '../data/airports';
 import type { Lang } from '../lib/airport-content';
 
@@ -8,7 +9,8 @@ interface Props {
 
 const { lang } = Astro.props as Props;
 const isEn = lang === 'en';
-const base = isEn ? '/en' : '';
+// English pages have English paths (src/lib/routes.ts): never '/en' + an Italian segment.
+const p = (path: string) => localePath(isEn ? 'en' : 'it', path);
 const groups = airportsByRegion();
 
 const t = isEn
@@ -32,23 +34,27 @@ const t = isEn
     <p class="text-slate-400 max-w-3xl leading-relaxed">{t.lead}</p>
   </div>
 
-  <div class="space-y-12">
+  <!-- Dense list (site review 2026-10-18): 15 region headings each holding one
+       or two full-width cards read as a mostly empty grid. Regions now flow in
+       columns, each airport is one row; same links, same order. -->
+  <div class="columns-1 sm:columns-2 lg:columns-3 gap-10">
     {groups.map((g) => (
-      <section>
-        <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 pb-2 border-b" style="border-color:#1e3048">{g.region}</h2>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <section class="break-inside-avoid mb-10">
+        <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 pb-2 border-b" style="border-color:#1e3048">{g.region}</h2>
+        <ul>
           {g.items.map((a) => (
-            <a href={`${base}/aeroporti/${a.slug}`} class="block p-5 rounded-xl border no-underline group transition-all hover:border-sky-400/30" style="background:#0f1929;border-color:#1e3048">
-              <div class="flex items-center justify-between gap-3 mb-2">
-                <span class="text-slate-100 font-semibold text-sm group-hover:text-white transition-colors">{fullName(a)}</span>
-                <span class="text-xs font-mono text-slate-500 shrink-0">{a.iata}</span>
-              </div>
-              <p class="text-xs text-slate-500 leading-relaxed line-clamp-2">{isEn ? a.blurbEn : a.blurbIt}</p>
-            </a>
+            <li class="border-b" style="border-color:#1e304866">
+              <a href={p(`/aeroporti/${a.slug}`)} class="block py-3 no-underline group">
+                <span class="flex items-baseline justify-between gap-3">
+                  <span class="text-slate-100 font-semibold text-sm group-hover:text-sky-300 transition-colors">{fullName(a)}</span>
+                  <span class="text-xs font-mono text-slate-500 shrink-0">{a.iata} · {a.icao}</span>
+                </span>
+                <span class="block text-xs text-slate-500 leading-relaxed mt-1 line-clamp-2">{isEn ? a.blurbEn : a.blurbIt}</span>
+              </a>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
     ))}
   </div>
-
 </div>
