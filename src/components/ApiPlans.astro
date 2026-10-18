@@ -33,6 +33,12 @@ const t = it
       radius: (km: number | null) => (km ? `raggio fino a ${nf.format(km)} km` : 'raggio mondiale'),
       ent: 'host enterprise-api (oltre 100/min per IP)',
       priority: 'supporto email prioritario',
+      recommended: 'Consigliato',
+      price: (eur: number) => `${eur} €`,
+      today: 'oggi',
+      perIp: 'richieste/min per IP',
+      later: 'dopo l\'avviso via email:',
+      summary: (eur: number) => `${eur} €/mese + IVA · rinnovo mensile, disdici quando vuoi`,
       getFree: 'Chiave gratuita ↓',
       choose: (n: string) => `Scegli ${n}`,
       freeNote: FREE_LIMITS_FROM
@@ -75,6 +81,12 @@ const t = it
       radius: (km: number | null) => (km ? `radius up to ${nf.format(km)} km` : 'worldwide radius'),
       ent: 'enterprise-api host (beyond 100/min per IP)',
       priority: 'priority email support',
+      recommended: 'Recommended',
+      price: (eur: number) => `€${eur}`,
+      today: 'today',
+      perIp: 'requests/min per IP',
+      later: 'after the email notice:',
+      summary: (eur: number) => `€${eur}/month + tax · renews monthly, cancel any time`,
       getFree: 'Free key ↓',
       choose: (n: string) => `Choose ${n}`,
       freeNote: FREE_LIMITS_FROM
@@ -101,7 +113,10 @@ const t = it
 
 const contactHref = it ? '/contatti' : '/en/contatti';
 const termsHref = it ? '/termini' : '/en/termini';
-const accent: Record<string, string> = { free: '#64748b', starter: '#38bdf8', pro: '#a78bfa', business: '#34d399' };
+// One accent for every plan (status colours like green stay reserved for
+// states); Pro is the recommended one: badge + the only filled button.
+const ACCENT = '#38bdf8';
+const RECOMMENDED = 'pro';
 ---
 
 <section id="piani" class="mb-14 scroll-mt-24" data-lang={lang} data-checkout={CHECKOUT_URL}
@@ -113,17 +128,33 @@ const accent: Record<string, string> = { free: '#64748b', starter: '#38bdf8', pr
 
   <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
     {PLANS.map((p) => (
-      <div class="rounded-xl border p-5 flex flex-col" style={`background:#0a1320;border-color:${p.id === 'pro' ? '#a78bfa55' : '#1e3048'}`}>
-        <div class="text-xs font-semibold uppercase tracking-widest mb-3" style={`color:${accent[p.id]}`}>{t.names[p.id]}</div>
+      <div class="rounded-xl border p-5 flex flex-col" style={`background:#0a1320;border-color:${p.id === RECOMMENDED ? ACCENT + '80' : '#1e3048'}`}>
+        <div class="flex items-center justify-between gap-2 mb-3 h-6">
+          <div class="text-xs font-semibold uppercase tracking-widest" style={`color:${p.priceEur ? ACCENT : '#94a3b8'}`}>{t.names[p.id]}</div>
+          {p.id === RECOMMENDED && (
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded" style={`background:${ACCENT}1f;color:#7dd3fc`}>{t.recommended}</span>
+          )}
+        </div>
         <div class="mb-1">
           {p.priceEur === 0 ? (
-            <span class="text-3xl font-bold text-slate-100">€0<span class="text-sm font-normal text-slate-500">{t.perMonth}</span></span>
+            <span class="text-3xl font-bold text-slate-100 tabular-nums">{t.price(0)}<span class="text-sm font-normal text-slate-500">{t.perMonth}</span></span>
           ) : (
-            <span class="text-3xl font-bold text-slate-100">€{p.priceEur}<span class="text-sm font-normal text-slate-500">{t.perMonth}</span></span>
+            <span class="text-3xl font-bold text-slate-100 tabular-nums">{t.price(p.priceEur)}<span class="text-sm font-normal text-slate-500">{t.perMonth}</span></span>
           )}
         </div>
         <div class="text-xs text-slate-500 mb-4 h-4">{p.priceEur > 0 ? t.plus : ''}</div>
         <p class="text-sm text-slate-300 mb-4">{t.use[p.id]}</p>
+        {p.priceEur === 0 && !FREE_LIMITS_FROM ? (
+          <ul class="text-xs text-slate-400 space-y-1.5 mb-6 font-mono">
+            {/* What a Free key gets TODAY: the planned limits are not enforced
+                until the announced date (public-api FREE_TIER_ENFORCE). */}
+            <li><span class="text-slate-200">100</span> {t.perIp} ({t.today})</li>
+            <li class="pt-1 text-slate-500 font-sans">{t.later}</li>
+            <li class="text-slate-500">{nf.format(p.perMin)} {t.perMin}</li>
+            <li class="text-slate-500">{nf.format(p.perMonth)} {t.perMonthReq}</li>
+            <li class="text-slate-500">{t.radius(p.maxRadiusKm)}</li>
+          </ul>
+        ) : (
         <ul class="text-xs text-slate-400 space-y-1.5 mb-6 font-mono">
           <li><span class="text-slate-200">{nf.format(p.perMin)}</span> {t.perMin}</li>
           <li><span class="text-slate-200">{nf.format(p.perMonth)}</span> {t.perMonthReq}</li>
@@ -131,14 +162,17 @@ const accent: Record<string, string> = { free: '#64748b', starter: '#38bdf8', pr
           {p.enterpriseHost && <li>{t.ent}</li>}
           {p.id === 'business' && <li>{t.priority}</li>}
         </ul>
+        )}
         <div class="mt-auto">
           {p.priceEur === 0 ? (
             <a href="#api-key" class="block text-center px-4 py-2 rounded-lg text-sm no-underline"
                style="background:#111e30;color:#cbd5e1;border:1px solid #1e3048">{t.getFree}</a>
           ) : (
             <button type="button" class="plan-choose block w-full px-4 py-2 rounded-lg text-sm font-medium"
-                    data-plan={p.id} data-name={t.names[p.id]}
-                    style={`background:${accent[p.id]}18;color:${accent[p.id]};border:1px solid ${accent[p.id]}40`}>
+                    data-plan={p.id} data-name={t.names[p.id]} data-summary={t.summary(p.priceEur)}
+                    style={p.id === RECOMMENDED
+                      ? `background:${ACCENT};color:#070d1a;border:1px solid ${ACCENT}`
+                      : `background:${ACCENT}18;color:#7dd3fc;border:1px solid ${ACCENT}40`}>
               {t.choose(t.names[p.id])}
             </button>
           )}
@@ -153,20 +187,22 @@ const accent: Record<string, string> = { free: '#64748b', starter: '#38bdf8', pr
   </p>
 
   <div id="checkout-box" class="hidden rounded-xl p-6 border" style="background:#0a1320;border-color:#1e3048">
-    <h3 id="checkout-title" class="font-semibold text-slate-100 mb-4" data-template={t.boxTitle('{name}')}></h3>
+    <h3 id="checkout-title" class="font-semibold text-slate-100 mb-1" data-template={t.boxTitle('{name}')}></h3>
+    <p id="checkout-summary" class="text-sm text-slate-400 mb-4 tabular-nums"></p>
     <form id="checkout-form" class="space-y-3" novalidate>
       <label for="checkout-email" class="block text-xs text-slate-400">{t.emailLabel}</label>
       <input type="email" id="checkout-email" required autocomplete="email"
+             aria-describedby="checkout-hint checkout-status"
              placeholder={it ? 'la-tua-email@esempio.com' : 'you@example.com'}
              class="px-3 py-2.5 rounded-lg text-sm w-full sm:max-w-md block"
-             style="background:#111e30;color:#e2e8f0;border:1px solid #1e3048" />
-      <p class="text-xs text-slate-500 max-w-xl">{t.emailHint}</p>
+             style="background:#111e30;color:#e2e8f0;border:1px solid var(--color-input-border)" />
+      <p id="checkout-hint" class="text-xs text-slate-500 max-w-xl">{t.emailHint}</p>
       <div class="flex flex-wrap items-center gap-4 pt-1">
         <button type="submit" id="checkout-submit" class="px-5 py-2.5 rounded-lg font-medium text-sm"
                 style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830">{t.pay}</button>
         <p id="checkout-status" class="text-sm" role="status"></p>
       </div>
-      <p class="text-xs text-slate-600 max-w-xl pt-2">
+      <p class="text-xs text-slate-500 max-w-xl pt-2">
         {t.fine} <a href={termsHref} class="text-slate-400 hover:text-slate-300">{t.terms}</a>.
       </p>
     </form>
@@ -207,6 +243,7 @@ const accent: Record<string, string> = { free: '#64748b', starter: '#38bdf8', pr
     btn.addEventListener('click', () => {
       plan = btn.dataset.plan || '';
       title.textContent = (title.dataset.template || '').replace('{name}', btn.dataset.name || plan);
+      (document.getElementById('checkout-summary') as HTMLElement).textContent = btn.dataset.summary || '';
       box.classList.remove('hidden');
       setStatus('', '');
       box.scrollIntoView({ behavior: 'smooth', block: 'center' });

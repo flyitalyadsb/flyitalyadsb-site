@@ -84,12 +84,12 @@ X-Api-Key: <la-tua-chiave>
     </div>
 
     <nav class="page-index mb-10" aria-label="Indice della pagina">
-      <a href="#rest-api"><span>01</span>REST API</a>
-      <a href="#mcp"><span>02</span>Server MCP</a>
-      <a href="#come-collegarlo"><span>03</span>Come collegarlo a Claude</a>
-      <a href="#piani"><span>04</span>Piani</a>
-      <a href="#faq"><span>05</span>FAQ</a>
-      <a href="#api-key"><span>06</span>Ottieni una chiave</a>
+      <a href="#piani"><span>01</span>Piani</a>
+      <a href="#api-key"><span>02</span>Chiave gratuita</a>
+      <a href="#rest-api"><span>03</span>REST API</a>
+      <a href="#mcp"><span>04</span>Server MCP</a>
+      <a href="#come-collegarlo"><span>05</span>Come collegarlo a Claude</a>
+      <a href="#faq"><span>06</span>FAQ</a>
     </nav>
 
     <!-- At-a-glance readout — the reference specs a developer scans for
@@ -101,6 +101,54 @@ X-Api-Key: <la-tua-chiave>
         <div><div class="k">auth</div><div class="v accent">X-Api-Key</div></div>
         <div><div class="k">piani</div><div class="v">free<span style="font-size:11px;color:#8391a7"> · da 9 €</span></div></div>
       </div>
+    </div>
+
+    <ApiPlans lang="it" />
+
+    <!-- Auth signup -->
+    <div id="api-key" class="rounded-xl p-8 border scroll-mt-24 mb-14" style="background:#0a1320;border-color:#1e3048">
+      <h3 class="font-semibold text-slate-100 mb-2">Ottieni una API key</h3>
+      <p class="text-sm text-slate-400 leading-relaxed mb-6">
+        REST API e server MCP condividono la stessa chiave, passata nell'header <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code>.
+        Istantanea e gratuita: inserisci un'email, la chiave arriva lì — non compare mai in questa pagina.
+        Se richiedi di nuovo con la stessa email, quella vecchia smette di funzionare e ne ricevi una nuova
+        (è anche il modo per recuperarla se l'hai persa).
+        Hai già una chiave? Piano, consumi e rigenerazione da
+        <a href="/dati/api/account/" class="text-sky-400 no-underline hover:text-sky-300">La mia API</a>.
+      </p>
+      <form id="key-form" class="space-y-3" novalidate>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <div>
+            <label for="key-email" class="block text-xs text-slate-400 mb-1.5">Email</label>
+            <input type="email" id="key-email" name="email" required autocomplete="email" aria-describedby="key-status" placeholder="la-tua-email@esempio.com"
+                 class="px-3 py-2.5 rounded-lg text-sm w-full"
+                 style="background:#111e30;color:#e2e8f0;border:1px solid var(--color-input-border)" />
+          </div>
+          <div>
+            <label for="key-name" class="block text-xs text-slate-400 mb-1.5">Nome o progetto <span class="text-slate-500">(opzionale)</span></label>
+            <input type="text" id="key-name" name="name" maxlength="200"
+                 class="px-3 py-2.5 rounded-lg text-sm w-full"
+                 style="background:#111e30;color:#e2e8f0;border:1px solid var(--color-input-border)" />
+          </div>
+        </div>
+        <div>
+          <label for="key-use-case" class="block text-xs text-slate-400 mb-1.5">A cosa la usi? <span class="text-slate-500">(opzionale)</span></label>
+          <input type="text" id="key-use-case" name="use_case" maxlength="500"
+                 class="px-3 py-2.5 rounded-lg text-sm w-full"
+                 style="background:#111e30;color:#e2e8f0;border:1px solid var(--color-input-border)" />
+        </div>
+        <div class="flex items-center gap-4">
+          <button type="submit" id="key-submit"
+                  class="px-5 py-2.5 rounded-lg font-medium text-sm transition-all"
+                  style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
+                  onmouseover="this.style.background='#38bdf825'"
+                  onmouseout="this.style.background='#38bdf815'">
+            Invia chiave via email →
+          </button>
+          <p id="key-status" class="text-sm" role="status"></p>
+        </div>
+        <p class="text-xs text-slate-500">Se questa email ha già una chiave gratuita, quella smette di funzionare e ricevi la nuova.</p>
+      </form>
     </div>
 
     <!-- REST API -->
@@ -204,8 +252,6 @@ X-Api-Key: <la-tua-chiave>
       <pre class="p-4 rounded-lg text-xs overflow-auto leading-relaxed" style="background:#0a1320;color:#94a3b8;border:1px solid #1e3048"><code>{mcpCallExample}</code></pre>
     </section>
 
-    <ApiPlans lang="it" />
-
     <!-- FAQ — same content as faqJsonLd above; that structured data must
          match what's actually visible on the page, and until now it had no
          visible counterpart at all. -->
@@ -225,51 +271,6 @@ X-Api-Key: <la-tua-chiave>
         ))}
       </div>
     </section>
-
-    <!-- Auth signup -->
-    <div id="api-key" class="rounded-xl p-8 border scroll-mt-24" style="background:#0a1320;border-color:#1e3048">
-      <h3 class="font-semibold text-slate-100 mb-2">Ottieni una API key</h3>
-      <p class="text-sm text-slate-400 leading-relaxed mb-6">
-        REST API e server MCP condividono la stessa chiave, passata nell'header <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code>.
-        Istantanea e gratuita: inserisci un'email, la chiave arriva lì — non compare mai in questa pagina.
-        Se richiedi di nuovo con la stessa email, quella vecchia smette di funzionare e ne ricevi una nuova
-        (è anche il modo per recuperarla se l'hai persa).
-        Hai già una chiave? Piano, consumi e rigenerazione da
-        <a href="/dati/api/account/" class="text-sky-400 no-underline hover:text-sky-300">La mia API</a>.
-      </p>
-      <form id="key-form" class="space-y-3" novalidate>
-        <div class="grid sm:grid-cols-2 gap-3">
-          <div>
-            <label for="key-email" class="block text-xs text-slate-400 mb-1.5">Email</label>
-            <input type="email" id="key-email" name="email" required autocomplete="email" aria-describedby="key-status" placeholder="la-tua-email@esempio.com"
-                 class="px-3 py-2.5 rounded-lg text-sm w-full"
-                 style="background:#111e30;color:#e2e8f0;border:1px solid var(--color-input-border)" />
-          </div>
-          <div>
-            <label for="key-name" class="block text-xs text-slate-400 mb-1.5">Nome o progetto <span class="text-slate-500">(opzionale)</span></label>
-            <input type="text" id="key-name" name="name" maxlength="200"
-                 class="px-3 py-2.5 rounded-lg text-sm w-full"
-                 style="background:#111e30;color:#e2e8f0;border:1px solid var(--color-input-border)" />
-          </div>
-        </div>
-        <div>
-          <label for="key-use-case" class="block text-xs text-slate-400 mb-1.5">A cosa la usi? <span class="text-slate-500">(opzionale)</span></label>
-          <input type="text" id="key-use-case" name="use_case" maxlength="500"
-                 class="px-3 py-2.5 rounded-lg text-sm w-full"
-                 style="background:#111e30;color:#e2e8f0;border:1px solid var(--color-input-border)" />
-        </div>
-        <div class="flex items-center gap-4">
-          <button type="submit" id="key-submit"
-                  class="px-5 py-2.5 rounded-lg font-medium text-sm transition-all"
-                  style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
-                  onmouseover="this.style.background='#38bdf825'"
-                  onmouseout="this.style.background='#38bdf815'">
-            Invia chiave via email →
-          </button>
-          <p id="key-status" class="text-sm" role="status"></p>
-        </div>
-      </form>
-    </div>
 
   </div>
 

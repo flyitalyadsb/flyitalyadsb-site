@@ -84,12 +84,12 @@ X-Api-Key: <your-key>
     </div>
 
     <nav class="page-index mb-10" aria-label="Page index">
-      <a href="#rest-api"><span>01</span>REST API</a>
-      <a href="#mcp"><span>02</span>MCP server</a>
-      <a href="#connect-claude"><span>03</span>Connect to Claude</a>
-      <a href="#piani"><span>04</span>Plans</a>
-      <a href="#faq"><span>05</span>FAQ</a>
-      <a href="#api-key"><span>06</span>Get a key</a>
+      <a href="#piani"><span>01</span>Plans</a>
+      <a href="#api-key"><span>02</span>Free key</a>
+      <a href="#rest-api"><span>03</span>REST API</a>
+      <a href="#mcp"><span>04</span>MCP server</a>
+      <a href="#connect-claude"><span>05</span>Connect to Claude</a>
+      <a href="#faq"><span>06</span>FAQ</a>
     </nav>
 
     <!-- At-a-glance readout — the reference specs a developer scans for
@@ -101,6 +101,54 @@ X-Api-Key: <your-key>
         <div><div class="k">auth</div><div class="v accent">X-Api-Key</div></div>
         <div><div class="k">plans</div><div class="v">free<span style="font-size:11px;color:#8391a7"> · from €9</span></div></div>
       </div>
+    </div>
+
+    <ApiPlans lang="en" />
+
+    <!-- Auth signup -->
+    <div id="api-key" class="rounded-xl p-8 border scroll-mt-24 mb-14" style="background:#0a1320;border-color:#1e3048">
+      <h3 class="font-semibold text-slate-100 mb-2">Get an API key</h3>
+      <p class="text-sm text-slate-400 leading-relaxed mb-6">
+        The REST API and the MCP server share the same key, passed in the <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> header.
+        Instant and free: enter an email, the key arrives there — it's never shown on this page.
+        Requesting again with the same email retires the old key and issues a new one
+        (also how to recover a lost key).
+        Already have a key? See its plan and usage, or rotate it, from
+        <a href="/en/dati/api/account/" class="text-sky-400 no-underline hover:text-sky-300">My API</a>.
+      </p>
+      <form id="key-form" class="space-y-3" novalidate>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <div>
+            <label for="key-email" class="block text-xs text-slate-400 mb-1.5">Email</label>
+            <input type="email" id="key-email" name="email" required autocomplete="email" aria-describedby="key-status" placeholder="you@example.com"
+                 class="px-3 py-2.5 rounded-lg text-sm w-full"
+                 style="background:#111e30;color:#e2e8f0;border:1px solid var(--color-input-border)" />
+          </div>
+          <div>
+            <label for="key-name" class="block text-xs text-slate-400 mb-1.5">Name or project <span class="text-slate-500">(optional)</span></label>
+            <input type="text" id="key-name" name="name" maxlength="200"
+                 class="px-3 py-2.5 rounded-lg text-sm w-full"
+                 style="background:#111e30;color:#e2e8f0;border:1px solid var(--color-input-border)" />
+          </div>
+        </div>
+        <div>
+          <label for="key-use-case" class="block text-xs text-slate-400 mb-1.5">What will you use it for? <span class="text-slate-500">(optional)</span></label>
+          <input type="text" id="key-use-case" name="use_case" maxlength="500"
+                 class="px-3 py-2.5 rounded-lg text-sm w-full"
+                 style="background:#111e30;color:#e2e8f0;border:1px solid var(--color-input-border)" />
+        </div>
+        <div class="flex items-center gap-4">
+          <button type="submit" id="key-submit"
+                  class="px-5 py-2.5 rounded-lg font-medium text-sm transition-all"
+                  style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
+                  onmouseover="this.style.background='#38bdf825'"
+                  onmouseout="this.style.background='#38bdf815'">
+            Email me a key →
+          </button>
+          <p id="key-status" class="text-sm" role="status"></p>
+        </div>
+        <p class="text-xs text-slate-500">If this email already has a free key, that key stops working and you get the new one.</p>
+      </form>
     </div>
 
     <!-- REST API -->
@@ -204,8 +252,6 @@ X-Api-Key: <your-key>
       <pre class="p-4 rounded-lg text-xs overflow-auto leading-relaxed" style="background:#0a1320;color:#94a3b8;border:1px solid #1e3048"><code>{mcpCallExample}</code></pre>
     </section>
 
-    <ApiPlans lang="en" />
-
     <!-- FAQ — same content as faqJsonLd above; that structured data must
          match what's actually visible on the page, and until now it had no
          visible counterpart at all. -->
@@ -225,51 +271,6 @@ X-Api-Key: <your-key>
         ))}
       </div>
     </section>
-
-    <!-- Auth signup -->
-    <div id="api-key" class="rounded-xl p-8 border scroll-mt-24" style="background:#0a1320;border-color:#1e3048">
-      <h3 class="font-semibold text-slate-100 mb-2">Get an API key</h3>
-      <p class="text-sm text-slate-400 leading-relaxed mb-6">
-        The REST API and the MCP server share the same key, passed in the <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> header.
-        Instant and free: enter an email, the key arrives there — it's never shown on this page.
-        Requesting again with the same email retires the old key and issues a new one
-        (also how to recover a lost key).
-        Already have a key? See its plan and usage, or rotate it, from
-        <a href="/en/dati/api/account/" class="text-sky-400 no-underline hover:text-sky-300">My API</a>.
-      </p>
-      <form id="key-form" class="space-y-3" novalidate>
-        <div class="grid sm:grid-cols-2 gap-3">
-          <div>
-            <label for="key-email" class="block text-xs text-slate-400 mb-1.5">Email</label>
-            <input type="email" id="key-email" name="email" required autocomplete="email" aria-describedby="key-status" placeholder="you@example.com"
-                 class="px-3 py-2.5 rounded-lg text-sm w-full"
-                 style="background:#111e30;color:#e2e8f0;border:1px solid var(--color-input-border)" />
-          </div>
-          <div>
-            <label for="key-name" class="block text-xs text-slate-400 mb-1.5">Name or project <span class="text-slate-500">(optional)</span></label>
-            <input type="text" id="key-name" name="name" maxlength="200"
-                 class="px-3 py-2.5 rounded-lg text-sm w-full"
-                 style="background:#111e30;color:#e2e8f0;border:1px solid var(--color-input-border)" />
-          </div>
-        </div>
-        <div>
-          <label for="key-use-case" class="block text-xs text-slate-400 mb-1.5">What will you use it for? <span class="text-slate-500">(optional)</span></label>
-          <input type="text" id="key-use-case" name="use_case" maxlength="500"
-                 class="px-3 py-2.5 rounded-lg text-sm w-full"
-                 style="background:#111e30;color:#e2e8f0;border:1px solid var(--color-input-border)" />
-        </div>
-        <div class="flex items-center gap-4">
-          <button type="submit" id="key-submit"
-                  class="px-5 py-2.5 rounded-lg font-medium text-sm transition-all"
-                  style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
-                  onmouseover="this.style.background='#38bdf825'"
-                  onmouseout="this.style.background='#38bdf815'">
-            Email me a key →
-          </button>
-          <p id="key-status" class="text-sm" role="status"></p>
-        </div>
-      </form>
-    </div>
 
   </div>
 

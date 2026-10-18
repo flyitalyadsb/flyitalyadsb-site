@@ -13,6 +13,7 @@ const it = lang === 'it';
 const nf = new Intl.NumberFormat(it ? 'it-IT' : 'en-US');
 const paid = PLANS.filter((p) => p.priceEur > 0).map((p) => ({
   id: p.id,
+  enterpriseHost: p.enterpriseHost && p.perMin > 100,
   name: p.id.charAt(0).toUpperCase() + p.id.slice(1),
   limits: it
     ? `${nf.format(p.perMin)} richieste/min per chiave · ${nf.format(p.perMonth)} richieste/mese · ${p.maxRadiusKm ? `raggio fino a ${nf.format(p.maxRadiusKm)} km` : 'raggio mondiale'}`
@@ -25,6 +26,9 @@ const t = it
       title: 'Grazie!',
       lead: (plan: string) => `Il tuo piano ${plan} sta per attivarsi.`,
       fallbackPlan: 'a pagamento',
+      tryTitle: 'Prova la chiave',
+      tryText: 'Appena ti arriva la conferma, una chiamata basta per vedere il nuovo piano nella risposta (header X-FIA-Plan):',
+      tryCmd: 'curl -i -H "x-api-key: LA_TUA_CHIAVE" https://api.flyitalyadsb.com/v2/mil',
       steps: [
         ['La chiave', "Entro pochi secondi la API key della tua email passa al nuovo piano: non devi cambiarla. Se non ne avevi ancora una, te ne arriva una nuova per email insieme alla conferma."],
         ['Più di 100 richieste al minuto', 'Dallo stesso IP usa https://enterprise-api.flyitalyadsb.com/v2: stessa API, stessa chiave, fuori dal limite per IP.'],
@@ -43,6 +47,9 @@ const t = it
       title: 'Thank you!',
       lead: (plan: string) => `Your ${plan} plan is about to go live.`,
       fallbackPlan: 'paid',
+      tryTitle: 'Try your key',
+      tryText: 'As soon as the confirmation arrives, one call shows the new plan in the response (X-FIA-Plan header):',
+      tryCmd: 'curl -i -H "x-api-key: YOUR_KEY" https://api.flyitalyadsb.com/v2/mil',
       steps: [
         ['Your key', "Within seconds the API key of your email moves to the new plan: no need to change it. If you didn't have one yet, a new key is emailed to you with the confirmation."],
         ['More than 100 requests a minute', 'From a single IP, use https://enterprise-api.flyitalyadsb.com/v2: same API, same key, outside the per-IP limit.'],
@@ -67,7 +74,7 @@ const t = it
 
   <ol class="space-y-5 mb-10">
     {t.steps.map(([h, p], i) => (
-      <li class="flex gap-4">
+      <li class="flex gap-4" data-step={i === 1 ? 'enterprise' : undefined}>
         <span class="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold"
               style="background:#34d39915;color:#6ee7b7;border:1px solid #34d39940">{i + 1}</span>
         <div>
@@ -77,6 +84,12 @@ const t = it
       </li>
     ))}
   </ol>
+
+  <div class="rounded-lg p-4 mb-8 border" style="background:#0a1320;border-color:#1e3048">
+    <div class="text-sm font-semibold text-slate-100 mb-1">{t.tryTitle}</div>
+    <p class="text-sm text-slate-400 mb-3">{t.tryText}</p>
+    <pre class="text-xs overflow-auto p-3 rounded" style="background:#111e30;color:#7dd3fc"><code>{t.tryCmd}</code></pre>
+  </div>
 
   <p class="text-xs text-slate-500 mb-8">{t.noMail}</p>
   <div class="flex flex-wrap gap-3">
@@ -91,9 +104,15 @@ const t = it
 
 <script>
   const box = document.getElementById('thanks') as HTMLElement;
-  const plans = JSON.parse(box.dataset.plans || '[]') as { id: string; name: string; limits: string }[];
+  const plans = JSON.parse(box.dataset.plans || '[]') as { id: string; name: string; limits: string; enterpriseHost: boolean }[];
   const id = new URLSearchParams(location.search).get('plan');
   const plan = plans.find((p) => p.id === id);
+  // The enterprise-api host matters only above 100 requests/min from one IP:
+  // Starter's per-key limit (60/min) never gets there.
+  if (!plan || !plan.enterpriseHost) {
+    document.querySelector('[data-step="enterprise"]')?.remove();
+    document.querySelectorAll('#thanks ol > li > span').forEach((n, i) => { n.textContent = String(i + 1); });
+  }
   if (plan) {
     (document.getElementById('thanks-lead') as HTMLElement).textContent =
       (box.dataset.lead || '').replace('{plan}', plan.name);

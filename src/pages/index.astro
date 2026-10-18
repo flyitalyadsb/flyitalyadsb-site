@@ -197,17 +197,24 @@ import Layout from '../layouts/Layout.astro';
           <h2 class="text-2xl font-bold text-slate-100 mb-3">Interroga i dati via API o dalla tua AI</h2>
           <p class="text-slate-400 text-sm leading-relaxed">
             REST API pubblica e server MCP per Claude, ChatGPT e altri agenti — chiave gratuita e
-            istantanea via email, nessuna approvazione manuale. Vedi anche
+            istantanea via email, nessuna approvazione manuale; piani da 9 €/mese quando ti serve più volume. Vedi anche
             <a href="/llms.txt" class="text-sky-400 no-underline hover:text-sky-300">llms.txt</a>.
           </p>
         </div>
-        <a href="/dati/api"
-           class="shrink-0 px-6 py-3 rounded-lg font-medium text-sm text-center no-underline transition-all"
-           style="background:#38bdf8;color:#070d1a"
-           onmouseover="this.style.background='#7dd3fc'"
-           onmouseout="this.style.background='#38bdf8'">
-          Documentazione API →
-        </a>
+        <div class="shrink-0 flex flex-col sm:flex-row gap-3">
+          <a href="/dati/api/#piani"
+             class="px-6 py-3 rounded-lg font-medium text-sm text-center no-underline transition-all"
+             style="background:#38bdf8;color:#070d1a"
+             onmouseover="this.style.background='#7dd3fc'"
+             onmouseout="this.style.background='#38bdf8'">
+            Chiave gratuita e piani →
+          </a>
+          <a href="/dati/api/"
+             class="px-6 py-3 rounded-lg text-sm text-center no-underline"
+             style="background:#111e30;color:#cbd5e1;border:1px solid #1e3048">
+            Documentazione
+          </a>
+        </div>
       </div>
       <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
