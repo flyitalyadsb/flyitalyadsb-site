@@ -110,8 +110,8 @@ export interface HistoryTrace {
 }
 
 /** Separate from `v2Fetch`: `/v2/history/*`'s error bodies are more specific
- * than a generic "not found" (e.g. distinguishing "never seen that day" from
- * "moved to a private R2 bucket, not yet self-serve"), and an MCP-calling
+ * than a generic "not found" (e.g. "no trace data for this icao on this date"
+ * vs "archive temporarily unavailable" when the archive read fails), and an MCP-calling
  * agent benefits from that detail — the 3 existing tools' 404s don't carry
  * anything beyond "not found", so their generic message stays as-is. */
 async function v2FetchHistory<T>(path: string, apiKey: string): Promise<T> {

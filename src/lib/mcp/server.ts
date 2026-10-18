@@ -48,7 +48,7 @@ export const TOOLS = {
   aircraft_history: {
     title: 'Historical position track for an aircraft',
     description:
-      'Get one aircraft\'s historical position track for a specific day (position, altitude, speed, heading over time), or list which dates have history available for it. Self-serve historical data, distinct from the live-only tools above — recent days only (older history is not yet self-serve).',
+      'Get one aircraft\'s historical position track for a specific day (position, altitude, speed, heading over time), or list which dates have history available for it. Self-serve historical data, distinct from the live-only tools above: 2022-04 → 2023-10 (first/last point per flight only), 2023-07 → 2024-06 (full tracks, with gaps), and every day since 2026-08-17.',
     inputSchema: aircraftHistoryInputSchema,
     annotations: {
       readOnlyHint: true,
