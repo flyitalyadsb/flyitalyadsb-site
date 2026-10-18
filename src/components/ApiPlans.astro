@@ -2,7 +2,8 @@
 // Plans + self-serve checkout for /dati/api (IT) and /en/dati/api (EN).
 // Data: src/data/plans.ts. Checkout: POST CHECKOUT_URL {email, plan, lang} →
 // {url} of a Stripe Checkout (Managed Payments) → back here with
-// ?checkout=success|cancel. The key the email already has is upgraded in
+// /dati/api/grazie/?plan=<plan> (src/components/ApiThanks.astro) or here with
+// ?checkout=cancel. The key the email already has is upgraded in
 // place by the Stripe webhook (public-api); no key → one is emailed.
 import { PLANS, FREE_LIMITS_FROM, CHECKOUT_URL } from '../data/plans';
 
