@@ -71,16 +71,34 @@ const sections = [
     ],
   },
 ];
+
+// Plain text in `sections`, links added here: escape first, then turn the
+// known addresses into links (no HTML in the copy itself).
+const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const linkify = (t: string) =>
+  esc(t)
+    .replace(/admin@flyitalyadsb\.com/g, '<a href="mailto:admin@flyitalyadsb.com" class="text-sky-400 no-underline hover:text-sky-300">admin@flyitalyadsb.com</a>')
+    .replace(/\bflyitalyadsb\.com\/(en\/)?dati\/api\b/g, (m) => `<a href="https://${m}/" class="text-sky-400 no-underline hover:text-sky-300">${m}</a>`)
+    .replace(/\blink\.com\b/g, '<a href="https://link.com" rel="noopener" class="text-sky-400 no-underline hover:text-sky-300">link.com</a>');
+const anchor = (h: string) => 's' + h.split('.')[0];
 ---
 
 <Layout title="Condizioni del servizio API" description="Condizioni del servizio API di FlyItalyADSB: piani, pagamenti, licenza dei dati, usi consentiti.">
   <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-3xl mx-auto">
     <h1 class="text-4xl font-bold text-slate-100 mb-3">Condizioni del servizio API</h1>
     <p class="text-sm text-slate-500 mb-10">Versione del {VERSION}</p>
+    <nav aria-label="Indice" class="mb-10 rounded-xl border p-5" style="background:#0a1320;border-color:#1e3048">
+      <p class="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">Indice</p>
+      <ol class="grid sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
+        {sections.map((s) => (
+          <li><a href={`#${anchor(s.h)}`} class="text-slate-300 no-underline hover:text-sky-300">{s.h}</a></li>
+        ))}
+      </ol>
+    </nav>
     {sections.map((s) => (
-      <section class="mb-8">
+      <section id={anchor(s.h)} class="mb-8 scroll-mt-24">
         <h2 class="text-lg font-semibold text-slate-100 mb-3">{s.h}</h2>
-        {s.p.map((para) => <p class="text-sm text-slate-400 leading-relaxed mb-3">{para}</p>)}
+        {s.p.map((para) => <p class="text-sm text-slate-400 leading-relaxed mb-3" set:html={linkify(para)} />)}
       </section>
     ))}
   </div>

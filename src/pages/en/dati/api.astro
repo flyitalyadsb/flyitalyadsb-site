@@ -1,6 +1,7 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
 import ApiPlans from '../../../components/ApiPlans.astro';
+import { PLANS } from '../../../data/plans';
 
 const SITE = 'https://flyitalyadsb.com';
 
@@ -45,6 +46,34 @@ const faqJsonLd = {
   })),
 };
 
+// Plans as schema.org offers — the same prices and limits the Plans section
+// shows (src/data/plans.ts); structured data must match visible content.
+const offersJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: 'FlyItalyADSB API',
+  serviceType: 'Real-time ADS-B data API',
+  provider: { '@type': 'Organization', name: 'Nesso Labs S.r.l.', vatID: 'IT04754860981', url: 'https://nessolabs.it' },
+  url: `${SITE}/en/dati/api/`,
+  offers: PLANS.map((p) => ({
+    '@type': 'Offer',
+    name: p.id.charAt(0).toUpperCase() + p.id.slice(1),
+    price: p.priceEur.toFixed(2),
+    priceCurrency: 'EUR',
+    url: `${SITE}/en/dati/api/#piani`,
+    ...(p.priceEur > 0 && {
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: p.priceEur.toFixed(2),
+        priceCurrency: 'EUR',
+        valueAddedTaxIncluded: false,
+        billingDuration: 'P1M',
+        unitText: 'month',
+      },
+    }),
+  })),
+};
+
 const breadcrumbJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
@@ -63,9 +92,9 @@ X-Api-Key: <your-key>
 ---
 
 <Layout
-  title="API and AI agents"
-  description="FlyItalyADSB's REST API v2 and MCP server: how to query live aircraft data, for developers and for AI agents like Claude or ChatGPT."
-  jsonLd={[faqJsonLd, breadcrumbJsonLd]}
+  title="API, MCP and plans"
+  description="FlyItalyADSB's REST API v2 and MCP server for developers and AI agents: a free key in seconds, commercial use included, and plans from €9/month for higher volume."
+  jsonLd={[faqJsonLd, offersJsonLd, breadcrumbJsonLd]}
 >
   <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-5xl mx-auto">
 
