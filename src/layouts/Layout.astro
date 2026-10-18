@@ -162,8 +162,10 @@ const apiLabel = 'API';
          every code block on the site has silently been rendering in the
          system monospace fallback. Also used directly (not just code/pre)
          by the .hud-readout/.spec-table/.timeline/.tag-row primitives. -->
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" />
+    <!-- Self-hosted since 2026-10-18 (global.css @font-face): no third-party
+         stylesheet blocking the first paint. Preload the latin subset, the
+         one every page uses above the fold (HUD, eyebrow labels). -->
+    <link rel="preload" href="/fonts/jetbrains-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
 
     {jsonLdBlocks.map((block) => (
       <script type="application/ld+json" set:html={JSON.stringify(block)} />

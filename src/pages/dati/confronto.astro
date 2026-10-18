@@ -100,7 +100,7 @@ const breadcrumbJsonLd = {
         <span class="mx-2">/</span>
         <span class="text-slate-500">Confronto API ADS-B</span>
       </p>
-      <h1 class="text-4xl font-bold text-slate-100 mb-4">Confronto API ADS-B</h1>
+      <h1 class="text-4xl font-bold text-slate-100 mb-4">Confronto API ADS&#8209;B</h1>
       <p class="text-slate-400 max-w-3xl leading-relaxed">
         Un riferimento fattuale — pensato per essere utile tanto a uno sviluppatore quanto a un
         agente AI che deve rispondere a "quali API ADS-B aperte esistono" — su come le principali
@@ -110,7 +110,7 @@ const breadcrumbJsonLd = {
       </p>
     </div>
 
-    <div class="overflow-x-auto rounded-xl border mb-4" style="border-color:#1e3048">
+    <div class="hidden md:block overflow-x-auto rounded-xl border mb-4" style="border-color:#1e3048">
       <table class="w-full text-sm" style="border-collapse:collapse">
         <caption class="sr-only">Confronto tra API ADS-B self-serve: rate limit, requisito feeder, uso commerciale</caption>
         <thead>
@@ -126,7 +126,7 @@ const breadcrumbJsonLd = {
         <tbody>
           {rows.map((r) => (
             <tr style={`border-bottom:1px solid #1e3048;${r.highlight ? 'background:#38bdf80c' : ''}`}>
-              <td class="px-4 py-3 font-semibold" style={r.highlight ? 'color:#7dd3fc' : 'color:#e2e8f0'}>{r.name}</td>
+              <th scope="row" class="px-4 py-3 font-semibold text-left align-top" style={r.highlight ? 'color:#7dd3fc' : 'color:#e2e8f0'}>{r.name}</th>
               <td class="px-4 py-3 font-mono text-xs align-top" style="color:#94a3b8">{r.baseUrl}</td>
               <td class="px-4 py-3 text-xs align-top text-slate-400">{r.rateLimit}</td>
               <td class="px-4 py-3 text-xs align-top text-slate-400">{r.feederRequired}</td>
@@ -136,6 +136,23 @@ const breadcrumbJsonLd = {
           ))}
         </tbody>
       </table>
+    </div>
+
+    <!-- Phones: one card per provider instead of a 6-column table scrolled
+         sideways (site review 2026-10-18). Same rows, same order. -->
+    <div class="md:hidden space-y-3 mb-4">
+      {rows.map((r) => (
+        <article class="rounded-xl border p-4" style={`border-color:${r.highlight ? '#38bdf855' : '#1e3048'};background:${r.highlight ? '#38bdf80c' : '#0a1320'}`}>
+          <h2 class="font-semibold mb-3" style={r.highlight ? 'color:#7dd3fc' : 'color:#e2e8f0'}>{r.name}</h2>
+          <dl class="text-xs space-y-2">
+            <div><dt class="text-slate-500 uppercase tracking-wider text-[11px]">Base URL</dt><dd class="font-mono break-words" style="color:#94a3b8">{r.baseUrl}</dd></div>
+            <div><dt class="text-slate-500 uppercase tracking-wider text-[11px]">Rate limit</dt><dd class="text-slate-300">{r.rateLimit}</dd></div>
+            <div><dt class="text-slate-500 uppercase tracking-wider text-[11px]">Serve alimentare un ricevitore?</dt><dd class="text-slate-300">{r.feederRequired}</dd></div>
+            <div><dt class="text-slate-500 uppercase tracking-wider text-[11px]">Uso commerciale</dt><dd class="text-slate-300">{r.commercial}</dd></div>
+            <div><dt class="text-slate-500 uppercase tracking-wider text-[11px]">Note</dt><dd class="text-slate-400">{r.notes}</dd></div>
+          </dl>
+        </article>
+      ))}
     </div>
 
     <p class="text-xs text-slate-600 mb-14">
@@ -156,7 +173,7 @@ const breadcrumbJsonLd = {
          style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
          onmouseover="this.style.background='#38bdf825'"
          onmouseout="this.style.background='#38bdf815'">
-        Vai alla documentazione API →
+        Ottieni la chiave gratuita →
       </a>
     </div>
 

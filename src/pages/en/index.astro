@@ -8,17 +8,35 @@ import Layout from '../../layouts/Layout.astro';
 >
 
   <!-- HERO -->
-  <section class="relative" style="height:90vh;min-height:560px">
+  <!-- Taller floor on phones: copy panel + the two-row readout didn't fit in
+       90vh at 390px and overlapped. -->
+  <section class="relative min-h-[760px] sm:min-h-[560px]" style="height:90vh">
 
     <!-- Not lazy: this iframe fills the hero, which is on-screen at first
          paint (height:90vh) — it's the likely LCP element, and `loading="lazy"`
          was actively delaying exactly the content guaranteed to be visible. -->
+    <!-- Phones get a static picture of the same map (public/img/hero-map-mobile.jpg,
+         ~115 KB) instead of the live tar1090 page, which costs several MB and
+         a busy main thread for a decorative background; "Explore the map" opens
+         the live one. From sm up the iframe loads at once (it is the LCP), set by
+         the inline script right below so no request starts on phones.
+         lat/lon/zoom: centred on Italy (without them tar1090 centres on the
+         visitor's guessed location, e.g. New York). -->
+    <img src="/img/hero-map-mobile.jpg" alt="" aria-hidden="true" width="596" height="820"
+         class="absolute inset-0 w-full h-full object-cover sm:hidden" fetchpriority="high" />
     <iframe
-      src="https://mappa.flyitalyadsb.com?hideSidebar&hideButtons"
+      id="hero-map"
+      data-src="https://mappa.flyitalyadsb.com/?hideSidebar&hideButtons&lat=42.6&lon=12.6&zoom=6"
       title="Live ADS-B map"
-      class="absolute inset-0 w-full h-full border-0"
+      class="absolute inset-0 w-full h-full border-0 hidden sm:block"
       sandbox="allow-scripts allow-same-origin allow-popups"
     ></iframe>
+    <script is:inline>
+      (function () {
+        var f = document.getElementById('hero-map');
+        if (f && window.matchMedia('(min-width: 640px)').matches) f.src = f.dataset.src;
+      })();
+    </script>
 
     <div class="absolute inset-0 pointer-events-none"
          style="background:linear-gradient(to bottom, #070d1acc 0%, #070d1a22 30%, #070d1a22 60%, #070d1aff 100%)">
@@ -27,8 +45,11 @@ import Layout from '../../layouts/Layout.astro';
          style="background:linear-gradient(to right, #070d1acc 0%, transparent 60%)">
     </div>
 
-    <div class="absolute inset-0 flex items-center px-6 sm:px-12 lg:px-20 pt-14 pb-28">
-      <div class="max-w-xl">
+    <div class="absolute inset-0 flex items-center px-6 sm:px-12 lg:px-20 pt-14 pb-48 sm:pb-28">
+      <!-- Panel behind the copy: the live map's aircraft icons and labels ran
+           through the H1 and body text, the gradient alone wasn't enough. -->
+      <div class="max-w-xl rounded-2xl p-5 sm:p-8 -ml-5 sm:-ml-8"
+           style="background:#070d1ad9;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)">
 
         <p class="text-xs font-semibold uppercase tracking-widest mb-4" style="color:#7dd3fc;font-family:'JetBrains Mono',monospace">
           global network · unfiltered data
@@ -74,7 +95,7 @@ import Layout from '../../layouts/Layout.astro';
       <div class="hud-readout">
         <div>
           <div class="k">aircraft now</div>
-          <div class="v accent"><span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block mr-1.5" style="margin-bottom:2px"></span><span id="live-count-en">—</span></div>
+          <div class="v accent"><span class="w-1.5 h-1.5 rounded-full bg-green-400 motion-safe:animate-pulse inline-block mr-1.5" style="margin-bottom:2px" aria-hidden="true"></span><span class="sr-only">live: </span><span id="live-count-en">—</span></div>
         </div>
         <div>
           <div class="k">msg/sec</div>
@@ -248,41 +269,53 @@ import Layout from '../../layouts/Layout.astro';
   </section>
 
 <script>
-// stats.json's `messages` field is readsb's cumulative message counter, not
-// a rate — msg/sec is derived from the delta between two polls, same way
-// tar1090's own stats panel computes it. Left as "—" until a second sample
-// exists rather than showing a made-up number on first paint.
-let prevSampleEn: { messages: number; now: number } | null = null;
+// stats.json's `messages` is readsb's cumulative counter, not a rate: msg/sec
+// is the delta between two samples with DIFFERENT `now` (the file is rewritten
+// every ~2 s; a second poll that lands before the rewrite gets the same `now`,
+// and the old fixed 2 s + 10 s schedule then left "—" for ~10 s). So: retry
+// soon until a rate exists, then every 10 s. On errors say "n/a" instead of a
+// silent "—" (2026-10-18 review).
+const LOCALE = 'en-US';
+const NA = 'n/a';
+let prev: { messages: number; now: number } | null = null;
+let haveRate = false;
+let failures = 0;
 
-async function updateLiveCountEn() {
+function show(id: string, text: string) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+async function poll() {
+  let next = 10000;
   try {
     const res = await fetch('https://api.flyitalyadsb.com/api/stats.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(String(res.status));
     const data = await res.json();
-    // /api/stats.json now returns the global count (aircraft = number), not the array.
-    const n = typeof data.aircraft === 'number' ? data.aircraft : null;
-    const el = document.getElementById('live-count-en');
-    if (el && n !== null) el.textContent = n.toLocaleString('en-US');
-
+    failures = 0;
+    if (typeof data.aircraft === 'number') show('live-count', data.aircraft.toLocaleString(LOCALE));
     if (typeof data.messages === 'number' && typeof data.now === 'number') {
-      const mpsEl = document.getElementById('live-mps-en');
-      if (prevSampleEn && mpsEl) {
-        const dMsg = data.messages - prevSampleEn.messages;
-        const dt = data.now - prevSampleEn.now;
-        if (dt > 0 && dMsg >= 0) {
-          mpsEl.textContent = Math.round(dMsg / dt).toLocaleString('en-US');
-        }
+      if (prev && data.now > prev.now && data.messages >= prev.messages) {
+        show('live-mps', Math.round((data.messages - prev.messages) / (data.now - prev.now)).toLocaleString(LOCALE));
+        haveRate = true;
       }
-      prevSampleEn = { messages: data.messages, now: data.now };
+      if (!prev || data.now > prev.now) prev = { messages: data.messages, now: data.now };
+      if (!haveRate) {
+        show('live-mps', '…');
+        next = 2500;
+      }
     }
-  } catch {}
+  } catch {
+    failures += 1;
+    if (failures >= 2) {
+      show('live-count', NA);
+      show('live-mps', NA);
+    }
+    next = failures < 3 ? 3000 : 30000;
+  }
+  setTimeout(poll, next);
 }
-updateLiveCountEn();
-// A visitor who glances at the hero in the first few seconds would see
-// msg/sec stuck on its placeholder for the full 10s until the regular
-// interval's second sample — one quick early follow-up gets a real
-// reading in ~2s instead, then the normal cadence takes over.
-setTimeout(updateLiveCountEn, 2000);
-setInterval(updateLiveCountEn, 10000);
+poll();
 </script>
 
 </Layout>
