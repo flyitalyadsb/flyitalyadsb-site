@@ -182,7 +182,11 @@ const apiLabel = 'API';
           </span>
         </a>
 
-        <div class="flex items-center gap-1 text-sm">
+        <!-- Full row from lg (1024px) up. Below that the seven links + API +
+             language did not fit and pushed the whole page wider than the
+             phone (390px: everything cut on the right, 2026-10-18): they move
+             into the #nav-menu panel, API and language stay in the bar. -->
+        <div class="hidden lg:flex items-center gap-1 text-sm">
           {navLinks.map(link => (
             <a href={link.href}
                target={link.external ? '_blank' : undefined}
@@ -208,6 +212,42 @@ const apiLabel = 'API';
           </a>
         </div>
 
+        <div class="flex lg:hidden items-center gap-2 text-sm">
+          <a href={apiHref}
+             class="px-3 py-1.5 rounded text-sm font-semibold no-underline"
+             style="color:#7dd3fc;border:1px solid #38bdf840;background:#38bdf812">
+            {apiLabel}
+          </a>
+          <a href={altHref}
+             class="px-2.5 py-1 rounded text-xs font-mono font-semibold no-underline"
+             style="background:#ffffff08;color:#94a3b8;border:1px solid #ffffff12">
+            {altLabel}
+          </a>
+          <button type="button" id="nav-toggle" aria-controls="nav-menu" aria-expanded="false"
+                  aria-label={isEn ? 'Open menu' : 'Apri il menu'}
+                  data-label-open={isEn ? 'Open menu' : 'Apri il menu'}
+                  data-label-close={isEn ? 'Close menu' : 'Chiudi il menu'}
+                  class="p-2 -mr-2 rounded text-slate-300 hover:text-white hover:bg-white/5 transition-colors">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path class="nav-icon-open" d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round" />
+              <path class="nav-icon-close hidden" d="M6 6l12 12M18 6L6 18" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+
+      </div>
+
+      <div id="nav-menu" class="lg:hidden hidden border-t" style="border-color:#1e3048">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-col">
+          {navLinks.map(link => (
+            <a href={link.href}
+               target={link.external ? '_blank' : undefined}
+               rel={link.external ? 'noopener' : undefined}
+               class="px-3 py-3 rounded text-base text-slate-300 hover:text-white hover:bg-white/5 transition-colors no-underline">
+              {link.label}{link.external ? ' ↗' : ''}
+            </a>
+          ))}
+        </div>
       </div>
     </nav>
 
@@ -300,6 +340,23 @@ const apiLabel = 'API';
          own style attribute) — only the border is a scroll cue, a bit of
          separation once there's page content above to separate from. -->
     <script>
+      // Mobile menu (below lg): toggle, close on a link, on Escape, and when
+      // the window grows past lg (the panel is lg:hidden anyway).
+      const navToggle = document.getElementById('nav-toggle');
+      const navMenu = document.getElementById('nav-menu');
+      const setMenu = (open: boolean) => {
+        if (!navToggle || !navMenu) return;
+        navMenu.classList.toggle('hidden', !open);
+        navToggle.setAttribute('aria-expanded', String(open));
+        navToggle.setAttribute('aria-label', (open ? navToggle.dataset.labelClose : navToggle.dataset.labelOpen) || '');
+        navToggle.querySelector('.nav-icon-open')?.classList.toggle('hidden', open);
+        navToggle.querySelector('.nav-icon-close')?.classList.toggle('hidden', !open);
+      };
+      navToggle?.addEventListener('click', () => setMenu(navMenu?.classList.contains('hidden') ?? false));
+      navMenu?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
+      window.matchMedia('(min-width: 1024px)').addEventListener('change', (e) => { if (e.matches) setMenu(false); });
+
       const navbar = document.getElementById('navbar');
       window.addEventListener('scroll', () => {
         if (!navbar) return;
