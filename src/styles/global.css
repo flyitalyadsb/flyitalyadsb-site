@@ -68,6 +68,7 @@
   border-top: 1px solid var(--color-border);
 }
 .hud-readout > div {
+  min-width: 0; /* let a long value wrap inside its cell (grid items default to min-content) */
   padding: 14px 16px;
   border-right: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
@@ -83,9 +84,11 @@
   margin-bottom: 6px;
 }
 .hud-readout .v {
-  font: 600 20px/1 "JetBrains Mono", monospace;
+  font: 600 20px/1.15 "JetBrains Mono", monospace;
   color: #e2e8f0;
   font-variant-numeric: tabular-nums;
+  /* URLs like api.flyitalyadsb.com/v2 overlapped the next cell at 390px. */
+  overflow-wrap: anywhere;
 }
 .hud-readout .v.accent {
   color: var(--color-sky-accent);
