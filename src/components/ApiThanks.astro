@@ -32,6 +32,8 @@ const t = it
       ],
       noMail: "Nessuna email entro qualche minuto? Controlla lo spam, poi scrivici: rispondiamo entro un giorno lavorativo.",
       docs: 'Documentazione API',
+      account: 'La mia API',
+      accountHref: '/dati/api/account/',
       contact: 'Contattaci',
       docsHref: '/dati/api/',
       contactHref: '/contatti',
@@ -48,6 +50,8 @@ const t = it
       ],
       noMail: "No email within a few minutes? Check your spam folder, then write to us: we answer within one business day.",
       docs: 'API documentation',
+      account: 'My API',
+      accountHref: '/en/dati/api/account/',
       contact: 'Contact us',
       docsHref: '/en/dati/api/',
       contactHref: '/en/contatti',
@@ -76,8 +80,10 @@ const t = it
 
   <p class="text-xs text-slate-500 mb-8">{t.noMail}</p>
   <div class="flex flex-wrap gap-3">
-    <a href={t.docsHref} class="px-5 py-2.5 rounded-lg text-sm font-medium no-underline"
-       style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830">{t.docs} →</a>
+    <a href={t.accountHref} class="px-5 py-2.5 rounded-lg text-sm font-medium no-underline"
+       style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830">{t.account} →</a>
+    <a href={t.docsHref} class="px-5 py-2.5 rounded-lg text-sm no-underline"
+       style="background:#111e30;color:#cbd5e1;border:1px solid #1e3048">{t.docs}</a>
     <a href={t.contactHref} class="px-5 py-2.5 rounded-lg text-sm no-underline"
        style="background:#111e30;color:#cbd5e1;border:1px solid #1e3048">{t.contact}</a>
   </div>
