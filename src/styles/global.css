@@ -279,9 +279,11 @@
 .page-index a:hover {
   color: var(--color-sky-accent);
 }
+/* The "01 02 03" counters numbered sections whose order means nothing (a
+   nesso-ui-kit anti-pattern, review 2026-10-18): hidden here so the markup of
+   the pages using it doesn't have to change. */
 .page-index a span {
-  color: #7a889e;
-  margin-right: 8px;
+  display: none;
 }
 @media (max-width: 640px) {
   .page-index a {
