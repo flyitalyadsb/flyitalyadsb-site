@@ -21,6 +21,9 @@
   html {
     background-color: #070d1a;
     color: #cbd5e1;
+    /* Dark-only site: native scrollbars, form controls and the table/code
+       scroll areas follow it (they rendered light on Windows/Linux). */
+    color-scheme: dark;
     scroll-behavior: smooth;
     /* Faint instrument-panel grid — the site's content is live telemetry
        (aircraft counts, message rates, coverage), not a marketing product;
@@ -219,7 +222,8 @@
   flex-wrap: wrap;
 }
 .tag-row span {
-  font: 500 12px/1 "JetBrains Mono", monospace;
+  /* 1.5, not 1: tags that wrap to two lines collided (chi-siamo). */
+  font: 500 12px/1.5 "JetBrains Mono", monospace;
   border: 1px solid var(--color-border);
   padding: 9px 13px;
   color: #94a3b8;
@@ -275,4 +279,11 @@ input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
   outline-offset: 0;
+}
+
+/* Respect "reduce motion": no animated scrolling to in-page anchors. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }

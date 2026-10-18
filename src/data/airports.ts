@@ -195,7 +195,8 @@ const norm = (s: string) =>
   s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 export function fullName(a: Airport): string {
-  return `${a.city} ${a.name}`;
+  // Some airports are named after their city (Lamezia Terme): don't say it twice.
+  return a.name.toLowerCase().includes(a.city.toLowerCase()) ? a.name : `${a.city} ${a.name}`;
 }
 
 export function getAirport(slug: string): Airport | undefined {
