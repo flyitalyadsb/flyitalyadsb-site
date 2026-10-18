@@ -1,5 +1,5 @@
 // Curated dataset of common aircraft types, keyed by ICAO type designator.
-// Powers the programmatic SEO pages under /aeromobili and /en/aeromobili.
+// Powers the programmatic SEO pages under /aeromobili and /en/aircraft.
 // `code` matches the `t` field of the live aircraft feed, so each page can show
 // how many aircraft of that type FlyItalyADSB is tracking right now.
 

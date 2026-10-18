@@ -10,7 +10,7 @@ import Layout from '../../../layouts/Layout.astro';
 
     <div class="mb-14">
       <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
-        <a href="/en/dati" class="text-slate-600 hover:text-slate-400 no-underline">Data</a>
+        <a href="/en/data" class="text-slate-600 hover:text-slate-400 no-underline">Data</a>
         <span class="mx-2">/</span>
         <span class="text-slate-500">Archive</span>
       </p>
@@ -39,7 +39,7 @@ import Layout from '../../../layouts/Layout.astro';
             title: 'Wind and temperature from Mode-S (weather-32)',
             desc: 'The weather-32 project derives upper-air wind and temperature from Mode-S BDS50/60 messages (True Air Speed, magnetic heading, IAS, Mach number), validated against ERA5/IASI. This is a research analysis, not an exportable archive: the raw data is not organized into a downloadable dataset on request.',
             size: null,
-            link: { href: '/en/ricerca/weather', label: 'See the research results →' },
+            link: { href: '/en/research/weather', label: 'See the research results →' },
           },
         ].map(item => (
           <div class="p-6 rounded-xl border flex flex-col sm:flex-row gap-5" style="background:#0f1929;border-color:#1e3048">
@@ -78,7 +78,7 @@ import Layout from '../../../layouts/Layout.astro';
         </table>
         <p class="text-sm text-slate-400 leading-relaxed">
           Same API key and limit (100 requests/minute) as the rest of <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">/v2/*</code> —
-          see the <a href="/en/dati/api#rest-api" class="text-sky-400 no-underline hover:text-sky-300">API documentation</a> for how to get a key.
+          see the <a href="/en/data/api#rest-api" class="text-sky-400 no-underline hover:text-sky-300">API documentation</a> for how to get a key.
         </p>
       </div>
     </section>
@@ -97,7 +97,7 @@ import Layout from '../../../layouts/Layout.astro';
             For history beyond the self-serve window, bulk extracts, or university/institutional
             research projects, write to us with a description of your project.
           </p>
-          <a href="/en/contatti"
+          <a href="/en/contact"
              class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium no-underline transition-all"
              style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
              onmouseover="this.style.background='#38bdf825'"

@@ -1,4 +1,5 @@
 ---
+import { localePath } from '../lib/routes';
 import { typesByCategory, fullName, aircraftTypes } from '../data/aircraftTypes';
 import { categoryLabel, type Lang } from '../lib/aircraft-content';
 
@@ -8,7 +9,8 @@ interface Props {
 
 const { lang } = Astro.props as Props;
 const isEn = lang === 'en';
-const base = isEn ? '/en' : '';
+// English pages have English paths (src/lib/routes.ts): never '/en' + an Italian segment.
+const p = (path: string) => localePath(isEn ? 'en' : 'it', path);
 const groups = typesByCategory();
 
 const t = isEn
@@ -38,7 +40,7 @@ const t = isEn
         <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 pb-2 border-b" style="border-color:#1e3048">{categoryLabel(g.category, lang)}</h2>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {g.items.map((a) => (
-            <a href={`${base}/aeromobili/${a.slug}`} class="block p-5 rounded-xl border no-underline group transition-all hover:border-sky-400/30" style="background:#0f1929;border-color:#1e3048">
+            <a href={p(`/aeromobili/${a.slug}`)} class="block p-5 rounded-xl border no-underline group transition-all hover:border-sky-400/30" style="background:#0f1929;border-color:#1e3048">
               <div class="flex items-center justify-between gap-3 mb-2">
                 <span class="text-slate-100 font-semibold text-sm group-hover:text-white transition-colors">{fullName(a)}</span>
                 <span class="text-xs font-mono text-slate-500 shrink-0">{a.code}</span>
