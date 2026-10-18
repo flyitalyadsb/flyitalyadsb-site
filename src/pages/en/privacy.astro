@@ -1,0 +1,75 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+// Privacy notice — English version of /privacy (same content; the Italian
+// text prevails). ⚠️ Draft for legal review, see the Italian page's note.
+const VERSION = '18 October 2026';
+
+const sections = [
+  {
+    h: '1. Data controller',
+    p: [
+      'Nesso Labs S.r.l., Via Carlo Cattaneo 3, 25121 Brescia (BS), Italy, VAT IT04754860981. For any request about your data: admin@flyitalyadsb.com.',
+    ],
+  },
+  {
+    h: '2. What data we process',
+    p: [
+      'API keys and My API: your email address, the project name and intended use if you enter them, a fingerprint of the key (the key itself is not stored), creation and last-use dates and the number of requests per day per key. Sign-in to My API uses single-use links and temporary sessions, also stored only as fingerprints.',
+      "Subscriptions: plan, status and the customer and subscription identifiers at the payment provider. Payment data (card, billing address, VAT number) is collected and processed directly by the payment provider named in point 4: we never see it.",
+      'Requests to the service: IP address, date and time, requested path and user agent, in the technical logs of Cloudflare and of our servers, for security, usage limits and troubleshooting.',
+      "Feeders: the IP address your receiver sends data from and, if you provide it, the receiver's position for multilateration. The \"Are my data arriving?\" page uses the request's IP address only to answer that question.",
+    ],
+  },
+  {
+    h: '3. Why, and on what basis',
+    p: [
+      'Providing the service you ask for (key, plan, My API, service emails): performance of a contract, GDPR art. 6(1)(b). Protecting the service from abuse and enforcing limits: legitimate interest, art. 6(1)(f). Legal obligations (accounting and tax): art. 6(1)(c). We do not use your data for profiling or advertising and we do not sell it.',
+    ],
+  },
+  {
+    h: '4. Who we entrust it to',
+    p: [
+      'Cloudflare (content delivery, attack protection, cookieless aggregate site statistics); Stripe, through its Link service, which sells the paid plans on our behalf as merchant of record and processes payment data as an independent controller under its own privacy notice; the provider of our transactional email service. Some of these providers also process data outside the European Union, with the safeguards the GDPR requires (standard contractual clauses or an adequacy decision).',
+    ],
+  },
+  {
+    h: '5. For how long',
+    p: [
+      "A key's data and usage for as long as the key is active or the subscription runs, and then for as long as needed to handle any disputes and legal obligations. Technical request logs for a limited period tied to security and troubleshooting. My API sign-in links are valid for 15 minutes, sessions for 2 hours.",
+    ],
+  },
+  {
+    h: '6. Your rights',
+    p: [
+      'You can ask for access, rectification, erasure, restriction and portability, and object to processing based on legitimate interest, by writing to admin@flyitalyadsb.com. You can rotate or revoke your key from My API. You also have the right to lodge a complaint with the Italian data protection authority (garanteprivacy.it) or the authority of your country.',
+    ],
+  },
+  {
+    h: '7. Cookies',
+    p: [
+      "The site uses no profiling cookies and no third-party advertising cookies. My API keeps its session in your browser only (sessionStorage), which clears it when you close the tab.",
+    ],
+  },
+];
+
+const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const linkify = (t: string) =>
+  esc(t)
+    .replace(/admin@flyitalyadsb\.com/g, '<a href="mailto:admin@flyitalyadsb.com" class="text-sky-400 no-underline hover:text-sky-300">admin@flyitalyadsb.com</a>')
+    .replace(/garanteprivacy\.it/g, '<a href="https://www.garanteprivacy.it" rel="noopener" class="text-sky-400 no-underline hover:text-sky-300">garanteprivacy.it</a>')
+    .replace(/My API/g, '<a href="/en/data/api/account/" class="text-sky-400 no-underline hover:text-sky-300">My API</a>');
+---
+
+<Layout title="Privacy" description="FlyItalyADSB privacy notice: what data we process for API keys, subscriptions and feeders, why, for how long and your rights.">
+  <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-3xl mx-auto">
+    <h1 class="text-4xl font-bold text-slate-100 mb-3">Privacy notice</h1>
+    <p class="text-sm text-slate-500 mb-10">Version of {VERSION}</p>
+    {sections.map((s) => (
+      <section class="mb-8">
+        <h2 class="text-lg font-semibold text-slate-100 mb-3">{s.h}</h2>
+        {s.p.map((para) => <p class="text-sm text-slate-400 leading-relaxed mb-3" set:html={linkify(para)} />)}
+      </section>
+    ))}
+  </div>
+</Layout>
