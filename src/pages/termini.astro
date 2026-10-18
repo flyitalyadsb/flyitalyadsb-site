@@ -78,7 +78,7 @@ const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 const linkify = (t: string) =>
   esc(t)
     .replace(/admin@flyitalyadsb\.com/g, '<a href="mailto:admin@flyitalyadsb.com" class="text-sky-400 no-underline hover:text-sky-300">admin@flyitalyadsb.com</a>')
-    .replace(/\bflyitalyadsb\.com\/(en\/)?dati\/api\b/g, (m) => `<a href="https://${m}/" class="text-sky-400 no-underline hover:text-sky-300">${m}</a>`)
+    .replace(/\bflyitalyadsb\.com\/(?:en\/data|dati)\/api\b/g, (m) => `<a href="https://${m}/" class="text-sky-400 no-underline hover:text-sky-300">${m}</a>`)
     .replace(/\blink\.com\b/g, '<a href="https://link.com" rel="noopener" class="text-sky-400 no-underline hover:text-sky-300">link.com</a>');
 const anchor = (h: string) => 's' + h.split('.')[0];
 ---

@@ -1,5 +1,5 @@
 ---
-// Plans + self-serve checkout for /dati/api (IT) and /en/dati/api (EN).
+// Plans + self-serve checkout for /dati/api (IT) and /en/data/api (EN).
 // Data: src/data/plans.ts. Checkout: POST CHECKOUT_URL {email, plan, lang} →
 // {url} of a Stripe Checkout (Managed Payments) → back here with
 // /dati/api/grazie/?plan=<plan> (src/components/ApiThanks.astro) or here with
@@ -111,8 +111,8 @@ const t = it
       bad: 'Enter a valid email address.',
     };
 
-const contactHref = it ? '/contatti' : '/en/contatti';
-const termsHref = it ? '/termini' : '/en/termini';
+const contactHref = it ? '/contatti' : '/en/contact';
+const termsHref = it ? '/termini' : '/en/terms';
 // One accent for every plan (status colours like green stay reserved for
 // states); Pro is the recommended one: badge + the only filled button.
 const ACCENT = '#38bdf8';

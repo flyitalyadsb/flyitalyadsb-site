@@ -32,7 +32,7 @@ const faqs = [
   },
   {
     q: 'How does this compare to other open ADS-B APIs (adsb.fi, airplanes.live, adsb.lol...)?',
-    a: 'See the factual comparison at flyitalyadsb.com/en/dati/confronto: rate limits, feeder requirements, and commercial-use terms for each, compared without value judgments.',
+    a: 'See the factual comparison at flyitalyadsb.com/en/data/comparison: rate limits, feeder requirements, and commercial-use terms for each, compared without value judgments.',
   },
 ];
 
@@ -54,13 +54,13 @@ const offersJsonLd = {
   name: 'FlyItalyADSB API',
   serviceType: 'Real-time ADS-B data API',
   provider: { '@type': 'Organization', name: 'Nesso Labs S.r.l.', vatID: 'IT04754860981', url: 'https://nessolabs.it' },
-  url: `${SITE}/en/dati/api/`,
+  url: `${SITE}/en/data/api/`,
   offers: PLANS.map((p) => ({
     '@type': 'Offer',
     name: p.id.charAt(0).toUpperCase() + p.id.slice(1),
     price: p.priceEur.toFixed(2),
     priceCurrency: 'EUR',
-    url: `${SITE}/en/dati/api/#piani`,
+    url: `${SITE}/en/data/api/#piani`,
     ...(p.priceEur > 0 && {
       priceSpecification: {
         '@type': 'UnitPriceSpecification',
@@ -79,8 +79,8 @@ const breadcrumbJsonLd = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE}/en/` },
-    { '@type': 'ListItem', position: 2, name: 'Data', item: `${SITE}/en/dati/` },
-    { '@type': 'ListItem', position: 3, name: 'API and AI agents', item: `${SITE}/en/dati/api/` },
+    { '@type': 'ListItem', position: 2, name: 'Data', item: `${SITE}/en/data/` },
+    { '@type': 'ListItem', position: 3, name: 'API and AI agents', item: `${SITE}/en/data/api/` },
   ],
 };
 
@@ -100,7 +100,7 @@ X-Api-Key: <your-key>
 
     <div class="mb-10">
       <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
-        <a href="/en/dati" class="text-slate-600 hover:text-slate-400 no-underline">Data</a>
+        <a href="/en/data" class="text-slate-600 hover:text-slate-400 no-underline">Data</a>
         <span class="mx-2">/</span>
         <span class="text-slate-500">API and AI agents</span>
       </p>
@@ -143,7 +143,7 @@ X-Api-Key: <your-key>
         Requesting again with the same email retires the old key and issues a new one
         (also how to recover a lost key).
         Already have a key? See its plan and usage, or rotate it, from
-        <a href="/en/dati/api/account/" class="text-sky-400 no-underline hover:text-sky-300">My API</a>.
+        <a href="/en/data/api/account/" class="text-sky-400 no-underline hover:text-sky-300">My API</a>.
       </p>
       <form id="key-form" class="space-y-3" novalidate>
         <div class="grid sm:grid-cols-2 gap-3">
@@ -210,7 +210,7 @@ X-Api-Key: <your-key>
       </p>
       <p class="text-xs text-slate-500 mt-2">
         Commercial use is allowed on every plan within its limits. Real-time redistribution, an SLA or custom volume
-        need an enterprise agreement — <a href="/en/contatti" class="text-sky-400 no-underline hover:text-sky-300">contact us</a>.
+        need an enterprise agreement — <a href="/en/contact" class="text-sky-400 no-underline hover:text-sky-300">contact us</a>.
       </p>
     </section>
 

@@ -72,8 +72,8 @@ const breadcrumbJsonLd = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE}/en/` },
-    { '@type': 'ListItem', position: 2, name: 'Data', item: `${SITE}/en/dati/` },
-    { '@type': 'ListItem', position: 3, name: 'ADS-B API comparison', item: `${SITE}/en/dati/confronto/` },
+    { '@type': 'ListItem', position: 2, name: 'Data', item: `${SITE}/en/data/` },
+    { '@type': 'ListItem', position: 3, name: 'ADS-B API comparison', item: `${SITE}/en/data/comparison/` },
   ],
 };
 ---
@@ -87,7 +87,7 @@ const breadcrumbJsonLd = {
 
     <div class="mb-10">
       <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
-        <a href="/en/dati" class="text-slate-600 hover:text-slate-400 no-underline">Data</a>
+        <a href="/en/data" class="text-slate-600 hover:text-slate-400 no-underline">Data</a>
         <span class="mx-2">/</span>
         <span class="text-slate-500">ADS-B API comparison</span>
       </p>
@@ -157,16 +157,16 @@ const breadcrumbJsonLd = {
       <h2 class="font-semibold text-slate-100 mb-2">Get a FlyItalyADSB key</h2>
       <p class="text-sm text-slate-400 leading-relaxed mb-4">
         Self-serve, free, instant — just an email. Works for both the REST API and the
-        <a href="/en/dati/api" class="text-sky-400 no-underline hover:text-sky-300">MCP server for AI agents</a>.
+        <a href="/en/data/api" class="text-sky-400 no-underline hover:text-sky-300">MCP server for AI agents</a>.
       </p>
-      <a href="/en/dati/api#api-key"
+      <a href="/en/data/api#api-key"
          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium no-underline transition-all"
          style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
          onmouseover="this.style.background='#38bdf825'"
          onmouseout="this.style.background='#38bdf815'">
         Get a free key →
       </a>
-      <a href="/en/dati/api#piani"
+      <a href="/en/data/api#piani"
          class="inline-flex items-center gap-2 px-4 py-2 ml-2 rounded-lg text-sm no-underline"
          style="background:#111e30;color:#cbd5e1;border:1px solid #1e3048">
         Plans from €9/month

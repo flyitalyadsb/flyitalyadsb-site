@@ -1,4 +1,5 @@
 ---
+import { localePath } from '../lib/routes';
 import type { Airport } from '../data/airports';
 import { fullName, nearbyAirports, RADIUS_KM } from '../data/airports';
 import { faqs, type Lang } from '../lib/airport-content';
@@ -13,7 +14,8 @@ const isEn = lang === 'en';
 const name = fullName(airport);
 const nearby = nearbyAirports(airport, 4);
 const localFaqs = faqs(airport, lang);
-const base = isEn ? '/en' : '';
+// English pages have English paths (src/lib/routes.ts): never '/en' + an Italian segment.
+const p = (path: string) => localePath(isEn ? 'en' : 'it', path);
 // mapSrc is also the "open full map" outbound link target (below) — someone
 // clicking through explicitly wants the real interactive tool, sidebar and
 // all, so the hide params live only on the embed's own src, not this one.
@@ -71,9 +73,9 @@ const t = isEn
 
   <!-- Breadcrumb -->
   <nav class="text-xs text-slate-500 mb-6 flex flex-wrap items-center gap-2" aria-label="breadcrumb">
-    <a href={`${base}/`} class="hover:text-slate-300 no-underline">{t.crumbHome}</a>
+    <a href={p(`/`)} class="hover:text-slate-300 no-underline">{t.crumbHome}</a>
     <span class="text-slate-700">/</span>
-    <a href={`${base}/aeroporti`} class="hover:text-slate-300 no-underline">{t.crumbAirports}</a>
+    <a href={p(`/aeroporti`)} class="hover:text-slate-300 no-underline">{t.crumbAirports}</a>
     <span class="text-slate-700">/</span>
     <span class="text-slate-400">{name}</span>
   </nav>
@@ -148,11 +150,11 @@ const t = isEn
   <div class="mb-16">
     <div class="flex items-end justify-between gap-4 mb-6">
       <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest">{t.nearbyTitle}</h2>
-      <a href={`${base}/aeroporti`} class="text-sm text-sky-400 hover:text-sky-300 no-underline">{t.allAirports} →</a>
+      <a href={p(`/aeroporti`)} class="text-sm text-sky-400 hover:text-sky-300 no-underline">{t.allAirports} →</a>
     </div>
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {nearby.map((o) => (
-        <a href={`${base}/aeroporti/${o.slug}`} class="block p-5 rounded-xl border no-underline group transition-all hover:border-sky-400/30" style="background:#0f1929;border-color:#1e3048">
+        <a href={p(`/aeroporti/${o.slug}`)} class="block p-5 rounded-xl border no-underline group transition-all hover:border-sky-400/30" style="background:#0f1929;border-color:#1e3048">
           <div class="text-xs font-mono text-slate-500 mb-2">{o.iata} · {o.icao}</div>
           <div class="text-slate-100 font-semibold text-sm group-hover:text-white transition-colors">{o.city} {o.name}</div>
           <div class="text-xs text-slate-600 mt-1">{o.region}</div>
@@ -167,7 +169,7 @@ const t = isEn
       <h2 class="text-lg font-bold text-slate-100 mb-2">{t.contribTitle}</h2>
       <p class="text-sm text-slate-400 leading-relaxed">{t.contribBody}</p>
     </div>
-    <a href={`${base}/community/feeder`} class="shrink-0 px-6 py-3 rounded-lg font-medium text-sm text-center no-underline transition-all" style="background:#38bdf8;color:#070d1a">{t.contribCta}</a>
+    <a href={p(`/community/feeder`)} class="shrink-0 px-6 py-3 rounded-lg font-medium text-sm text-center no-underline transition-all" style="background:#38bdf8;color:#070d1a">{t.contribCta}</a>
   </div>
 
 </div>

@@ -22,7 +22,7 @@ const sections = [
   {
     h: '3. Keys and plans',
     p: [
-      'Each API key is personal and tied to an email address. The plans, with their prices and limits (requests per minute per key, requests per month, maximum radius, usable hosts), are described at flyitalyadsb.com/en/dati/api. Commercial use is allowed on every plan, Free included, within that plan\'s limits. Requests beyond the limits get an error response (429 or 403) and are not counted.',
+      'Each API key is personal and tied to an email address. The plans, with their prices and limits (requests per minute per key, requests per month, maximum radius, usable hosts), are described at flyitalyadsb.com/en/data/api. Commercial use is allowed on every plan, Free included, within that plan\'s limits. Requests beyond the limits get an error response (429 or 403) and are not counted.',
     ],
   },
   {
@@ -76,7 +76,7 @@ const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 const linkify = (t: string) =>
   esc(t)
     .replace(/admin@flyitalyadsb\.com/g, '<a href="mailto:admin@flyitalyadsb.com" class="text-sky-400 no-underline hover:text-sky-300">admin@flyitalyadsb.com</a>')
-    .replace(/\bflyitalyadsb\.com\/(en\/)?dati\/api\b/g, (m) => `<a href="https://${m}/" class="text-sky-400 no-underline hover:text-sky-300">${m}</a>`)
+    .replace(/\bflyitalyadsb\.com\/(?:en\/data|dati)\/api\b/g, (m) => `<a href="https://${m}/" class="text-sky-400 no-underline hover:text-sky-300">${m}</a>`)
     .replace(/\blink\.com\b/g, '<a href="https://link.com" rel="noopener" class="text-sky-400 no-underline hover:text-sky-300">link.com</a>');
 const anchor = (h: string) => 's' + h.split('.')[0];
 ---

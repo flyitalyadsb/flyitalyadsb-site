@@ -109,8 +109,8 @@ const t = it
       rotateFail: 'Could not rotate the key, try again shortly.',
       plans: { free: 'Free', starter: 'Starter', pro: 'Pro', business: 'Business', enterprise: 'Enterprise' },
       locale: 'en-US',
-      plansHref: '/en/dati/api/#piani',
-      keyHref: '/en/dati/api/#api-key',
+      plansHref: '/en/data/api/#piani',
+      keyHref: '/en/data/api/#api-key',
     };
 
 // Same texts the script needs, passed as data (functions become templates).
@@ -125,7 +125,7 @@ const msg = {
 <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-4xl mx-auto" id="account" data-lang={lang}
      data-msg={JSON.stringify(msg)} data-api="https://api.flyitalyadsb.com/v2">
   <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
-    <a href={it ? '/dati/api/' : '/en/dati/api/'} class="text-slate-600 hover:text-slate-400 no-underline">API</a>
+    <a href={it ? '/dati/api/' : '/en/data/api/'} class="text-slate-600 hover:text-slate-400 no-underline">API</a>
     <span class="mx-2">/</span><span>{t.title}</span>
   </p>
   <h1 class="text-4xl font-bold text-slate-100 mb-3">{t.title}</h1>
