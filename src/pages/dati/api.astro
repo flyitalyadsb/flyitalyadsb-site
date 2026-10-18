@@ -1,12 +1,21 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import ApiPlans from '../../components/ApiPlans.astro';
 
 const SITE = 'https://flyitalyadsb.com';
 
 const faqs = [
   {
     q: 'Serve una API key?',
-    a: 'Sì, sia per la REST API (api.flyitalyadsb.com/v2/*) sia per il server MCP (flyitalyadsb.com/mcp): stessa chiave per entrambi, passata nell\'header X-Api-Key. È self-service e istantanea: basta un indirizzo email, la chiave arriva via email in pochi secondi, senza approvazione manuale.',
+    a: 'Sì, sia per la REST API (api.flyitalyadsb.com/v2/*) sia per il server MCP (flyitalyadsb.com/mcp): stessa chiave per entrambi, passata nell\'header X-Api-Key. È self-service e istantanea: basta un indirizzo email, la chiave arriva via email in pochi secondi, senza approvazione manuale. La chiave è gratuita; i piani a pagamento ne alzano i limiti senza cambiarla.',
+  },
+  {
+    q: 'Posso usare l\'API per scopi commerciali?',
+    a: 'Sì, con ogni piano, free compreso, entro i limiti del piano. Oltre i limiti del free serve un piano a pagamento (Starter da 9 €/mese, Pro, Business): self-service, disdici quando vuoi, la chiave che hai già viene promossa sul posto. Ridistribuzione in tempo reale (rigirare i nostri dati a terzi), SLA o volumi su misura richiedono un accordo enterprise.',
+  },
+  {
+    q: 'Chi gestisce pagamento e fatture?',
+    a: 'Stripe, tramite Link, vende i piani per nostro conto (merchant of record): applica al checkout l\'imposta giusta per il tuo paese, invia ricevute e fatture, e ti fa cambiare o disdire l\'abbonamento su link.com. I dati restano CC BY-SA 4.0: il piano paga accesso, limiti e supporto, non una licenza diversa.',
   },
   {
     q: 'Come uso il server MCP con Claude o ChatGPT?',
@@ -78,8 +87,9 @@ X-Api-Key: <la-tua-chiave>
       <a href="#rest-api"><span>01</span>REST API</a>
       <a href="#mcp"><span>02</span>Server MCP</a>
       <a href="#come-collegarlo"><span>03</span>Come collegarlo a Claude</a>
-      <a href="#faq"><span>04</span>FAQ</a>
-      <a href="#api-key"><span>05</span>Ottieni una chiave</a>
+      <a href="#piani"><span>04</span>Piani</a>
+      <a href="#faq"><span>05</span>FAQ</a>
+      <a href="#api-key"><span>06</span>Ottieni una chiave</a>
     </nav>
 
     <!-- At-a-glance readout — the reference specs a developer scans for
@@ -89,7 +99,7 @@ X-Api-Key: <la-tua-chiave>
         <div><div class="k">rest base url</div><div class="v" style="font-size:13px">api.flyitalyadsb.com/v2</div></div>
         <div><div class="k">mcp endpoint</div><div class="v" style="font-size:13px">flyitalyadsb.com/mcp</div></div>
         <div><div class="k">auth</div><div class="v accent">X-Api-Key</div></div>
-        <div><div class="k">rate limit</div><div class="v">100<span style="font-size:11px;color:#64748b">/min/ip</span></div></div>
+        <div><div class="k">piani</div><div class="v">free<span style="font-size:11px;color:#64748b"> · da 9 €</span></div></div>
       </div>
     </div>
 
@@ -119,11 +129,11 @@ X-Api-Key: <la-tua-chiave>
         ))}
       </table>
       <p class="text-xs text-slate-500 mt-4">
-        Limite: 100 richieste/minuto per IP. Le richieste senza <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> vengono respinte a livello edge.
+        Piano free: 100 richieste/minuto per IP; i piani a pagamento hanno limiti propri per chiave (vedi <a href="#piani" class="text-sky-400 no-underline hover:text-sky-300">Piani</a>). Le richieste senza <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> vengono respinte a livello edge.
       </p>
       <p class="text-xs text-slate-500 mt-2">
-        Uso commerciale consentito entro questo limite. Per volumi più alti, SLA o rivendita dei
-        dati serve un accordo enterprise — <a href="/contatti" class="text-sky-400 no-underline hover:text-sky-300">contattaci</a>.
+        Uso commerciale consentito con ogni piano, entro i suoi limiti. Ridistribuzione in tempo reale, SLA o
+        volumi su misura richiedono un accordo enterprise — <a href="/contatti" class="text-sky-400 no-underline hover:text-sky-300">contattaci</a>.
       </p>
     </section>
 
@@ -193,6 +203,8 @@ X-Api-Key: <la-tua-chiave>
       </p>
       <pre class="p-4 rounded-lg text-xs overflow-auto leading-relaxed" style="background:#0a1320;color:#94a3b8;border:1px solid #1e3048"><code>{mcpCallExample}</code></pre>
     </section>
+
+    <ApiPlans lang="it" />
 
     <!-- FAQ — same content as faqJsonLd above; that structured data must
          match what's actually visible on the page, and until now it had no

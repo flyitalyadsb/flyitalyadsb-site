@@ -1,0 +1,85 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+// API terms of service — English version of /termini (same content; the
+// Italian text prevails, see the note at the bottom). ⚠️ Legal review before
+// paid plans go live (nesso-infra docs/FLYITALYADSB-BILLING.md, step 6).
+const VERSION = '18 October 2026';
+
+const sections = [
+  {
+    h: '1. Who provides the service',
+    p: [
+      'The FlyItalyADSB API service (REST API at api.flyitalyadsb.com and enterprise-api.flyitalyadsb.com, MCP server at flyitalyadsb.com/mcp) is provided by Nesso Labs S.r.l., Via Carlo Cattaneo 3, 25121 Brescia (BS), Italy, VAT IT04754860981. Contact: admin@flyitalyadsb.com.',
+    ],
+  },
+  {
+    h: '2. The service',
+    p: [
+      'The API gives access to the air-traffic data collected by the FlyItalyADSB network (live positions and recent history). The service is provided on a best-effort basis: no guaranteed service level (SLA) unless agreed in a written enterprise agreement.',
+    ],
+  },
+  {
+    h: '3. Keys and plans',
+    p: [
+      'Each API key is personal and tied to an email address. The plans, with their prices and limits (requests per minute per key, requests per month, maximum radius, usable hosts), are described at flyitalyadsb.com/en/dati/api. Commercial use is allowed on every plan, Free included, within that plan\'s limits. Requests beyond the limits get an error response (429 or 403) and are not counted.',
+    ],
+  },
+  {
+    h: '4. Payment, renewal and cancellation',
+    p: [
+      'Paid plans are monthly subscriptions that renew automatically, sold on our behalf by Stripe through its Link service, acting as reseller (merchant of record): it applies the taxes due in the buyer\'s country, issues receipts and invoices and handles payments, refunds and disputes under its own terms.',
+      'You can change plan or cancel at any time at link.com; a cancellation takes effect at the end of the period already paid, after which the key goes back to the Free plan. The rights the law gives consumers are unaffected.',
+    ],
+  },
+  {
+    h: '5. Data and licence',
+    p: [
+      'The data is published under the Creative Commons Attribution-ShareAlike 4.0 licence (CC BY-SA 4.0): anyone reusing it must credit "FlyItalyADSB" with a link to flyitalyadsb.com and share derivative works under the same licence. A paid plan pays for access to the service, its limits and support, not for a different licence on the data.',
+    ],
+  },
+  {
+    h: '6. Uses that are not allowed',
+    p: [
+      'You may not: use the data for safety of life, air traffic control or navigation; share your key with others or work around the limits (several keys or IP addresses for the same use); run a service that forwards the API\'s responses to third parties in real time (relay or proxy) without an enterprise agreement; use the service for unlawful activities, or to follow or harass people.',
+    ],
+  },
+  {
+    h: '7. Suspension',
+    p: [
+      'In case of abuse, of a breach of these terms, or of traffic that puts the service at risk for other users, we may limit, suspend or revoke a key, notifying you by email where possible.',
+    ],
+  },
+  {
+    h: '8. Liability',
+    p: [
+      'The data comes from volunteers\' receivers and may be incomplete, delayed or wrong: it is provided as is. To the extent permitted by law, Nesso Labs S.r.l. is not liable for indirect damages or lost profits arising from the use of the service; the mandatory protections of consumer law are unaffected.',
+    ],
+  },
+  {
+    h: '9. Changes',
+    p: [
+      'Changes to plans, limits or these terms are announced to users by email at least 30 days in advance and apply from the date stated. Paid subscribers can cancel before they take effect.',
+    ],
+  },
+  {
+    h: '10. Governing law',
+    p: [
+      'Italian law applies. For disputes with consumers, the courts of the consumer\'s place of residence have jurisdiction; in all other cases, the courts of Brescia. If the Italian and English versions differ, the Italian version prevails.',
+    ],
+  },
+];
+---
+
+<Layout title="API terms of service" description="FlyItalyADSB API terms of service: plans, payment, data licence, permitted uses.">
+  <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-3xl mx-auto">
+    <h1 class="text-4xl font-bold text-slate-100 mb-3">API terms of service</h1>
+    <p class="text-sm text-slate-500 mb-10">Version of {VERSION}</p>
+    {sections.map((s) => (
+      <section class="mb-8">
+        <h2 class="text-lg font-semibold text-slate-100 mb-3">{s.h}</h2>
+        {s.p.map((para) => <p class="text-sm text-slate-400 leading-relaxed mb-3">{para}</p>)}
+      </section>
+    ))}
+  </div>
+</Layout>
