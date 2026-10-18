@@ -25,7 +25,7 @@ export function categoryLabel(c: CategoryKey, lang: Lang): string {
 /** Canonical URL of a type page (trailing slash = directory build format). */
 export function typeUrl(t: AircraftType, lang: Lang): string {
   return lang === 'en'
-    ? `${SITE}/en/aeromobili/${t.slug}/`
+    ? `${SITE}/en/aircraft/${t.slug}/`
     : `${SITE}/aeromobili/${t.slug}/`;
 }
 
@@ -93,7 +93,7 @@ export function faqJsonLd(t: AircraftType, lang: Lang): Record<string, unknown> 
 
 export function breadcrumbJsonLd(t: AircraftType, lang: Lang): Record<string, unknown> {
   const home = lang === 'en' ? `${SITE}/en/` : `${SITE}/`;
-  const index = lang === 'en' ? `${SITE}/en/aeromobili/` : `${SITE}/aeromobili/`;
+  const index = lang === 'en' ? `${SITE}/en/aircraft/` : `${SITE}/aeromobili/`;
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -105,10 +105,10 @@ export function breadcrumbJsonLd(t: AircraftType, lang: Lang): Record<string, un
   };
 }
 
-/** CollectionPage/ItemList for the /aeromobili (or /en/aeromobili) index —
+/** CollectionPage/ItemList for the /aeromobili (or /en/aircraft) index —
  * built from the same `aircraftTypes` dataset the index page already renders. */
 export function aircraftTypesCollectionJsonLd(lang: Lang): Record<string, unknown> {
-  const index = lang === 'en' ? `${SITE}/en/aeromobili/` : `${SITE}/aeromobili/`;
+  const index = lang === 'en' ? `${SITE}/en/aircraft/` : `${SITE}/aeromobili/`;
   return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',

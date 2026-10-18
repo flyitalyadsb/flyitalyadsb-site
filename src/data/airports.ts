@@ -1,5 +1,5 @@
 // Curated dataset of major Italian airports.
-// Powers the programmatic SEO pages under /aeroporti and /en/aeroporti.
+// Powers the programmatic SEO pages under /aeroporti and /en/airports.
 // Coordinates are used to center the live map and to count aircraft within a
 // radius (server-side, via api.flyitalyadsb.com/api/count?lat&lon&radius).
 

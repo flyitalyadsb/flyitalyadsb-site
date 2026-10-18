@@ -1,4 +1,5 @@
 ---
+import { otherLanguagePath } from '../lib/routes';
 import '../styles/global.css';
 
 interface Props {
@@ -39,13 +40,10 @@ const abs = (p: string) => new URL(p, siteOrigin).href;
 const canonicalURL = abs(path);
 const imageURL = new URL(image, siteOrigin).href;
 
-// Language switcher: swap the /en prefix while preserving the trailing slash.
-function altLangPath(p: string): string {
-  if (p === '/en' || p === '/en/') return '/';
-  if (p.startsWith('/en/')) return p.replace(/^\/en/, '');
-  if (p === '/') return '/en/';
-  return `/en${p}`;
-}
+// Language switcher + hreflang: the same page in the other language. English
+// pages have English paths since 2026-10-18 (src/lib/routes.ts), so this is a
+// mapping, not just adding/removing the /en prefix. Trailing slash preserved.
+const altLangPath = otherLanguagePath;
 const altHref = altLangPath(path);
 const altLabel = isEn ? 'IT' : 'EN';
 
@@ -85,12 +83,12 @@ const nav = isEn
 const navLinks = isEn
   ? [
       { href: 'https://mappa.flyitalyadsb.com', label: nav.map, external: true },
-      { href: '/en/aeroporti', label: nav.airports, external: false },
-      { href: '/en/aeromobili', label: nav.aircraft, external: false },
-      { href: '/en/dati', label: nav.data, external: false },
-      { href: '/en/rete', label: nav.network, external: false },
-      { href: '/en/ricerca', label: nav.research, external: false },
-      { href: '/en/chi-siamo', label: nav.about, external: false },
+      { href: '/en/airports', label: nav.airports, external: false },
+      { href: '/en/aircraft', label: nav.aircraft, external: false },
+      { href: '/en/data', label: nav.data, external: false },
+      { href: '/en/network', label: nav.network, external: false },
+      { href: '/en/research', label: nav.research, external: false },
+      { href: '/en/about', label: nav.about, external: false },
     ]
   : [
       { href: 'https://mappa.flyitalyadsb.com', label: nav.map, external: true },
@@ -106,7 +104,7 @@ const navLinks = isEn
 // link) so the API/MCP docs — the thing an adsb.lol-style visitor actively
 // looks for — read as a distinct destination instead of blending into the
 // content nav next to "Rete" or "Ricerca".
-const apiHref = isEn ? '/en/dati/api' : '/dati/api';
+const apiHref = isEn ? '/en/data/api' : '/dati/api';
 // Section of the current page, for aria-current on the nav (a section link
 // stays current on its sub-pages: /aeroporti/pisa/ → Aeroporti).
 const here = Astro.url.pathname.replace(/\/+$/, '');
@@ -291,30 +289,30 @@ const apiLabel = 'API';
           <div>
             <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">{isEn ? 'Data' : 'Dati'}</div>
             <ul class="space-y-2 text-sm">
-              <li><a href={isEn ? '/en/dati' : '/dati'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'About our data' : 'I nostri dati'}</a></li>
-              <li><a href={isEn ? '/en/aeroporti' : '/aeroporti'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Airports' : 'Aeroporti'}</a></li>
-              <li><a href={isEn ? '/en/aeromobili' : '/aeromobili'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Aircraft types' : 'Aeromobili'}</a></li>
-              <li><a href={isEn ? '/en/dati/archivio' : '/dati/archivio'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Archive' : 'Archivio storico'}</a></li>
-              <li><a href={isEn ? '/en/dati/api' : '/dati/api'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'API & AI agents' : 'API e agenti AI'}</a></li>
+              <li><a href={isEn ? '/en/data' : '/dati'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'About our data' : 'I nostri dati'}</a></li>
+              <li><a href={isEn ? '/en/airports' : '/aeroporti'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Airports' : 'Aeroporti'}</a></li>
+              <li><a href={isEn ? '/en/aircraft' : '/aeromobili'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Aircraft types' : 'Aeromobili'}</a></li>
+              <li><a href={isEn ? '/en/data/archive' : '/dati/archivio'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Archive' : 'Archivio storico'}</a></li>
+              <li><a href={isEn ? '/en/data/api' : '/dati/api'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'API & AI agents' : 'API e agenti AI'}</a></li>
             </ul>
           </div>
 
           <div>
             <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">{isEn ? 'Community' : 'Community'}</div>
             <ul class="space-y-2 text-sm">
-              <li><a href={isEn ? '/en/rete' : '/rete'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'The network' : 'La rete'}</a></li>
+              <li><a href={isEn ? '/en/network' : '/rete'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'The network' : 'La rete'}</a></li>
               <li><a href={isEn ? '/en/community/feeder' : '/community/feeder'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Become a feeder' : 'Diventa feeder'}</a></li>
-              <li><a href={isEn ? '/en/community/stato-feeder' : '/community/stato-feeder'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Is my data arriving?' : 'I miei dati arrivano?'}</a></li>
+              <li><a href={isEn ? '/en/community/feeder-status' : '/community/stato-feeder'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Is my data arriving?' : 'I miei dati arrivano?'}</a></li>
               <li><a href={isEn ? '/en/community/mlat' : '/community/mlat'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'How MLAT works' : 'Come funziona MLAT'}</a></li>
-              <li><a href={isEn ? '/en/ricerca' : '/ricerca'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Research' : 'Ricerca'}</a></li>
+              <li><a href={isEn ? '/en/research' : '/ricerca'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Research' : 'Ricerca'}</a></li>
             </ul>
           </div>
 
           <div>
             <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">{isEn ? 'Project' : 'Progetto'}</div>
             <ul class="space-y-2 text-sm">
-              <li><a href={isEn ? '/en/chi-siamo' : '/chi-siamo'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'About' : 'Chi siamo'}</a></li>
-              <li><a href={isEn ? '/en/contatti' : '/contatti'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Contact us' : 'Contattaci'}</a></li>
+              <li><a href={isEn ? '/en/about' : '/chi-siamo'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'About' : 'Chi siamo'}</a></li>
+              <li><a href={isEn ? '/en/contact' : '/contatti'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Contact us' : 'Contattaci'}</a></li>
               <li>
                 <a href="https://github.com/flyitalyadsb" target="_blank" rel="noopener"
                    class="text-slate-500 hover:text-slate-300 no-underline">GitHub ↗</a>
