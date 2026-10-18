@@ -6,6 +6,15 @@
   --color-bg-surface: #0f1929;
   --color-bg-card: #111e30;
   --color-border: #1e3048;
+  /* Text greys tuned for WCAG AA (>= 4.5:1) on all three dark surfaces
+     (#070d1a, #0a1320, #111e30). Tailwind's stock slate-500/600/700 measured
+     3.5-4.1 / 2.2-2.6 there (review 2026-10-18); they are only ever used as
+     text colours on this site, so the fix lives here, once. */
+  --color-slate-500: #8391a7; /* 6.1 / 5.8 / 5.3 */
+  --color-slate-600: #7a889e; /* 5.4 / 5.2 / 4.7 */
+  --color-slate-700: #7a889e;
+  /* Form-control boundary, >= 3:1 against the card and the field (WCAG 1.4.11). */
+  --color-input-border: #566a88;
 }
 
 @layer base {
@@ -80,7 +89,7 @@
   font: 500 10px/1 "JetBrains Mono", monospace;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #64748b;
+  color: #8391a7;
   margin-bottom: 6px;
 }
 .hud-readout .v {
@@ -232,7 +241,7 @@
 }
 .page-index a {
   font: 500 12px/1 "JetBrains Mono", monospace;
-  color: #64748b;
+  color: #8391a7;
   text-decoration: none;
   padding: 10px 16px;
   border-right: 1px solid var(--color-border);
@@ -246,7 +255,7 @@
   color: var(--color-sky-accent);
 }
 .page-index a span {
-  color: #3a4a5e;
+  color: #7a889e;
   margin-right: 8px;
 }
 @media (max-width: 640px) {
@@ -254,4 +263,16 @@
     padding: 8px 12px 8px 0;
     border-right: none;
   }
+}
+
+/* Visible keyboard focus everywhere (the browser default was a 1px ring at
+   2.8:1 on these backgrounds). Mouse clicks don't trigger :focus-visible. */
+:focus-visible {
+  outline: 2px solid var(--color-sky-accent);
+  outline-offset: 2px;
+}
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline-offset: 0;
 }

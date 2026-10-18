@@ -214,8 +214,8 @@ const t = isEn
       }
       // Already ordered server-side (registration known first) and capped at 20.
       const rows = list.map((a: any) => {
-        const reg = a.r ? esc(a.r) : '<span style="color:#475569">—</span>';
-        const flight = a.flight ? esc(String(a.flight).trim()) : '<span style="color:#475569">—</span>';
+        const reg = a.r ? esc(a.r) : '<span style="color:#7a889e">—</span>';
+        const flight = a.flight ? esc(String(a.flight).trim()) : '<span style="color:#7a889e">—</span>';
         return `<tr style="border-top:1px solid #16263c">
           <td class="px-4 py-2 font-mono text-slate-200">${reg}</td>
           <td class="px-4 py-2 font-mono text-slate-400">${flight}</td>
