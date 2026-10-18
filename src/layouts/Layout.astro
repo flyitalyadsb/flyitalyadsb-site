@@ -107,6 +107,14 @@ const navLinks = isEn
 // looks for — read as a distinct destination instead of blending into the
 // content nav next to "Rete" or "Ricerca".
 const apiHref = isEn ? '/en/dati/api' : '/dati/api';
+// Section of the current page, for aria-current on the nav (a section link
+// stays current on its sub-pages: /aeroporti/pisa/ → Aeroporti).
+const here = Astro.url.pathname.replace(/\/+$/, '');
+const isCurrent = (href: string) => {
+  if (href.startsWith('http')) return false;
+  const h = href.replace(/\/+$/, '');
+  return here === h || here.startsWith(h + '/');
+};
 const apiLabel = 'API';
 ---
 
@@ -169,7 +177,10 @@ const apiLabel = 'API';
          gradient scrim fixed the legibility bug but still let the map's
          colors compete with the text — solid + blurred from the start,
          same as the scroll-triggered state below, reads much cleaner. -->
-    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:px-3 focus:py-2 focus:rounded focus:text-sm"
+       style="background:#111e30;color:#e2e8f0">{isEn ? 'Skip to content' : 'Salta al contenuto'}</a>
+
+    <nav id="navbar" aria-label={isEn ? 'Main' : 'Principale'} class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
          style="background:#070d1aee;backdrop-filter:blur(12px)">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
 
@@ -191,8 +202,9 @@ const apiLabel = 'API';
             <a href={link.href}
                target={link.external ? '_blank' : undefined}
                rel={link.external ? 'noopener' : undefined}
-               class="px-3 py-1.5 rounded text-slate-400 hover:text-slate-100 hover:bg-white/5 transition-colors no-underline">
-              {link.label}
+               aria-current={isCurrent(link.href) ? 'page' : undefined}
+               class={`px-3 py-1.5 rounded hover:text-slate-100 hover:bg-white/5 transition-colors no-underline ${isCurrent(link.href) ? 'text-slate-100 bg-white/5' : 'text-slate-400'}`}>
+              {link.label}{link.external ? ' ↗' : ''}
             </a>
           ))}
           <a href={apiHref}
@@ -203,7 +215,7 @@ const apiLabel = 'API';
             {apiLabel}
           </a>
           <!-- Language switcher -->
-          <a href={altHref}
+          <a href={altHref} hreflang={isEn ? 'it' : 'en'} lang={isEn ? 'it' : 'en'} aria-label={isEn ? 'Italiano' : 'English'}
              class="ml-3 px-2.5 py-1 rounded text-xs font-mono font-semibold transition-colors no-underline"
              style="background:#ffffff08;color:#8391a7;border:1px solid #ffffff12"
              onmouseover="this.style.color='#94a3b8'"
@@ -218,7 +230,7 @@ const apiLabel = 'API';
              style="color:#7dd3fc;border:1px solid #38bdf840;background:#38bdf812">
             {apiLabel}
           </a>
-          <a href={altHref}
+          <a href={altHref} hreflang={isEn ? 'it' : 'en'} lang={isEn ? 'it' : 'en'} aria-label={isEn ? 'Italiano' : 'English'}
              class="px-2.5 py-1 rounded text-xs font-mono font-semibold no-underline"
              style="background:#ffffff08;color:#94a3b8;border:1px solid #ffffff12">
             {altLabel}
@@ -243,7 +255,8 @@ const apiLabel = 'API';
             <a href={link.href}
                target={link.external ? '_blank' : undefined}
                rel={link.external ? 'noopener' : undefined}
-               class="px-3 py-3 rounded text-base text-slate-300 hover:text-white hover:bg-white/5 transition-colors no-underline">
+               aria-current={isCurrent(link.href) ? 'page' : undefined}
+               class={`px-3 py-3 rounded text-base hover:text-white hover:bg-white/5 transition-colors no-underline ${isCurrent(link.href) ? 'text-white bg-white/5' : 'text-slate-300'}`}>
               {link.label}{link.external ? ' ↗' : ''}
             </a>
           ))}
@@ -252,7 +265,7 @@ const apiLabel = 'API';
     </nav>
 
     <!-- Slot content -->
-    <main class="flex-1">
+    <main id="main" tabindex="-1" class="flex-1 focus:outline-none">
       <slot />
     </main>
 
