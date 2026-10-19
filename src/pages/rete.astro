@@ -95,19 +95,14 @@ const AREE = [
           <h2 class="font-semibold text-slate-100">Aggregatori internazionali</h2>
         </div>
         <p class="text-sm text-slate-400 leading-relaxed mb-4">
-          Il server readsb-globe si connette anche a <strong class="text-slate-300">adsb.lol</strong> e
-          <strong class="text-slate-300">theairtraffic.com</strong>, con i loro dati MLAT integrati nel
-          feed. Servono a <span class="text-slate-300">infittire</span> le aree dove i nostri ricevitori
+          Il server readsb-globe riceve anche il feed condiviso di <strong class="text-slate-300">ADSBHub</strong>
+          e, per alianti e ultraleggeri, l'<strong class="text-slate-300">Open Glider Network</strong>. Servono a <span class="text-slate-300">infittire</span> le aree dove i nostri ricevitori
           sono radi: la portata globale ce l'abbiamo già dai feeder diretti.
         </p>
         <div class="space-y-2 text-xs">
           <div class="flex justify-between py-1 border-b" style="border-color:#1e3048">
-            <span class="text-slate-500">adsb.lol</span>
-            <span class="text-slate-300 font-mono">BEAST in · SBS MLAT in</span>
-          </div>
-          <div class="flex justify-between py-1 border-b" style="border-color:#1e3048">
-            <span class="text-slate-500">theairtraffic.com</span>
-            <span class="text-slate-300 font-mono">BEAST in · SBS MLAT in</span>
+            <span class="text-slate-500">ADSBHub</span>
+            <span class="text-slate-300 font-mono">SBS in</span>
           </div>
           <div class="flex justify-between py-1">
             <span class="text-slate-500">OGN (ultraleggeri)</span>
@@ -170,7 +165,7 @@ const AREE = [
             {
               step: '01',
               title: 'Ricezione',
-              desc: 'I feeder inviano dati BEAST TCP al server readsb-ingest (porta 4905). Simultaneamente, readsb-globe riceve da adsb.lol e theairtraffic.com.',
+              desc: 'I feeder inviano dati BEAST TCP al server readsb-ingest (porta 4905). Simultaneamente, readsb-globe riceve i feed di ADSBHub e OGN.',
               tags: ['readsb-ingest', 'readsb-globe']
             },
             {
@@ -182,8 +177,8 @@ const AREE = [
             {
               step: '03',
               title: 'Aggregazione',
-              desc: 'readsb-globe fonde tutti i feed: feeder diretti, MLAT risultante, adsb.lol, theairtraffic.com, OGN. Produce aircraft.json ogni 200ms e aggiorna lo storico heatmap.',
-              tags: ['aircraft.json', '0.2s', 'heatmap']
+              desc: 'readsb-globe fonde tutti i feed: feeder diretti, MLAT risultante, ADSBHub, OGN. Produce aircraft.json ogni 2 secondi e aggiorna lo storico heatmap.',
+              tags: ['aircraft.json', '2s', 'heatmap']
             },
             {
               step: '04',

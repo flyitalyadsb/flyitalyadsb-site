@@ -25,6 +25,7 @@ const sections = [
     h: '3. Chiavi e piani',
     p: [
       "Ogni API key è personale e legata a un indirizzo email. I piani disponibili, con prezzi e limiti (richieste al minuto per chiave, richieste al mese, raggio massimo), sono descritti su flyitalyadsb.com/dati/api. L'uso commerciale è consentito con ogni piano, Free compreso, entro i limiti del piano. Le richieste oltre i limiti ricevono una risposta di errore (429 o 403) e non sono conteggiate.",
+      "Una chiave può stare dentro un'app o un dispositivo che distribuisci o vendi, e il tuo server può usarla per servire gli utenti del tuo prodotto, anche tenendo le risposte in cache. Le richieste di tutti i dispositivi, gli utenti e i server di quel prodotto contano insieme sui limiti del piano della chiave: usa una chiave per prodotto e non dividere lo stesso uso su più chiavi.",
     ],
   },
   {
@@ -43,7 +44,7 @@ const sections = [
   {
     h: '6. Usi non consentiti',
     p: [
-      "Non è consentito: usare i dati per la sicurezza delle persone, il controllo del traffico aereo o la navigazione; condividere la propria chiave con terzi o aggirare i limiti (più chiavi o più indirizzi IP per lo stesso uso); operare un servizio che inoltra a terzi in tempo reale le risposte dell'API (relay o proxy) senza un accordo enterprise; usare il servizio per attività illecite, per pedinare o molestare persone.",
+      "Non è consentito: usare i dati per la sicurezza delle persone, il controllo del traffico aereo o la navigazione; dare la propria chiave a terzi perché la usino nei loro prodotti, o aggirare i limiti (più chiavi o più indirizzi IP per lo stesso uso); rivendere o ridistribuire i dati in tempo reale come API o feed per prodotti di altri senza un accordo enterprise; usare il servizio per attività illecite, per pedinare o molestare persone.",
     ],
   },
   {

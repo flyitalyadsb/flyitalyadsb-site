@@ -12,7 +12,11 @@ const faqs = [
   },
   {
     q: 'Posso usare l\'API per scopi commerciali?',
-    a: 'Sì, con ogni piano, free compreso, entro i limiti del piano. Oltre i limiti del free serve un piano a pagamento (Starter da 9 €/mese, Pro, Business): self-service, disdici quando vuoi, la chiave che hai già viene promossa sul posto. Ridistribuzione in tempo reale (rigirare i nostri dati a terzi), SLA o volumi su misura richiedono un accordo enterprise.',
+    a: 'Sì, con ogni piano, free compreso, entro i limiti del piano. Oltre i limiti del free serve un piano a pagamento (Starter da 9 €/mese, Pro, Business): self-service, disdici quando vuoi, la chiave che hai già viene promossa sul posto. Puoi usarla anche dentro app e dispositivi che vendi (vedi sotto). Serve un accordo enterprise solo per rivendere i dati come API o feed per prodotti di altri, per uno SLA o per volumi oltre il Business.',
+  },
+  {
+    q: 'Posso mettere la chiave in un\'app o in un dispositivo che vendo? E usarla dal mio server?',
+    a: 'Sì. La chiave può stare dentro un\'app o un dispositivo che distribuisci o vendi, e il tuo server può usarla, anche con una cache, per servire gli utenti del tuo prodotto. Le richieste di tutti i dispositivi e gli utenti contano insieme sul piano di quella chiave: per esempio 10 dispositivi che chiedono 12 volte al minuto, giorno e notte, fanno 120 richieste al minuto e oltre 5 milioni al mese, cioè il piano Pro. Usa una chiave per prodotto e cita nel prodotto FlyItalyADSB e flyitalyadsb.com (CC BY-SA 4.0). Una chiave dentro un\'app si può estrarre: se vuoi tenerla al sicuro, falla usare solo dal tuo server. Serve un accordo enterprise solo per rivendere i dati come API o feed per prodotti di altri.',
   },
   {
     q: 'Come funzionano pagamento e disdetta?',
@@ -21,6 +25,22 @@ const faqs = [
   {
     q: 'C\'è uno SLA? In quanto tempo rispondete?',
     a: 'Nessun piano include uno SLA o tempi di risposta garantiti, né dell\'API né alle email: FlyItalyADSB è una community e i piani a pagamento coprono solo i costi di server e banda. Il servizio è best effort e rispondiamo appena possibile. Un SLA si concorda solo con un accordo enterprise.',
+  },
+  {
+    q: 'Da dove vengono i dati?',
+    a: 'Quasi tutto dai ricevitori della rete FlyItalyADSB, che ci mandano i dati direttamente, e dalla nostra multilaterazione (MLAT). Una piccola parte arriva da fonti esterne: ADSBHub e, per alianti e ultraleggeri, l\'Open Glider Network (OGN). Gli aerei visti solo da queste fonti sono circa l\'1% del totale (misura del 19 ottobre 2026): se una si ferma, il resto non cambia.',
+  },
+  {
+    q: 'Quanto sono aggiornate le posizioni?',
+    a: 'Il server riscrive il quadro di tutti gli aerei ogni 2 secondi e l\'API lo rilegge al massimo ogni 3. Ogni aereo ha il campo seen_pos, i secondi passati dall\'ultima posizione ricevuta: in una misura del 19 ottobre 2026 metà delle posizioni aveva meno di un secondo e 9 su 10 meno di 7 secondi. Le posizioni più vecchie di circa 60 secondi non vengono restituite.',
+  },
+  {
+    q: 'Quali campi ci sono in una risposta? C\'è la tratta del volo?',
+    a: 'Ogni aereo è un record nel formato aircraft.json di readsb, lo stesso di tar1090 e adsb.lol: hex ICAO, nominativo (flight), immatricolazione (r) e tipo (t) per circa il 99% degli aerei, posizione, quota, velocità, direzione (track), squawk, categoria e i flag militare, PIA e LADD. Non c\'è la tratta (aeroporti di partenza e di arrivo) e non ci sono foto: per quelle serve un\'altra fonte.',
+  },
+  {
+    q: 'Posso avere tutti gli aerei di una zona in una sola richiesta?',
+    a: 'Sì: /v2/lat/<lat>/lon/<lon>/dist/<km> restituisce tutti gli aerei entro il raggio. Il raggio massimo dipende dal piano: 500 km con Free, 1000 km con Starter, nessun limite con Pro e Business, che possono chiedere il mondo intero in una richiesta. Non c\'è invece una richiesta unica per più aerei per hex o immatricolazione: una richiesta per aereo, oppure una per raggio.',
   },
   {
     q: 'Come uso il server MCP con Claude o ChatGPT?',
@@ -32,7 +52,7 @@ const faqs = [
   },
   {
     q: 'La rete copre solo l\'Italia?',
-    a: 'No. FlyItalyADSB è nata in Italia ma è una rete globale con oltre 3.200 feeder diretti nel mondo: sia la REST API sia l\'MCP accettano coordinate ovunque sul pianeta, non solo in Italia.',
+    a: 'No. FlyItalyADSB è nata in Italia ma è una rete globale con oltre 3.200 feeder diretti nel mondo: sia la REST API sia l\'MCP accettano coordinate ovunque sul pianeta, non solo in Italia. La copertura segue i ricevitori: è fitta in Italia, in buona parte d\'Europa e in Nord America, più rada in Asia, Africa e Oceania. Per una zona precisa guarda la mappa live o prova una richiesta con la chiave Free.',
   },
   {
     q: 'Come si confronta con altre API ADS-B aperte (adsb.fi, airplanes.live, adsb.lol...)?',
@@ -214,8 +234,8 @@ X-Api-Key: <la-tua-chiave>
         Piano free: 100 richieste/minuto per IP; i piani a pagamento hanno limiti propri per chiave (vedi <a href="#piani" class="text-sky-400 no-underline hover:text-sky-300">Piani</a>). Le richieste senza <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> vengono respinte a livello edge.
       </p>
       <p class="text-xs text-slate-500 mt-2">
-        Uso commerciale consentito con ogni piano, entro i suoi limiti. Ridistribuzione in tempo reale, SLA o
-        volumi su misura richiedono un accordo enterprise — <a href="/contatti" class="text-sky-400 no-underline hover:text-sky-300">contattaci</a>.
+        Uso commerciale consentito con ogni piano, entro i suoi limiti, anche dentro app e dispositivi venduti. Rivendere i dati come API o feed per
+        altri, SLA o volumi oltre il Business richiedono un accordo enterprise — <a href="/contatti" class="text-sky-400 no-underline hover:text-sky-300">contattaci</a>.
       </p>
     </section>
 
