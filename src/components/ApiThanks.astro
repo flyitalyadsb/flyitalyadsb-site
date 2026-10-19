@@ -2,7 +2,9 @@
 // Landing page after a completed Stripe Checkout (success_url set by
 // nesso-infra public-api/billing.py: /dati/api/grazie/?plan=<plan>). The page
 // can't know whether the webhook has already run, so it says what happens
-// next instead of claiming the plan is live.
+// next instead of claiming the plan is live. A brand-new key is never in an
+// email (2026-10-19): the email brings a one-time link to /dati/api/chiave/.
+// One host for every plan (api.flyitalyadsb.com), so no host choice here.
 import { PLANS } from '../data/plans';
 
 interface Props {
@@ -13,7 +15,6 @@ const it = lang === 'it';
 const nf = new Intl.NumberFormat(it ? 'it-IT' : 'en-US');
 const paid = PLANS.filter((p) => p.priceEur > 0).map((p) => ({
   id: p.id,
-  enterpriseHost: p.enterpriseHost && p.perMin > 100,
   name: p.id.charAt(0).toUpperCase() + p.id.slice(1),
   limits: it
     ? `${nf.format(p.perMin)} richieste/min per chiave · ${nf.format(p.perMonth)} richieste/mese · ${p.maxRadiusKm ? `raggio fino a ${nf.format(p.maxRadiusKm)} km` : 'raggio mondiale'}`
@@ -30,9 +31,8 @@ const t = it
       tryText: 'Appena ti arriva la conferma, una chiamata basta per vedere il nuovo piano nella risposta (header X-FIA-Plan):',
       tryCmd: 'curl -i -H "x-api-key: LA_TUA_CHIAVE" https://api.flyitalyadsb.com/v2/mil',
       steps: [
-        ['La chiave', "Entro pochi secondi la API key della tua email passa al nuovo piano: non devi cambiarla. Se non ne avevi ancora una, te ne arriva una nuova per email insieme alla conferma."],
-        ['Più di 100 richieste al minuto', 'Dallo stesso IP usa https://enterprise-api.flyitalyadsb.com/v2: stessa API, stessa chiave, fuori dal limite per IP.'],
-        ['Ricevuta e abbonamento', 'La ricevuta arriva per email e contiene i link per cambiare piano, aggiornare il metodo di pagamento o disdire quando vuoi.'],
+        ['La chiave', "Entro pochi secondi la API key della tua email passa al nuovo piano: non devi cambiarla. Se non ne avevi ancora una, ti arriva un'email con un link per vederla: funziona una volta sola e vale 7 giorni."],
+        ['Ricevuta e abbonamento', "La ricevuta del pagamento ti arriva in un'email separata. Per cambiare piano, aggiornare il metodo di pagamento o disdire quando vuoi, usa La mia API."],
       ],
       noMail: "Nessuna email entro qualche minuto? Controlla lo spam, poi scrivici: rispondiamo entro un giorno lavorativo.",
       docs: 'Documentazione API',
@@ -51,9 +51,8 @@ const t = it
       tryText: 'As soon as the confirmation arrives, one call shows the new plan in the response (X-FIA-Plan header):',
       tryCmd: 'curl -i -H "x-api-key: YOUR_KEY" https://api.flyitalyadsb.com/v2/mil',
       steps: [
-        ['Your key', "Within seconds the API key of your email moves to the new plan: no need to change it. If you didn't have one yet, a new key is emailed to you with the confirmation."],
-        ['More than 100 requests a minute', 'From a single IP, use https://enterprise-api.flyitalyadsb.com/v2: same API, same key, outside the per-IP limit.'],
-        ['Receipt and subscription', 'Your receipt arrives by email with the links to change plan, update your payment method or cancel any time.'],
+        ['Your key', "Within seconds the API key of your email moves to the new plan: no need to change it. If you didn't have one yet, you'll get an email with a link to see it: it works once and for 7 days."],
+        ['Receipt and subscription', "You'll receive the payment receipt in a separate email. To change plan, update your payment method or cancel any time, use My API."],
       ],
       noMail: "No email within a few minutes? Check your spam folder, then write to us: we answer within one business day.",
       docs: 'API documentation',
@@ -74,7 +73,7 @@ const t = it
 
   <ol class="space-y-5 mb-10">
     {t.steps.map(([h, p], i) => (
-      <li class="flex gap-4" data-step={i === 1 ? 'enterprise' : undefined}>
+      <li class="flex gap-4">
         <span class="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold"
               style="background:#34d39915;color:#6ee7b7;border:1px solid #34d39940">{i + 1}</span>
         <div>
@@ -104,15 +103,9 @@ const t = it
 
 <script>
   const box = document.getElementById('thanks') as HTMLElement;
-  const plans = JSON.parse(box.dataset.plans || '[]') as { id: string; name: string; limits: string; enterpriseHost: boolean }[];
+  const plans = JSON.parse(box.dataset.plans || '[]') as { id: string; name: string; limits: string }[];
   const id = new URLSearchParams(location.search).get('plan');
   const plan = plans.find((p) => p.id === id);
-  // The enterprise-api host matters only above 100 requests/min from one IP:
-  // Starter's per-key limit (60/min) never gets there.
-  if (!plan || !plan.enterpriseHost) {
-    document.querySelector('[data-step="enterprise"]')?.remove();
-    document.querySelectorAll('#thanks ol > li > span').forEach((n, i) => { n.textContent = String(i + 1); });
-  }
   if (plan) {
     (document.getElementById('thanks-lead') as HTMLElement).textContent =
       (box.dataset.lead || '').replace('{plan}', plan.name);

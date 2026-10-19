@@ -2,9 +2,14 @@
 // "La mia API" / "My API": manage your keys and subscription without a
 // password. Backend: nesso-infra k8s/flyitalyadsb/base/public-api/account.py
 //   POST /v2/account/login {email, lang}  → emails a one-time link (?t=…)
-//   POST /v2/account/session {token}      → 2 h Bearer session
+//   POST /v2/account/session {token}      → 2 h Bearer session; exchanged on a
+//                                           click on "Accedi", never on load:
+//                                           mail scanners open links (some run
+//                                           JS) and would burn a single-use one
 //   GET  /v2/account/me                   → keys, limits, usage, subscription
-//   POST /v2/account/rotate {key_id}      → new key, emailed
+//   POST /v2/account/rotate {key_id}      → new key; since 2026-10-19 returned
+//                                           in the response (shown once here),
+//                                           before that only emailed: both work
 //   POST /v2/account/portal               → subscription management URL
 //   POST /v2/account/logout
 // Everything coming from the API is written with textContent (key names are
@@ -26,6 +31,8 @@ const t = it
       wait: 'Un attimo: riprova tra qualche secondo.',
       bad: 'Inserisci un indirizzo email valido.',
       opening: 'Accesso in corso…',
+      signinText: 'Il link della tua email è pronto: premi Accedi per entrare. Vale 15 minuti e si usa una volta sola.',
+      signin: 'Accedi',
       expired: 'Questo link non è più valido (scaduto o già usato): chiedine uno nuovo.',
       loading: 'Carico i tuoi dati…',
       fail: 'Il servizio non risponde, riprova tra poco.',
@@ -49,15 +56,21 @@ const t = it
       perMin: 'richieste/min per chiave',
       perMonth: 'richieste/mese',
       radius: (km: number | null) => (km ? `raggio fino a ${km.toLocaleString('it-IT')} km` : 'raggio mondiale'),
-      entHost: 'host enterprise-api',
       notEnforced: 'Limiti del piano Free non ancora applicati: fino ad allora vale il limite di 100 richieste/minuto per IP.',
       month: 'Questo mese',
       requests: 'richieste',
       chartTitle: 'Richieste al giorno, ultimi 30 giorni',
       today: 'oggi, parziale',
       rotate: 'Rigenera chiave',
-      rotateConfirm: 'La chiave attuale smetterà di funzionare subito e te ne arriverà una nuova per email, con lo stesso piano. Continuo?',
+      rotateConfirm: 'La chiave attuale smetterà di funzionare subito e ne riceverai una nuova, con lo stesso piano. Continuo?',
       rotated: 'Fatto: la nuova chiave è nella tua email, la vecchia non funziona più.',
+      rotatedShown: 'Fatto: ecco la nuova chiave. La vecchia non funziona più.',
+      keyLabel: 'Nuova API key',
+      copy: 'Copia',
+      copied: 'Copiata negli appunti.',
+      copyFail: 'Copia non riuscita: seleziona la chiave e copiala a mano.',
+      saveNow: 'Salvala ora: non te la possiamo mostrare di nuovo. Se la perdi, puoi rigenerarla da qui.',
+      savedDone: "Fatto, l'ho salvata",
       rotateFail: 'Non sono riuscito a rigenerare la chiave, riprova tra poco.',
       plans: { free: 'Free', starter: 'Starter', pro: 'Pro', business: 'Business', enterprise: 'Enterprise' },
       locale: 'it-IT',
@@ -74,6 +87,8 @@ const t = it
       wait: 'One moment: try again in a few seconds.',
       bad: 'Enter a valid email address.',
       opening: 'Signing you in…',
+      signinText: 'Your sign-in link is ready: press Sign in to continue. It is valid for 15 minutes and works once.',
+      signin: 'Sign in',
       expired: 'This link is no longer valid (expired or already used): request a new one.',
       loading: 'Loading your data…',
       fail: 'The service is not responding, try again shortly.',
@@ -97,15 +112,21 @@ const t = it
       perMin: 'requests/min per key',
       perMonth: 'requests/month',
       radius: (km: number | null) => (km ? `radius up to ${km.toLocaleString('en-US')} km` : 'worldwide radius'),
-      entHost: 'enterprise-api host',
       notEnforced: 'Free-plan limits are not applied yet: until then the limit is 100 requests/minute per IP.',
       month: 'This month',
       requests: 'requests',
       chartTitle: 'Requests per day, last 30 days',
       today: 'today, partial',
       rotate: 'Rotate key',
-      rotateConfirm: 'Your current key will stop working immediately and a new one with the same plan will be emailed to you. Continue?',
+      rotateConfirm: "Your current key will stop working immediately and you'll get a new one with the same plan. Continue?",
       rotated: 'Done: the new key is in your inbox, the old one no longer works.',
+      rotatedShown: 'Done: here is the new key. The old one no longer works.',
+      keyLabel: 'New API key',
+      copy: 'Copy',
+      copied: 'Copied to the clipboard.',
+      copyFail: 'Could not copy: select the key and copy it by hand.',
+      saveNow: "Save it now: we can't show it to you again. If you lose it, you can regenerate it here.",
+      savedDone: "Done, I've saved it",
       rotateFail: 'Could not rotate the key, try again shortly.',
       plans: { free: 'Free', starter: 'Starter', pro: 'Pro', business: 'Business', enterprise: 'Enterprise' },
       locale: 'en-US',
@@ -144,6 +165,13 @@ const msg = {
     </div>
     <p id="acc-login-status" class="text-sm mt-3" role="status"></p>
   </form>
+
+  <!-- 1b. a sign-in link was opened: exchange it only on a click -->
+  <div id="acc-signin" class="hidden rounded-xl p-6 border max-w-xl" style="background:#0a1320;border-color:#1e3048">
+    <p class="text-sm text-slate-400 mb-4">{t.signinText}</p>
+    <button type="button" id="acc-signin-btn" class="px-5 py-2.5 rounded-lg font-medium text-sm"
+            style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830">{t.signin}</button>
+  </div>
 
   <!-- 2. waiting -->
   <p id="acc-wait" class="text-sm text-slate-400" role="status"></p>
@@ -196,7 +224,7 @@ const msg = {
 
   type Key = {
     id: number; prefix: string; name: string | null; plan: string;
-    limits: { per_min: number | null; monthly: number | null; max_radius_km: number | null; enterprise_host: boolean; enforced: boolean };
+    limits: { per_min: number | null; monthly: number | null; max_radius_km: number | null; enforced: boolean };
     created_at: string | null; last_used_at: string | null; used_month: number; daily: { day: string; count: number }[];
   };
 
@@ -234,6 +262,7 @@ const msg = {
 
   function showLogin(note?: string, color?: string) {
     $('acc-dash').classList.add('hidden');
+    $('acc-signin').classList.add('hidden');
     $('acc-wait').textContent = '';
     $('acc-login').classList.remove('hidden');
     if (note) say($('acc-login-status'), note, color);
@@ -274,14 +303,41 @@ const msg = {
         el('span', {}, dShort.format(new Date(daily[0].day))), el('span', {}, dShort.format(new Date(daily[n - 1].day)))));
   }
 
+  // The new key after a rotation, shown once: same box as the key page.
+  function keyBox(key: string, onDone: () => void) {
+    const code = el('code', { class: 'flex-1 min-w-0 text-sm break-all select-all', style: 'color:#e2e8f0' }, key);
+    const copyStatus = el('p', { class: 'text-xs mt-2 min-h-[1rem]', role: 'status' });
+    const copy = el('button', { type: 'button', class: 'self-start sm:self-auto px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap', style: 'background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830' }, M.copy);
+    copy.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(key);
+        say(copyStatus, M.copied, '#6ee7b7');
+      } catch {
+        const range = document.createRange();
+        range.selectNodeContents(code);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+        say(copyStatus, M.copyFail, '#fbbf24');
+      }
+    });
+    const done = el('button', { type: 'button', class: 'mt-4 text-sm px-3 py-1.5 rounded-lg', style: 'background:#111e30;color:#cbd5e1;border:1px solid #1e3048' }, M.savedDone);
+    done.addEventListener('click', onDone);
+    return el('div', { class: 'mt-4 w-full', tabindex: '-1' },
+      el('p', { class: 'text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2' }, M.keyLabel),
+      el('div', { class: 'flex flex-col sm:flex-row sm:items-center gap-3 rounded-lg p-4', style: 'background:#111e30;border:1px solid #1e3048' }, code, copy),
+      copyStatus,
+      el('p', { class: 'text-sm mt-1', style: 'color:#fbbf24' }, M.saveNow),
+      done);
+  }
+
   function keyCard(k: Key) {
     const L = k.limits;
     const radius = L.max_radius_km ? M.radius[1].replace(/[\d.,]+/, nf.format(L.max_radius_km)) : M.radius[0];
     const facts = el('ul', { class: 'text-xs text-slate-400 font-mono space-y-1' },
       ...(L.per_min ? [el('li', {}, `${nf.format(L.per_min)} ${M.perMin}`)] : []),
       ...(L.monthly ? [el('li', {}, `${nf.format(L.monthly)} ${M.perMonth}`)] : []),
-      el('li', {}, radius),
-      ...(L.enterprise_host ? [el('li', {}, M.entHost)] : []));
+      el('li', {}, radius));
     const usage = el('div', { class: 'mt-4' },
       el('div', { class: 'flex justify-between text-xs mb-1' },
         el('span', { class: 'text-slate-400' }, M.month),
@@ -302,11 +358,22 @@ const msg = {
         const r = await api('POST', '/account/rotate', { key_id: k.id, lang: LANG });
         if (r.status === 401) return showLogin(M.expired, '#fbbf24');
         if (r.status !== 200) { say(status, M.rotateFail, '#f87171'); btn.disabled = false; return; }
+        if (typeof r.data?.key === 'string' && r.data.key) {
+          // Shown once: no automatic reload, it would wipe the key off the page.
+          say(status, M.rotatedShown, '#6ee7b7');
+          btn.classList.add('hidden');
+          const box = keyBox(r.data.key, load);
+          actions.after(box);
+          box.focus();
+          return;
+        }
+        // Backend before 2026-10-19: the key went by email.
         say(status, M.rotated, '#6ee7b7');
         setTimeout(load, 1500);
       } catch { say(status, M.fail, '#f87171'); btn.disabled = false; }
     });
     const when = (iso: string | null) => (iso ? df.format(new Date(iso)) : M.never);
+    const actions = el('div', { class: 'mt-5 flex flex-wrap items-center gap-4' }, btn, status);
     return el('article', { class: 'rounded-xl p-6 border', style: 'background:#0a1320;border-color:#1e3048' },
       el('div', { class: 'flex flex-wrap items-start justify-between gap-3 mb-4' },
         el('div', {},
@@ -317,7 +384,7 @@ const msg = {
       facts,
       ...(!L.enforced ? [el('p', { class: 'text-xs text-slate-500 mt-2' }, M.notEnforced)] : []),
       usage, chart(k.daily),
-      el('div', { class: 'mt-5 flex flex-wrap items-center gap-4' }, btn, status));
+      actions);
   }
 
   async function load() {
@@ -382,19 +449,25 @@ const msg = {
     } catch { say(status, M.fail, '#f87171'); }
   });
 
-  (async () => {
-    const token = new URLSearchParams(location.search).get('t');
-    if (token) {
-      // The token must not stay in the address bar or the history.
-      history.replaceState(null, '', location.pathname);
+  // A sign-in link (?t=…) is exchanged only on a click on "Accedi": corporate
+  // mail scanners open links, some run JS, and would burn a single-use one.
+  const token = new URLSearchParams(location.search).get('t');
+  if (token) {
+    // The token must not stay in the address bar or the history.
+    history.replaceState(null, '', location.pathname);
+    $('acc-signin').classList.remove('hidden');
+    $('acc-signin-btn').addEventListener('click', async () => {
+      $('acc-signin').classList.add('hidden');
       say($('acc-wait'), M.opening);
       try {
         const r = await api('POST', '/account/session', { token });
         if (r.status === 200) { setSession(r.data); return load(); }
         return showLogin(M.expired, '#fbbf24');
       } catch { return showLogin(M.fail, '#f87171'); }
-    }
-    if (session()) return load();
+    });
+  } else if (session()) {
+    load();
+  } else {
     showLogin();
-  })();
+  }
 </script>
