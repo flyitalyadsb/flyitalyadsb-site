@@ -61,7 +61,7 @@ export function faqs(t: AircraftType, lang: Lang): Faq[] {
       },
       { q: `What is the ${t.code} code?`, a: `${t.code} is the ICAO type designator of the ${name} — the code that identifies the model in the ADS-B and Mode-S messages received by the network.` },
       { q: `How many engines and seats does the ${name} have?`, a: specs },
-      { q: `Is the flight data free and open?`, a: `Yes. FlyItalyADSB is a non-profit project and the data is published under the open CC BY-SA 4.0 licence.` },
+      { q: `Is the flight data free and open?`, a: `Yes. The live map and the Free API plan cost nothing, and the data is published under the open CC BY-SA 4.0 licence; paid API plans for higher volumes fund the infrastructure.` },
     ];
   }
   const specs =
@@ -75,7 +75,7 @@ export function faqs(t: AircraftType, lang: Lang): Faq[] {
     },
     { q: `Cos'è il codice ${t.code}?`, a: `${t.code} è il designatore di tipo ICAO del ${name}: è il codice che identifica il modello nei messaggi ADS-B e Mode-S ricevuti dalla rete.` },
     { q: `Quanti motori e posti ha il ${name}?`, a: specs },
-    { q: `I dati di volo sono gratuiti e aperti?`, a: `Sì. FlyItalyADSB è un progetto no-profit e i dati sono pubblicati con licenza aperta CC BY-SA 4.0.` },
+    { q: `I dati di volo sono gratuiti e aperti?`, a: `Sì. La mappa live e il piano API Free sono gratuiti, e i dati sono pubblicati con licenza aperta CC BY-SA 4.0; i piani API a pagamento per volumi più alti finanziano l'infrastruttura.` },
   ];
 }
 

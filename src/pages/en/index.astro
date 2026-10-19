@@ -4,7 +4,7 @@ import Layout from '../../layouts/Layout.astro';
 
 <Layout
   title="Open data on air traffic worldwide"
-  description="FlyItalyADSB collects ADS-B and MLAT data from 3,200+ receivers worldwide for meteorological and aeronautical research. A non-profit network born in Italy."
+  description="FlyItalyADSB collects ADS-B and MLAT data from 3,200+ receivers worldwide for meteorological and aeronautical research. A community network born in Italy."
 >
 
   <!-- HERO -->
@@ -63,7 +63,7 @@ import Layout from '../../layouts/Layout.astro';
 
         <p class="text-slate-400 text-lg leading-relaxed mb-8 max-w-md">
           More than 3,200 receivers around the world send us ADS-B and Mode-S
-          directly, with multilateration of our own — military aircraft included. Non-profit, unfiltered.
+          directly, with multilateration of our own — military aircraft included. Open, unfiltered.
         </p>
 
         <div class="flex flex-wrap gap-3">
@@ -210,13 +210,16 @@ import Layout from '../../layouts/Layout.astro';
           <h2 class="text-2xl font-bold text-slate-100 mb-3">Query the data via API or from your AI</h2>
           <p class="text-slate-400 text-sm leading-relaxed">
             Public REST API and an MCP server for Claude, ChatGPT and other agents — a free,
-            instant key by email, no manual approval. See also
+            instant key by email, no manual approval; plans from €9/month when you need more volume. See also
             <a href="/llms.txt" class="text-sky-400 no-underline hover:text-sky-300">llms.txt</a>.
           </p>
         </div>
-        <a href="/en/data/api" class="shrink-0 px-6 py-3 rounded-lg font-medium text-sm text-center no-underline transition-all" style="background:#38bdf8;color:#070d1a"
-           onmouseover="this.style.background='#7dd3fc'"
-           onmouseout="this.style.background='#38bdf8'">API documentation →</a>
+        <div class="shrink-0 flex flex-col sm:flex-row gap-3">
+          <a href="/en/data/api/#piani" class="px-6 py-3 rounded-lg font-medium text-sm text-center no-underline transition-all" style="background:#38bdf8;color:#070d1a"
+             onmouseover="this.style.background='#7dd3fc'"
+             onmouseout="this.style.background='#38bdf8'">Free key and plans →</a>
+          <a href="/en/data/api/" class="px-6 py-3 rounded-lg text-sm text-center no-underline" style="background:#111e30;color:#cbd5e1;border:1px solid #1e3048">Documentation</a>
+        </div>
       </div>
       <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[

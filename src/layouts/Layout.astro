@@ -25,8 +25,8 @@ const lang = isEn ? 'en' : 'it';
 const {
   title,
   description = isEn
-    ? 'Open, unfiltered ADS-B & MLAT data — a global network born in Italy, 3,200+ direct feeders, our own multilateration, weather research. Non-profit.'
-    : 'Dati ADS-B e MLAT aperti e non filtrati — rete globale nata in Italia, oltre 3.200 feeder diretti, multilaterazione propria, ricerca meteo. No-profit.',
+    ? 'Open, unfiltered ADS-B & MLAT data — a global network born in Italy, 3,200+ direct feeders, our own multilateration, weather research. A community network.'
+    : 'Dati ADS-B e MLAT aperti e non filtrati — rete globale nata in Italia, oltre 3.200 feeder diretti, multilaterazione propria, ricerca meteo. Rete community.',
   image = '/og.png',
   noindex = false,
   ogType = 'website',
@@ -59,8 +59,8 @@ const orgLd = {
   url: SITE,
   logo: `${SITE}/favicon.svg`,
   description: isEn
-    ? 'Non-profit network born in Italy collecting open ADS-B, Mode-S and MLAT aircraft data worldwide.'
-    : 'Rete no-profit nata in Italia che raccoglie dati aeronautici ADS-B, Mode-S e MLAT aperti in tutto il mondo.',
+    ? 'Community network born in Italy collecting open ADS-B, Mode-S and MLAT aircraft data worldwide.'
+    : 'Rete community nata in Italia che raccoglie dati aeronautici ADS-B, Mode-S e MLAT aperti in tutto il mondo.',
   sameAs: ['https://github.com/flyitalyadsb'],
 };
 const websiteLd = {
@@ -282,7 +282,7 @@ const apiLabel = 'API';
               <span class="text-slate-100 font-semibold text-sm">FlyItalyADSB</span>
             </div>
             <p class="text-xs text-slate-500 leading-relaxed">
-              {isEn ? 'Open ADS-B data, global network born in Italy, our own MLAT. Non-profit.' : 'Dati ADS-B aperti, rete globale nata in Italia, MLAT proprio. No-profit.'}
+              {isEn ? 'Open ADS-B data, global network born in Italy, our own MLAT. A community network.' : 'Dati ADS-B aperti, rete globale nata in Italia, MLAT proprio. Rete community.'}
             </p>
           </div>
 
@@ -335,8 +335,16 @@ const apiLabel = 'API';
           <p class="text-xs text-slate-600">
             © {new Date().getFullYear()} FlyItalyADSB · {isEn ? 'Data license' : 'Dati licenza'} <a href="https://creativecommons.org/licenses/by-sa/4.0/" class="hover:text-slate-400" target="_blank" rel="noopener">CC BY-SA 4.0</a>
           </p>
+          <!-- Who provides the service (paid API plans are sold for Nesso Labs
+               S.r.l.): company name, registered office and VAT number, as an
+               Italian company's website must show them (art. 35 DPR 633/72).
+               Verified on VIES 2026-10-18. -->
           <p class="text-xs text-slate-600">
-            {isEn ? 'Infrastructure by' : 'Infrastruttura gestita da'} <a href="https://nessolabs.it" class="hover:text-slate-400" target="_blank" rel="noopener">Nesso Labs</a>
+            {isEn ? 'Service provided by' : 'Servizio fornito da'} <a href="https://nessolabs.it" class="hover:text-slate-400" target="_blank" rel="noopener">Nesso Labs S.r.l.</a>
+            · Via Carlo Cattaneo 3, 25121 Brescia (BS), {isEn ? 'Italy' : 'Italia'}
+            · {isEn ? 'VAT' : 'P.IVA'} IT04754860981
+            · <a href={isEn ? '/en/terms' : '/termini'} class="hover:text-slate-400">{isEn ? 'Terms' : 'Condizioni'}</a>
+            · <a href={isEn ? '/en/privacy' : '/privacy'} class="hover:text-slate-400">Privacy</a>
           </p>
         </div>
       </div>

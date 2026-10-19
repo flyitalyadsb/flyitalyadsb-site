@@ -12,9 +12,9 @@ const rows = [
     name: 'FlyItalyADSB',
     highlight: true,
     baseUrl: 'api.flyitalyadsb.com/v2',
-    rateLimit: '100 requests/min per IP',
+    rateLimit: 'Free plan: 100 requests/min per IP; paid plans from €9/month with per-key limits up to 1,000 requests/min',
     feederRequired: 'No — key by email, free and instant',
-    commercial: 'Allowed within the standard limit; above that (high volume, SLA, data resale) needs an enterprise agreement',
+    commercial: 'Allowed on every plan, free included, within its limits; real-time redistribution, SLA or custom volume need an enterprise agreement',
     notes: 'Also includes an MCP server for AI agents; own MLAT over all of Italy (military included); self-serve history (/v2/history) with a daily per-aircraft track',
   },
   {
@@ -165,6 +165,11 @@ const breadcrumbJsonLd = {
          onmouseover="this.style.background='#38bdf825'"
          onmouseout="this.style.background='#38bdf815'">
         Get a free key →
+      </a>
+      <a href="/en/data/api#piani"
+         class="inline-flex items-center gap-2 px-4 py-2 ml-2 rounded-lg text-sm no-underline"
+         style="background:#111e30;color:#cbd5e1;border:1px solid #1e3048">
+        Plans from €9/month
       </a>
     </div>
 

@@ -1,0 +1,400 @@
+---
+// "La mia API" / "My API": manage your keys and subscription without a
+// password. Backend: nesso-infra k8s/flyitalyadsb/base/public-api/account.py
+//   POST /v2/account/login {email, lang}  → emails a one-time link (?t=…)
+//   POST /v2/account/session {token}      → 2 h Bearer session
+//   GET  /v2/account/me                   → keys, limits, usage, subscription
+//   POST /v2/account/rotate {key_id}      → new key, emailed
+//   POST /v2/account/portal               → subscription management URL
+//   POST /v2/account/logout
+// Everything coming from the API is written with textContent (key names are
+// user input).
+interface Props {
+  lang: 'it' | 'en';
+}
+const { lang } = Astro.props;
+const it = lang === 'it';
+
+const t = it
+  ? {
+      title: 'La mia API',
+      intro: 'Piano, consumi e chiavi della tua API FlyItalyADSB. Nessuna password: ti mandiamo un link via email.',
+      emailLabel: 'Email della tua API key',
+      send: 'Inviami il link →',
+      sending: 'Invio…',
+      sent: "Se questa email ha una API key, il link è in arrivo: vale 15 minuti e si usa una volta sola.",
+      wait: 'Un attimo: riprova tra qualche secondo.',
+      bad: 'Inserisci un indirizzo email valido.',
+      opening: 'Accesso in corso…',
+      expired: 'Questo link non è più valido (scaduto o già usato): chiedine uno nuovo.',
+      loading: 'Carico i tuoi dati…',
+      fail: 'Il servizio non risponde, riprova tra poco.',
+      signedAs: 'Accesso come',
+      logout: 'Esci',
+      subTitle: 'Abbonamento',
+      noSub: 'Nessun abbonamento: le tue chiavi sono sul piano Free.',
+      upgrade: 'Vedi i piani →',
+      manage: 'Gestisci abbonamento →',
+      renews: (d: string) => `Si rinnova il ${d}`,
+      ends: (d: string) => `Disdetto: termina il ${d}, poi la chiave torna al piano Free`,
+      pastDue: 'Pagamento non riuscito: aggiorna il metodo di pagamento',
+      ended: 'Terminato',
+      keysTitle: 'Le tue chiavi',
+      noKeys: 'Nessuna chiave attiva per questa email.',
+      getKey: 'Chiedi una chiave gratuita →',
+      prefix: 'prefisso',
+      created: 'creata il',
+      lastUsed: 'ultimo uso',
+      never: 'mai',
+      perMin: 'richieste/min per chiave',
+      perMonth: 'richieste/mese',
+      radius: (km: number | null) => (km ? `raggio fino a ${km.toLocaleString('it-IT')} km` : 'raggio mondiale'),
+      entHost: 'host enterprise-api',
+      notEnforced: 'Limiti del piano Free non ancora applicati: fino ad allora vale il limite di 100 richieste/minuto per IP.',
+      month: 'Questo mese',
+      requests: 'richieste',
+      chartTitle: 'Richieste al giorno, ultimi 30 giorni',
+      today: 'oggi, parziale',
+      rotate: 'Rigenera chiave',
+      rotateConfirm: 'La chiave attuale smetterà di funzionare subito e te ne arriverà una nuova per email, con lo stesso piano. Continuo?',
+      rotated: 'Fatto: la nuova chiave è nella tua email, la vecchia non funziona più.',
+      rotateFail: 'Non sono riuscito a rigenerare la chiave, riprova tra poco.',
+      plans: { free: 'Free', starter: 'Starter', pro: 'Pro', business: 'Business', enterprise: 'Enterprise' },
+      locale: 'it-IT',
+      plansHref: '/dati/api/#piani',
+      keyHref: '/dati/api/#api-key',
+    }
+  : {
+      title: 'My API',
+      intro: 'Plan, usage and keys of your FlyItalyADSB API. No password: we email you a link.',
+      emailLabel: 'Email of your API key',
+      send: 'Email me a link →',
+      sending: 'Sending…',
+      sent: 'If this email has an API key, the link is on its way: valid for 15 minutes, single use.',
+      wait: 'One moment: try again in a few seconds.',
+      bad: 'Enter a valid email address.',
+      opening: 'Signing you in…',
+      expired: 'This link is no longer valid (expired or already used): request a new one.',
+      loading: 'Loading your data…',
+      fail: 'The service is not responding, try again shortly.',
+      signedAs: 'Signed in as',
+      logout: 'Sign out',
+      subTitle: 'Subscription',
+      noSub: 'No subscription: your keys are on the Free plan.',
+      upgrade: 'See plans →',
+      manage: 'Manage subscription →',
+      renews: (d: string) => `Renews on ${d}`,
+      ends: (d: string) => `Cancelled: ends on ${d}, then the key goes back to the Free plan`,
+      pastDue: 'Payment failed: update your payment method',
+      ended: 'Ended',
+      keysTitle: 'Your keys',
+      noKeys: 'No active key for this email.',
+      getKey: 'Get a free key →',
+      prefix: 'prefix',
+      created: 'created',
+      lastUsed: 'last used',
+      never: 'never',
+      perMin: 'requests/min per key',
+      perMonth: 'requests/month',
+      radius: (km: number | null) => (km ? `radius up to ${km.toLocaleString('en-US')} km` : 'worldwide radius'),
+      entHost: 'enterprise-api host',
+      notEnforced: 'Free-plan limits are not applied yet: until then the limit is 100 requests/minute per IP.',
+      month: 'This month',
+      requests: 'requests',
+      chartTitle: 'Requests per day, last 30 days',
+      today: 'today, partial',
+      rotate: 'Rotate key',
+      rotateConfirm: 'Your current key will stop working immediately and a new one with the same plan will be emailed to you. Continue?',
+      rotated: 'Done: the new key is in your inbox, the old one no longer works.',
+      rotateFail: 'Could not rotate the key, try again shortly.',
+      plans: { free: 'Free', starter: 'Starter', pro: 'Pro', business: 'Business', enterprise: 'Enterprise' },
+      locale: 'en-US',
+      plansHref: '/en/data/api/#piani',
+      keyHref: '/en/data/api/#api-key',
+    };
+
+// Same texts the script needs, passed as data (functions become templates).
+const msg = {
+  ...t,
+  radius: [t.radius(null), t.radius(1000)],
+  renews: t.renews('{d}'),
+  ends: t.ends('{d}'),
+};
+---
+
+<div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-4xl mx-auto" id="account" data-lang={lang}
+     data-msg={JSON.stringify(msg)} data-api="https://api.flyitalyadsb.com/v2">
+  <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
+    <a href={it ? '/dati/api/' : '/en/data/api/'} class="text-slate-600 hover:text-slate-400 no-underline">API</a>
+    <span class="mx-2">/</span><span>{t.title}</span>
+  </p>
+  <h1 class="text-4xl font-bold text-slate-100 mb-3">{t.title}</h1>
+  <p class="text-slate-400 mb-10 max-w-2xl">{t.intro}</p>
+
+  <!-- 1. sign in -->
+  <form id="acc-login" class="hidden rounded-xl p-6 border max-w-xl" style="background:#0a1320;border-color:#1e3048" novalidate>
+    <label for="acc-email" class="block text-xs text-slate-400 mb-2">{t.emailLabel}</label>
+    <div class="flex flex-col sm:flex-row gap-3">
+      <input type="email" id="acc-email" required autocomplete="email"
+             placeholder={it ? 'la-tua-email@esempio.com' : 'you@example.com'}
+             class="px-3 py-2.5 rounded-lg text-sm w-full"
+             style="background:#111e30;color:#e2e8f0;border:1px solid var(--color-input-border)" />
+      <button type="submit" id="acc-send" class="px-5 py-2.5 rounded-lg font-medium text-sm whitespace-nowrap"
+              style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830">{t.send}</button>
+    </div>
+    <p id="acc-login-status" class="text-sm mt-3" role="status"></p>
+  </form>
+
+  <!-- 2. waiting -->
+  <p id="acc-wait" class="text-sm text-slate-400" role="status"></p>
+
+  <!-- 3. dashboard -->
+  <div id="acc-dash" class="hidden">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-8">
+      <p class="text-sm text-slate-400">{t.signedAs} <span id="acc-who" class="text-slate-200"></span></p>
+      <button type="button" id="acc-logout" class="text-sm px-3 py-1.5 rounded-lg"
+              style="background:#111e30;color:#cbd5e1;border:1px solid #1e3048">{t.logout}</button>
+    </div>
+
+    <section class="rounded-xl p-6 border mb-8" style="background:#0a1320;border-color:#1e3048" aria-labelledby="acc-sub-h">
+      <h2 id="acc-sub-h" class="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">{t.subTitle}</h2>
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p id="acc-sub-plan" class="text-xl font-semibold text-slate-100"></p>
+          <p id="acc-sub-state" class="text-sm text-slate-400 mt-1"></p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <a id="acc-upgrade" href={t.plansHref} class="hidden px-4 py-2 rounded-lg text-sm no-underline"
+             style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830">{t.upgrade}</a>
+          <button type="button" id="acc-manage" class="hidden px-4 py-2 rounded-lg text-sm"
+                  style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830">{t.manage}</button>
+        </div>
+      </div>
+      <p id="acc-sub-status" class="text-sm mt-3" role="status"></p>
+    </section>
+
+    <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">{t.keysTitle}</h2>
+    <div id="acc-keys" class="space-y-6"></div>
+    <p id="acc-nokeys" class="hidden text-sm text-slate-400">{t.noKeys} <a href={t.keyHref} class="text-sky-400 no-underline">{t.getKey}</a></p>
+  </div>
+
+  <div id="acc-tip" class="hidden fixed pointer-events-none text-xs px-2 py-1 rounded"
+       style="background:#111e30;color:#e2e8f0;border:1px solid #1e3048;z-index:50"></div>
+</div>
+
+<script>
+  const root = document.getElementById('account') as HTMLElement;
+  const M = JSON.parse(root.dataset.msg || '{}');
+  const API = root.dataset.api as string;
+  const LANG = root.dataset.lang as string;
+  const STORE = 'fia_account_session';
+  const BAR = '#1d9bd6'; // single series; validated against #0a1320 (dataviz validator)
+  const $ = (id: string) => document.getElementById(id) as HTMLElement;
+  const nf = new Intl.NumberFormat(M.locale);
+  const df = new Intl.DateTimeFormat(M.locale, { day: 'numeric', month: 'short', year: 'numeric' });
+  const dShort = new Intl.DateTimeFormat(M.locale, { day: 'numeric', month: 'short' });
+
+  type Key = {
+    id: number; prefix: string; name: string | null; plan: string;
+    limits: { per_min: number | null; monthly: number | null; max_radius_km: number | null; enterprise_host: boolean; enforced: boolean };
+    created_at: string | null; last_used_at: string | null; used_month: number; daily: { day: string; count: number }[];
+  };
+
+  function el(tag: string, attrs: Record<string, string> = {}, ...kids: (Node | string)[]) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    for (const k of kids) n.append(k);
+    return n;
+  }
+  const svg = (tag: string, attrs: Record<string, string | number>) => {
+    const n = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, String(v));
+    return n;
+  };
+  const say = (node: HTMLElement, text: string, color = '#94a3b8') => { node.textContent = text; node.style.color = color; };
+
+  function session(): string | null {
+    try {
+      const s = JSON.parse(sessionStorage.getItem(STORE) || 'null');
+      return s && new Date(s.expires_at) > new Date() ? s.session : null;
+    } catch { return null; }
+  }
+  function setSession(s: { session: string; expires_at: string } | null) {
+    try { s ? sessionStorage.setItem(STORE, JSON.stringify(s)) : sessionStorage.removeItem(STORE); } catch {}
+  }
+
+  async function api(method: string, path: string, body?: unknown) {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const s = session();
+    if (s) headers.Authorization = `Bearer ${s}`;
+    const res = await fetch(API + path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+    const data = await res.json().catch(() => ({}));
+    return { status: res.status, data };
+  }
+
+  function showLogin(note?: string, color?: string) {
+    $('acc-dash').classList.add('hidden');
+    $('acc-wait').textContent = '';
+    $('acc-login').classList.remove('hidden');
+    if (note) say($('acc-login-status'), note, color);
+  }
+
+  // Bars: one series → no legend (the title names it), 2px gaps, rounded top
+  // data-end, hover tooltip on a full-height hit area, a visually hidden table.
+  function chart(daily: Key['daily']) {
+    const W = 300, H = 64, gap = 2, n = daily.length, bw = (W - gap * (n - 1)) / n;
+    const max = Math.max(1, ...daily.map((d) => d.count));
+    const s = svg('svg', { viewBox: `0 0 ${W} ${H + 1}`, width: '100%', height: 72, role: 'img', 'aria-label': M.chartTitle, preserveAspectRatio: 'none' });
+    s.append(svg('line', { x1: 0, x2: W, y1: H + 0.5, y2: H + 0.5, stroke: '#1e3048', 'stroke-width': 1 }));
+    const tip = $('acc-tip');
+    daily.forEach((d, i) => {
+      const x = i * (bw + gap), h = d.count ? Math.max(2, (d.count / max) * (H - 2)) : 0, y = H - h, r = Math.min(2, bw / 2, h);
+      if (h) {
+        s.append(svg('path', {
+          d: `M${x},${H} V${y + r} Q${x},${y} ${x + r},${y} H${x + bw - r} Q${x + bw},${y} ${x + bw},${y + r} V${H} Z`,
+          fill: BAR, opacity: i === n - 1 ? 0.6 : 1,
+        }));
+      }
+      const hit = svg('rect', { x, y: 0, width: bw + gap, height: H, fill: 'transparent' });
+      const label = `${dShort.format(new Date(d.day))}${i === n - 1 ? ` (${M.today})` : ''}: ${nf.format(d.count)} ${M.requests}`;
+      hit.addEventListener('mousemove', (e) => {
+        tip.textContent = label;
+        tip.classList.remove('hidden');
+        tip.style.left = `${(e as MouseEvent).clientX + 12}px`;
+        tip.style.top = `${(e as MouseEvent).clientY - 28}px`;
+      });
+      hit.addEventListener('mouseleave', () => tip.classList.add('hidden'));
+      s.append(hit);
+    });
+    const table = el('table', { class: 'sr-only' }, el('caption', {}, M.chartTitle),
+      ...daily.map((d) => el('tr', {}, el('td', {}, d.day), el('td', {}, String(d.count)))));
+    return el('figure', { class: 'mt-4' },
+      el('figcaption', { class: 'text-xs text-slate-500 mb-2' }, M.chartTitle), s, table,
+      el('div', { class: 'flex justify-between text-[10px] text-slate-600 mt-1 font-mono' },
+        el('span', {}, dShort.format(new Date(daily[0].day))), el('span', {}, dShort.format(new Date(daily[n - 1].day)))));
+  }
+
+  function keyCard(k: Key) {
+    const L = k.limits;
+    const radius = L.max_radius_km ? M.radius[1].replace(/[\d.,]+/, nf.format(L.max_radius_km)) : M.radius[0];
+    const facts = el('ul', { class: 'text-xs text-slate-400 font-mono space-y-1' },
+      ...(L.per_min ? [el('li', {}, `${nf.format(L.per_min)} ${M.perMin}`)] : []),
+      ...(L.monthly ? [el('li', {}, `${nf.format(L.monthly)} ${M.perMonth}`)] : []),
+      el('li', {}, radius),
+      ...(L.enterprise_host ? [el('li', {}, M.entHost)] : []));
+    const usage = el('div', { class: 'mt-4' },
+      el('div', { class: 'flex justify-between text-xs mb-1' },
+        el('span', { class: 'text-slate-400' }, M.month),
+        el('span', { class: 'text-slate-200 font-mono' },
+          `${nf.format(k.used_month)}${L.monthly ? ` / ${nf.format(L.monthly)}` : ''} ${M.requests}`)));
+    if (L.monthly) {
+      const pct = Math.min(100, (k.used_month / L.monthly) * 100);
+      const bar = el('div', { class: 'h-2 rounded', style: 'background:#111e30' });
+      bar.append(el('div', { class: 'h-2 rounded', style: `width:${pct.toFixed(1)}%;background:${BAR}` }));
+      usage.append(bar);
+    }
+    const status = el('p', { class: 'text-sm mt-3', role: 'status' });
+    const btn = el('button', { type: 'button', class: 'text-sm px-3 py-1.5 rounded-lg', style: 'background:#111e30;color:#cbd5e1;border:1px solid #1e3048' }, M.rotate) as HTMLButtonElement;
+    btn.addEventListener('click', async () => {
+      if (!confirm(M.rotateConfirm)) return;
+      btn.disabled = true;
+      try {
+        const r = await api('POST', '/account/rotate', { key_id: k.id, lang: LANG });
+        if (r.status === 401) return showLogin(M.expired, '#fbbf24');
+        if (r.status !== 200) { say(status, M.rotateFail, '#f87171'); btn.disabled = false; return; }
+        say(status, M.rotated, '#6ee7b7');
+        setTimeout(load, 1500);
+      } catch { say(status, M.fail, '#f87171'); btn.disabled = false; }
+    });
+    const when = (iso: string | null) => (iso ? df.format(new Date(iso)) : M.never);
+    return el('article', { class: 'rounded-xl p-6 border', style: 'background:#0a1320;border-color:#1e3048' },
+      el('div', { class: 'flex flex-wrap items-start justify-between gap-3 mb-4' },
+        el('div', {},
+          el('p', { class: 'text-slate-100 font-semibold' }, k.name || `${M.prefix} ${k.prefix}`),
+          el('p', { class: 'text-xs text-slate-500 font-mono mt-1 break-words' },
+            `${M.prefix} ${k.prefix} · ${M.created} ${when(k.created_at)} · ${M.lastUsed} ${when(k.last_used_at)}`)),
+        el('span', { class: 'text-xs font-semibold uppercase tracking-widest px-2 py-1 rounded', style: 'background:#111e30;color:#7dd3fc' }, M.plans[k.plan] || k.plan)),
+      facts,
+      ...(!L.enforced ? [el('p', { class: 'text-xs text-slate-500 mt-2' }, M.notEnforced)] : []),
+      usage, chart(k.daily),
+      el('div', { class: 'mt-5 flex flex-wrap items-center gap-4' }, btn, status));
+  }
+
+  async function load() {
+    $('acc-login').classList.add('hidden');
+    say($('acc-wait'), M.loading);
+    let r;
+    try { r = await api('GET', '/account/me'); } catch { return say($('acc-wait'), M.fail, '#f87171'); }
+    if (r.status === 401) { setSession(null); return showLogin(M.expired, '#fbbf24'); }
+    if (r.status !== 200) return say($('acc-wait'), M.fail, '#f87171');
+    const me = r.data;
+    $('acc-wait').textContent = '';
+    $('acc-who').textContent = me.email;
+    const sub = me.subscription;
+    const planName = (p: string) => M.plans[p] || p;
+    if (sub && sub.active) {
+      $('acc-sub-plan').textContent = planName(sub.plan);
+      const end = sub.current_period_end ? df.format(new Date(sub.current_period_end)) : '';
+      $('acc-sub-state').textContent = sub.status === 'past_due' ? M.pastDue
+        : sub.cancel_at_period_end ? M.ends.replace('{d}', end) : M.renews.replace('{d}', end);
+    } else {
+      $('acc-sub-plan').textContent = planName('free');
+      $('acc-sub-state').textContent = sub ? `${planName(sub.plan)}: ${M.ended}` : M.noSub;
+    }
+    $('acc-manage').classList.toggle('hidden', !me.can_manage_billing);
+    $('acc-upgrade').classList.toggle('hidden', !!(sub && sub.active) || !me.can_buy);
+    const box = $('acc-keys');
+    box.replaceChildren(...me.keys.map(keyCard));
+    $('acc-nokeys').classList.toggle('hidden', me.keys.length > 0);
+    $('acc-dash').classList.remove('hidden');
+  }
+
+  $('acc-login').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = ($('acc-email') as HTMLInputElement).value.trim();
+    const status = $('acc-login-status');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return say(status, M.bad, '#f87171');
+    const btn = $('acc-send') as HTMLButtonElement;
+    btn.disabled = true;
+    say(status, M.sending);
+    try {
+      const r = await api('POST', '/account/login', { email, lang: LANG });
+      if (r.status === 202) say(status, M.sent, '#6ee7b7');
+      else if (r.status === 429) say(status, M.wait, '#fbbf24');
+      else say(status, r.data?.error || M.fail, '#f87171');
+    } catch { say(status, M.fail, '#f87171'); }
+    btn.disabled = false;
+  });
+
+  $('acc-logout').addEventListener('click', async () => {
+    try { await api('POST', '/account/logout', {}); } catch {}
+    setSession(null);
+    showLogin();
+  });
+
+  $('acc-manage').addEventListener('click', async () => {
+    const status = $('acc-sub-status');
+    try {
+      const r = await api('POST', '/account/portal', { lang: LANG });
+      if (r.status === 200 && r.data.url) { location.href = r.data.url; return; }
+      if (r.status === 401) return showLogin(M.expired, '#fbbf24');
+      say(status, r.data?.error || M.fail, '#f87171');
+    } catch { say(status, M.fail, '#f87171'); }
+  });
+
+  (async () => {
+    const token = new URLSearchParams(location.search).get('t');
+    if (token) {
+      // The token must not stay in the address bar or the history.
+      history.replaceState(null, '', location.pathname);
+      say($('acc-wait'), M.opening);
+      try {
+        const r = await api('POST', '/account/session', { token });
+        if (r.status === 200) { setSession(r.data); return load(); }
+        return showLogin(M.expired, '#fbbf24');
+      } catch { return showLogin(M.fail, '#f87171'); }
+    }
+    if (session()) return load();
+    showLogin();
+  })();
+</script>

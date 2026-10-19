@@ -1,0 +1,77 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Informativa privacy (GDPR art. 13). ⚠️ Bozza da far rivedere a un legale:
+// descrive i trattamenti come sono implementati il 2026-10-18 (public-api,
+// stats-api, Stripe Managed Payments, Cloudflare). Se cambia un trattamento,
+// cambia questo testo e la data.
+const VERSION = '18 ottobre 2026';
+
+const sections = [
+  {
+    h: '1. Titolare del trattamento',
+    p: [
+      'Nesso Labs S.r.l., Via Carlo Cattaneo 3, 25121 Brescia (BS), Italia, P.IVA IT04754860981. Per qualunque richiesta sui tuoi dati: admin@flyitalyadsb.com.',
+    ],
+  },
+  {
+    h: '2. Quali dati trattiamo',
+    p: [
+      "API key e La mia API: l'indirizzo email, il nome del progetto e l'uso dichiarato se li inserisci, l'impronta della chiave (la chiave in chiaro non viene conservata), le date di creazione e di ultimo utilizzo e il numero di richieste al giorno per chiave. Per l'accesso a La mia API usiamo link monouso e sessioni temporanee, salvati anch'essi solo come impronta.",
+      "Abbonamenti: il piano, lo stato e gli identificativi del cliente e dell'abbonamento presso il fornitore dei pagamenti. I dati di pagamento (carta, indirizzo di fatturazione, partita IVA) li raccoglie e li tratta direttamente il fornitore dei pagamenti indicato al punto 4: noi non li vediamo.",
+      "Richieste al servizio: indirizzo IP, data e ora, percorso richiesto e user agent, nei log tecnici di Cloudflare e dei nostri server, per sicurezza, limiti di utilizzo e diagnosi dei guasti.",
+      "Feeder: l'indirizzo IP da cui il ricevitore invia i dati e, se la indichi, la posizione del ricevitore per la multilaterazione. La pagina \"I miei dati arrivano?\" usa l'indirizzo IP della richiesta solo per rispondere a quella domanda.",
+    ],
+  },
+  {
+    h: '3. Perché e su quale base',
+    p: [
+      "Fornire il servizio che chiedi (chiave, piano, La mia API, email di servizio): esecuzione del contratto, art. 6.1.b GDPR. Proteggere il servizio da abusi e far rispettare i limiti: legittimo interesse, art. 6.1.f. Adempiere a obblighi di legge (contabili e fiscali): art. 6.1.c. Non usiamo i tuoi dati per profilazione o pubblicità e non li vendiamo.",
+    ],
+  },
+  {
+    h: '4. A chi li affidiamo',
+    p: [
+      "Cloudflare (rete di distribuzione, protezione da attacchi, statistiche aggregate del sito senza cookie); Stripe, tramite il servizio Link, che vende i piani a pagamento per nostro conto come merchant of record e tratta i dati di pagamento come titolare autonomo secondo la propria informativa; il fornitore del servizio di invio delle email transazionali. Alcuni di questi fornitori trattano dati anche fuori dall'Unione europea, con le garanzie previste dal GDPR (clausole contrattuali tipo o decisione di adeguatezza).",
+    ],
+  },
+  {
+    h: '5. Per quanto tempo',
+    p: [
+      "I dati di una chiave e del suo utilizzo finché la chiave è attiva o l'abbonamento è in corso, e poi per il tempo necessario a gestire eventuali contestazioni e gli obblighi di legge. I log tecnici delle richieste per un periodo limitato, legato a sicurezza e diagnosi. I link di accesso a La mia API valgono 15 minuti, le sessioni 2 ore.",
+    ],
+  },
+  {
+    h: '6. I tuoi diritti',
+    p: [
+      "Puoi chiedere accesso, rettifica, cancellazione, limitazione, portabilità e opporti al trattamento basato sul legittimo interesse scrivendo a admin@flyitalyadsb.com. Puoi rigenerare o revocare la tua chiave da La mia API. Hai inoltre diritto di proporre reclamo al Garante per la protezione dei dati personali (garanteprivacy.it).",
+    ],
+  },
+  {
+    h: '7. Cookie',
+    p: [
+      "Il sito non usa cookie di profilazione né di terze parti per pubblicità. La mia API conserva la sessione nel solo browser (sessionStorage), che la cancella alla chiusura della scheda.",
+    ],
+  },
+];
+
+const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const linkify = (t: string) =>
+  esc(t)
+    .replace(/admin@flyitalyadsb\.com/g, '<a href="mailto:admin@flyitalyadsb.com" class="text-sky-400 no-underline hover:text-sky-300">admin@flyitalyadsb.com</a>')
+    .replace(/garanteprivacy\.it/g, '<a href="https://www.garanteprivacy.it" rel="noopener" class="text-sky-400 no-underline hover:text-sky-300">garanteprivacy.it</a>')
+    .replace(/La mia API/g, '<a href="/dati/api/account/" class="text-sky-400 no-underline hover:text-sky-300">La mia API</a>');
+---
+
+<Layout title="Privacy" description="Informativa privacy di FlyItalyADSB: quali dati trattiamo per API key, abbonamenti e feeder, perché, per quanto tempo e i tuoi diritti.">
+  <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-3xl mx-auto">
+    <h1 class="text-4xl font-bold text-slate-100 mb-3">Informativa privacy</h1>
+    <p class="text-sm text-slate-500 mb-10">Versione del {VERSION}</p>
+    {sections.map((s) => (
+      <section class="mb-8">
+        <h2 class="text-lg font-semibold text-slate-100 mb-3">{s.h}</h2>
+        {s.p.map((para) => <p class="text-sm text-slate-400 leading-relaxed mb-3" set:html={linkify(para)} />)}
+      </section>
+    ))}
+  </div>
+</Layout>

@@ -20,6 +20,8 @@ const staticPaths = [
   '/ricerca/weather',
   '/chi-siamo',
   '/contatti',
+  '/termini',
+  '/privacy',
   '/community/feeder',
   '/community/stato-feeder',
   '/community/mlat',
