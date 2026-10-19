@@ -61,6 +61,7 @@ const t = it
       notYet: 'I piani a pagamento non sono ancora attivi: riprova tra poco.',
       wait: 'Un attimo: riprova tra qualche secondo.',
       fail: 'Il servizio di pagamento non risponde, riprova tra poco.',
+      enterprise: 'Questa email ha un accordo enterprise: per cambiare piano scrivici ad admin@flyitalyadsb.com.',
       bad: 'Inserisci un indirizzo email valido.',
     }
   : {
@@ -107,6 +108,7 @@ const t = it
       notYet: 'Paid plans are not active yet: please try again shortly.',
       wait: 'One moment: try again in a few seconds.',
       fail: 'The payment service is not responding, try again shortly.',
+      enterprise: 'This email has an enterprise agreement: to change plan, write to admin@flyitalyadsb.com.',
       bad: 'Enter a valid email address.',
     };
 
@@ -119,7 +121,7 @@ const RECOMMENDED = 'pro';
 ---
 
 <section id="piani" class="mb-14 scroll-mt-24" data-lang={lang} data-checkout={CHECKOUT_URL}
-         data-msg={JSON.stringify({ sending: t.sending, success: t.success, cancel: t.cancel, notYet: t.notYet, wait: t.wait, fail: t.fail, bad: t.bad })}>
+         data-msg={JSON.stringify({ sending: t.sending, success: t.success, cancel: t.cancel, notYet: t.notYet, wait: t.wait, fail: t.fail, bad: t.bad, enterprise: t.enterprise })}>
   <h2 class="text-2xl font-bold text-slate-100 mb-4">{t.title}</h2>
   <p class="text-slate-400 text-sm leading-relaxed mb-6 max-w-2xl">{t.intro}</p>
 
@@ -269,6 +271,9 @@ const RECOMMENDED = 'pro';
       if (res.status === 503) setStatus(msg.notYet, '#fbbf24');
       else if (res.status === 429) setStatus(msg.wait, '#fbbf24');
       else if (res.status === 400) setStatus(body?.error || msg.bad, '#f87171');
+      // Accordo enterprise sulla stessa email: il pagamento non partirebbe
+      // nemmeno, l'API lo respinge prima (nesso-infra public_api.py).
+      else if (res.status === 409 && body?.code === 'enterprise') setStatus(msg.enterprise, '#fbbf24');
       else setStatus(msg.fail, '#f87171');
     } catch {
       setStatus(msg.fail, '#f87171');
