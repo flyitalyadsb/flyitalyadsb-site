@@ -3,7 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 
 // Privacy notice — English version of /privacy (same content; the Italian
 // text prevails). ⚠️ Draft for legal review, see the Italian page's note.
-const VERSION = '18 October 2026';
+const VERSION = '19 October 2026';
 
 const sections = [
   {
@@ -18,7 +18,7 @@ const sections = [
       'API keys and My API: your email address, the project name and intended use if you enter them, a fingerprint of the key (the key itself is not stored), creation and last-use dates and the number of requests per day per key. Sign-in to My API uses single-use links and temporary sessions, also stored only as fingerprints.',
       "Subscriptions: plan, status and the customer and subscription identifiers at the payment provider. Payment data (card, billing address, VAT number) is collected and processed directly by the payment provider named in point 4: we never see it.",
       'Requests to the service: IP address, date and time, requested path and user agent, in the technical logs of Cloudflare and of our servers, for security, usage limits and troubleshooting.',
-      "Feeders: the IP address your receiver sends data from and, if you provide it, the receiver's position for multilateration. The \"Are my data arriving?\" page uses the request's IP address only to answer that question.",
+      "Feeders: the IP address your receiver sends data from and, if you provide it, the receiver's position for multilateration. The \"Are my data arriving?\" page uses the request's IP address only to answer that question. If you turn on the feeder perk in My API, we keep with your email the network (IP address) your receiver sends data from, the date of the check and the date of the last data seen, to know how long the perk applies.",
     ],
   },
   {

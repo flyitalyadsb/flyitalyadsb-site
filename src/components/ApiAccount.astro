@@ -12,6 +12,11 @@
 //                                           before that only emailed: both work
 //   POST /v2/account/portal               → subscription management URL
 //   POST /v2/account/logout
+//   POST /v2/account/feeder {non_commercial} → feeder perk (Pro limits on Free
+//                                           keys while the receiver feeds),
+//                                           checked on the IP of this request:
+//                                           the page must be opened from the
+//                                           receiver's network (feeders.py)
 // Everything coming from the API is written with textContent (key names are
 // user input).
 interface Props {
@@ -72,10 +77,31 @@ const t = it
       saveNow: 'Salvala ora: non te la possiamo mostrare di nuovo. Se la perdi, puoi rigenerarla da qui.',
       savedDone: "Fatto, l'ho salvata",
       rotateFail: 'Non sono riuscito a rigenerare la chiave, riprova tra poco.',
-      plans: { free: 'Free', starter: 'Starter', pro: 'Pro', business: 'Business', enterprise: 'Enterprise' },
+      plans: { free: 'Free', starter: 'Starter', pro: 'Pro', business: 'Business', enterprise: 'Enterprise', feeder: 'Free + feeder' },
       locale: 'it-IT',
       plansHref: '/dati/api/#piani',
       keyHref: '/dati/api/#api-key',
+      feederTitle: 'Vantaggio feeder',
+      feederPitch:
+        'Hai un ricevitore che alimenta FlyItalyADSB? Le tue chiavi Free hanno gratis i limiti del piano Pro (300 richieste/min, 10 milioni al mese, raggio mondiale), per uso non commerciale. Apri questa pagina dalla stessa rete del ricevitore (a casa, non dal telefono in 4G) e verifica.',
+      feederActive: 'Attivo: le tue chiavi Free hanno i limiti del piano Pro, per uso non commerciale, finché il ricevitore alimenta la rete.',
+      feederLapsed:
+        'Non vediamo più dati dalla rete del tuo ricevitore: apri questa pagina dalla rete da cui invia dati e verifica di nuovo.',
+      feederNet: 'Rete del ricevitore',
+      feederSeen: 'ultimo dato',
+      feederGrace: (h: number) => `Se il ricevitore si ferma, il vantaggio resta per ${h} ore.`,
+      feederDeclare: 'Uso la chiave per un progetto non commerciale',
+      feederVerify: 'Verifica il mio ricevitore',
+      feederReverify: 'Verifica di nuovo',
+      feederChecking: 'Controllo…',
+      feederOk: 'Fatto: vantaggio feeder attivo.',
+      feederNeedDeclare: "Conferma l'uso non commerciale per continuare.",
+      feederNotFeeding: (ip: string) =>
+        `Da questa rete (${ip}) non arrivano dati. Apri la pagina dalla rete del ricevitore, oppure controlla con`,
+      feederNotFree: 'Il vantaggio feeder vale per le chiavi Free.',
+      feederUnknown: 'Ora non riusciamo a verificarlo: riprova tra qualche minuto.',
+      feederStatusLink: 'I miei dati arrivano?',
+      feederStatusHref: '/community/stato-feeder/',
     }
   : {
       title: 'My API',
@@ -128,10 +154,31 @@ const t = it
       saveNow: "Save it now: we can't show it to you again. If you lose it, you can regenerate it here.",
       savedDone: "Done, I've saved it",
       rotateFail: 'Could not rotate the key, try again shortly.',
-      plans: { free: 'Free', starter: 'Starter', pro: 'Pro', business: 'Business', enterprise: 'Enterprise' },
+      plans: { free: 'Free', starter: 'Starter', pro: 'Pro', business: 'Business', enterprise: 'Enterprise', feeder: 'Free + feeder' },
       locale: 'en-US',
       plansHref: '/en/data/api/#piani',
       keyHref: '/en/data/api/#api-key',
+      feederTitle: 'Feeder perk',
+      feederPitch:
+        'Do you run a receiver that feeds FlyItalyADSB? Your Free keys get the Pro plan limits for free (300 requests/min, 10 million a month, worldwide radius), for non-commercial use. Open this page from the same network as the receiver (at home, not from your phone on mobile data) and verify.',
+      feederActive: 'Active: your Free keys have the Pro plan limits, for non-commercial use, as long as the receiver feeds the network.',
+      feederLapsed:
+        "We no longer see data from your receiver's network: open this page from the network it feeds from and verify again.",
+      feederNet: "Receiver's network",
+      feederSeen: 'last data',
+      feederGrace: (h: number) => `If the receiver stops, the perk stays for ${h} hours.`,
+      feederDeclare: 'I use the key for a non-commercial project',
+      feederVerify: 'Verify my receiver',
+      feederReverify: 'Verify again',
+      feederChecking: 'Checking…',
+      feederOk: 'Done: feeder perk active.',
+      feederNeedDeclare: 'Confirm non-commercial use to continue.',
+      feederNotFeeding: (ip: string) =>
+        `No data arrives from this network (${ip}). Open the page from the receiver's network, or check with`,
+      feederNotFree: 'The feeder perk is for Free keys.',
+      feederUnknown: "We can't check it right now: try again in a few minutes.",
+      feederStatusLink: 'Is my data arriving?',
+      feederStatusHref: '/en/community/feeder-status/',
     };
 
 // Same texts the script needs, passed as data (functions become templates).
@@ -140,6 +187,8 @@ const msg = {
   radius: [t.radius(null), t.radius(1000)],
   renews: t.renews('{d}'),
   ends: t.ends('{d}'),
+  feederGrace: t.feederGrace(0).replace('0', '{h}'),
+  feederNotFeeding: t.feederNotFeeding('{ip}'),
 };
 ---
 
@@ -201,6 +250,22 @@ const msg = {
       <p id="acc-sub-status" class="text-sm mt-3" role="status"></p>
     </section>
 
+    <!-- feeder perk: shown when the account has a Free key or a perk on record -->
+    <section id="acc-feeder" class="hidden rounded-xl p-6 border mb-8" style="background:#0a1320;border-color:#1e3048" aria-labelledby="acc-feeder-h">
+      <h2 id="acc-feeder-h" class="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">{t.feederTitle}</h2>
+      <p id="acc-feeder-text" class="text-sm text-slate-300 max-w-2xl"></p>
+      <p id="acc-feeder-meta" class="hidden text-xs text-slate-500 font-mono mt-2 break-words"></p>
+      <form id="acc-feeder-form" class="mt-4 space-y-3" novalidate>
+        <label class="flex items-start gap-2 text-sm text-slate-400">
+          <input type="checkbox" id="acc-feeder-nc" class="mt-1" />
+          <span>{t.feederDeclare}</span>
+        </label>
+        <button type="submit" id="acc-feeder-btn" class="px-4 py-2 rounded-lg text-sm"
+                style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830">{t.feederVerify}</button>
+      </form>
+      <p id="acc-feeder-status" class="text-sm mt-3" role="status"></p>
+    </section>
+
     <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">{t.keysTitle}</h2>
     <div id="acc-keys" class="space-y-6"></div>
     <p id="acc-nokeys" class="hidden text-sm text-slate-400">{t.noKeys} <a href={t.keyHref} class="text-sky-400 no-underline">{t.getKey}</a></p>
@@ -223,7 +288,7 @@ const msg = {
   const dShort = new Intl.DateTimeFormat(M.locale, { day: 'numeric', month: 'short' });
 
   type Key = {
-    id: number; prefix: string; name: string | null; plan: string;
+    id: number; prefix: string; name: string | null; plan: string; feeder?: boolean;
     limits: { per_min: number | null; monthly: number | null; max_radius_km: number | null; enforced: boolean };
     created_at: string | null; last_used_at: string | null; used_month: number; daily: { day: string; count: number }[];
   };
@@ -380,12 +445,53 @@ const msg = {
           el('p', { class: 'text-slate-100 font-semibold' }, k.name || `${M.prefix} ${k.prefix}`),
           el('p', { class: 'text-xs text-slate-500 font-mono mt-1 break-words' },
             `${M.prefix} ${k.prefix} · ${M.created} ${when(k.created_at)} · ${M.lastUsed} ${when(k.last_used_at)}`)),
-        el('span', { class: 'text-xs font-semibold uppercase tracking-widest px-2 py-1 rounded', style: 'background:#111e30;color:#7dd3fc' }, M.plans[k.plan] || k.plan)),
+        el('span', { class: 'text-xs font-semibold uppercase tracking-widest px-2 py-1 rounded', style: 'background:#111e30;color:#7dd3fc' }, M.plans[k.feeder ? 'feeder' : k.plan] || k.plan)),
       facts,
       ...(!L.enforced ? [el('p', { class: 'text-xs text-slate-500 mt-2' }, M.notEnforced)] : []),
       usage, chart(k.daily),
       actions);
   }
+
+  // Feeder perk: the check runs on the IP of the request, so the copy keeps
+  // saying "from the receiver's network". The address shown in a not-feeding
+  // answer is the visitor's own.
+  function feederSection(me: { keys: Key[]; feeder: null | { active: boolean; network: string; seen_at: string; grace_hours: number } }) {
+    const f = me.feeder;
+    const hasFree = me.keys.some((k) => k.plan === 'free');
+    $('acc-feeder').classList.toggle('hidden', !hasFree && !f);
+    $('acc-feeder-text').textContent = f ? (f.active ? M.feederActive : M.feederLapsed) : M.feederPitch;
+    const meta = $('acc-feeder-meta');
+    meta.classList.toggle('hidden', !f);
+    if (f) {
+      meta.textContent = `${M.feederNet} ${f.network} · ${M.feederSeen} ${df.format(new Date(f.seen_at))} · ${M.feederGrace.replace('{h}', String(f.grace_hours))}`;
+    }
+    $('acc-feeder-form').classList.toggle('hidden', !hasFree || !!(f && f.active));
+    $('acc-feeder-btn').textContent = f ? M.feederReverify : M.feederVerify;
+  }
+
+  $('acc-feeder-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const status = $('acc-feeder-status');
+    if (!($('acc-feeder-nc') as HTMLInputElement).checked) return say(status, M.feederNeedDeclare, '#fbbf24');
+    const btn = $('acc-feeder-btn') as HTMLButtonElement;
+    btn.disabled = true;
+    say(status, M.feederChecking);
+    try {
+      const r = await api('POST', '/account/feeder', { non_commercial: true, lang: LANG });
+      if (r.status === 401) return showLogin(M.expired, '#fbbf24');
+      if (r.status === 200) { say(status, M.feederOk, '#6ee7b7'); btn.disabled = false; return load(); }
+      const code = r.data?.code;
+      if (code === 'not-feeding') {
+        status.replaceChildren(M.feederNotFeeding.replace('{ip}', String(r.data.ip || '')) + ' ',
+          el('a', { href: M.feederStatusHref, class: 'text-sky-400 no-underline' }, M.feederStatusLink), '.');
+        status.style.color = '#fbbf24';
+      } else if (code === 'declaration-required') say(status, M.feederNeedDeclare, '#fbbf24');
+      else if (code === 'not-free') say(status, M.feederNotFree, '#fbbf24');
+      else if (code === 'presence-unknown' || r.status === 503) say(status, M.feederUnknown, '#fbbf24');
+      else say(status, r.data?.error || M.fail, '#f87171');
+    } catch { say(status, M.fail, '#f87171'); }
+    btn.disabled = false;
+  });
 
   async function load() {
     $('acc-login').classList.add('hidden');
@@ -410,6 +516,7 @@ const msg = {
     }
     $('acc-manage').classList.toggle('hidden', !me.can_manage_billing);
     $('acc-upgrade').classList.toggle('hidden', !!(sub && sub.active) || !me.can_buy);
+    feederSection(me);
     const box = $('acc-keys');
     box.replaceChildren(...me.keys.map(keyCard));
     $('acc-nokeys').classList.toggle('hidden', me.keys.length > 0);
