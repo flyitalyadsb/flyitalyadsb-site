@@ -50,7 +50,7 @@ export function faqs(a: Airport, lang: Lang): Faq[] {
       },
       {
         q: `Is the flight data free and open?`,
-        a: `Yes. The live map and the Free API plan cost nothing, and the data is published under the open CC BY-SA 4.0 licence; paid API plans for higher volumes fund the infrastructure.`,
+        a: `Yes. The live map and the Free API plan cost nothing, and the data is published under the open CC BY-SA 4.0 licence; paid API plans for higher volumes help cover the infrastructure costs.`,
       },
     ];
   }
@@ -69,7 +69,7 @@ export function faqs(a: Airport, lang: Lang): Faq[] {
     },
     {
       q: `I dati di volo sono gratuiti e aperti?`,
-      a: `Sì. La mappa live e il piano API Free sono gratuiti, e i dati sono pubblicati con licenza aperta CC BY-SA 4.0; i piani API a pagamento per volumi più alti finanziano l'infrastruttura.`,
+      a: `Sì. La mappa live e il piano API Free sono gratuiti, e i dati sono pubblicati con licenza aperta CC BY-SA 4.0; i piani API a pagamento per volumi più alti aiutano a coprire i costi dell'infrastruttura.`,
     },
   ];
 }

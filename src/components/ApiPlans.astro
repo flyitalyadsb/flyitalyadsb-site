@@ -19,7 +19,7 @@ const t = it
   ? {
       title: 'Piani',
       intro:
-        "Il piano Free resta gratuito, anche per uso commerciale, entro i suoi limiti: paghi solo se ti serve di più. La chiave è sempre la stessa: un piano a pagamento alza i limiti della chiave che hai già, senza cambiarla.",
+        "FlyItalyADSB è una community: la mappa e il piano Free restano gratuiti, anche per uso commerciale, entro i loro limiti. I piani a pagamento sono per chi usa molto l'API e aiutano a coprire i costi di server e banda. La chiave è sempre la stessa: un piano a pagamento alza i limiti della chiave che hai già, senza cambiarla.",
       perMonth: '/mese',
       plus: '+ IVA',
       names: { free: 'Free', starter: 'Starter', pro: 'Pro', business: 'Business' },
@@ -32,8 +32,6 @@ const t = it
       perMin: 'richieste/min per chiave',
       perMonthReq: 'richieste/mese',
       radius: (km: number | null) => (km ? `raggio fino a ${nf.format(km)} km` : 'raggio mondiale'),
-      priority: 'supporto email prioritario',
-      recommended: 'Consigliato',
       price: (eur: number) => `${eur} €`,
       today: 'oggi',
       perIp: 'richieste/min per IP',
@@ -61,13 +59,13 @@ const t = it
       notYet: 'I piani a pagamento non sono ancora attivi: riprova tra poco.',
       wait: 'Un attimo: riprova tra qualche secondo.',
       fail: 'Il servizio di pagamento non risponde, riprova tra poco.',
-      enterprise: 'Questa email ha un accordo enterprise: per cambiare piano scrivici ad admin@flyitalyadsb.com.',
+      enterpriseEmail: 'Questa email ha un accordo enterprise: per cambiare piano scrivici ad admin@flyitalyadsb.com.',
       bad: 'Inserisci un indirizzo email valido.',
     }
   : {
       title: 'Plans',
       intro:
-        'The Free plan stays free, commercial use included, within its limits: you only pay if you need more. Your key never changes: a paid plan raises the limits of the key you already have.',
+        "FlyItalyADSB is a community: the map and the Free plan stay free, commercial use included, within their limits. Paid plans are for heavy API users and help cover the cost of servers and bandwidth. Your key never changes: a paid plan raises the limits of the key you already have.",
       perMonth: '/month',
       plus: '+ tax',
       names: { free: 'Free', starter: 'Starter', pro: 'Pro', business: 'Business' },
@@ -80,8 +78,6 @@ const t = it
       perMin: 'requests/min per key',
       perMonthReq: 'requests/month',
       radius: (km: number | null) => (km ? `radius up to ${nf.format(km)} km` : 'worldwide radius'),
-      priority: 'priority email support',
-      recommended: 'Recommended',
       price: (eur: number) => `€${eur}`,
       today: 'today',
       perIp: 'requests/min per IP',
@@ -108,20 +104,20 @@ const t = it
       notYet: 'Paid plans are not active yet: please try again shortly.',
       wait: 'One moment: try again in a few seconds.',
       fail: 'The payment service is not responding, try again shortly.',
-      enterprise: 'This email has an enterprise agreement: to change plan, write to admin@flyitalyadsb.com.',
+      enterpriseEmail: 'This email has an enterprise agreement: to change plan, write to admin@flyitalyadsb.com.',
       bad: 'Enter a valid email address.',
     };
 
 const contactHref = it ? '/contatti' : '/en/contact';
 const termsHref = it ? '/termini' : '/en/terms';
 // One accent for every plan (status colours like green stay reserved for
-// states); Pro is the recommended one: badge + the only filled button.
+// states). No "recommended" plan and no perks beyond the limits (owner,
+// 2026-10-19): a community project, the paid plans only help cover costs.
 const ACCENT = '#38bdf8';
-const RECOMMENDED = 'pro';
 ---
 
 <section id="piani" class="mb-14 scroll-mt-24" data-lang={lang} data-checkout={CHECKOUT_URL}
-         data-msg={JSON.stringify({ sending: t.sending, success: t.success, cancel: t.cancel, notYet: t.notYet, wait: t.wait, fail: t.fail, bad: t.bad, enterprise: t.enterprise })}>
+         data-msg={JSON.stringify({ sending: t.sending, success: t.success, cancel: t.cancel, notYet: t.notYet, wait: t.wait, fail: t.fail, bad: t.bad, enterpriseEmail: t.enterpriseEmail })}>
   <h2 class="text-2xl font-bold text-slate-100 mb-4">{t.title}</h2>
   <p class="text-slate-400 text-sm leading-relaxed mb-6 max-w-2xl">{t.intro}</p>
 
@@ -129,12 +125,9 @@ const RECOMMENDED = 'pro';
 
   <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
     {PLANS.map((p) => (
-      <div class="rounded-xl border p-5 flex flex-col" style={`background:#0a1320;border-color:${p.id === RECOMMENDED ? ACCENT + '80' : '#1e3048'}`}>
+      <div class="rounded-xl border p-5 flex flex-col" style="background:#0a1320;border-color:#1e3048">
         <div class="flex items-center justify-between gap-2 mb-3 h-6">
           <div class="text-xs font-semibold uppercase tracking-widest" style={`color:${p.priceEur ? ACCENT : '#94a3b8'}`}>{t.names[p.id]}</div>
-          {p.id === RECOMMENDED && (
-            <span class="text-[11px] font-semibold px-2 py-0.5 rounded" style={`background:${ACCENT}1f;color:#7dd3fc`}>{t.recommended}</span>
-          )}
         </div>
         <div class="mb-1">
           {p.priceEur === 0 ? (
@@ -160,7 +153,6 @@ const RECOMMENDED = 'pro';
           <li><span class="text-slate-200">{nf.format(p.perMin)}</span> {t.perMin}</li>
           <li><span class="text-slate-200">{nf.format(p.perMonth)}</span> {t.perMonthReq}</li>
           <li>{t.radius(p.maxRadiusKm)}</li>
-          {p.id === 'business' && <li>{t.priority}</li>}
         </ul>
         )}
         <div class="mt-auto">
@@ -170,9 +162,7 @@ const RECOMMENDED = 'pro';
           ) : (
             <button type="button" class="plan-choose block w-full px-4 py-2 rounded-lg text-sm font-medium"
                     data-plan={p.id} data-name={t.names[p.id]} data-summary={t.summary(p.priceEur)}
-                    style={p.id === RECOMMENDED
-                      ? `background:${ACCENT};color:#070d1a;border:1px solid ${ACCENT}`
-                      : `background:${ACCENT}18;color:#7dd3fc;border:1px solid ${ACCENT}40`}>
+                    style={`background:${ACCENT}18;color:#7dd3fc;border:1px solid ${ACCENT}40`}>
               {t.choose(t.names[p.id])}
             </button>
           )}
@@ -273,7 +263,7 @@ const RECOMMENDED = 'pro';
       else if (res.status === 400) setStatus(body?.error || msg.bad, '#f87171');
       // Accordo enterprise sulla stessa email: il pagamento non partirebbe
       // nemmeno, l'API lo respinge prima (nesso-infra public_api.py).
-      else if (res.status === 409 && body?.code === 'enterprise') setStatus(msg.enterprise, '#fbbf24');
+      else if (res.status === 409 && body?.code === 'enterprise') setStatus(msg.enterpriseEmail, '#fbbf24');
       else setStatus(msg.fail, '#f87171');
     } catch {
       setStatus(msg.fail, '#f87171');
