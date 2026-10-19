@@ -1,0 +1,220 @@
+---
+// "La tua API key" / "Your API key": the page behind the one-time link that
+// the key emails carry (signup, new key of a paid plan). The email never holds
+// the key any more (2026-10-19). Backend: nesso-infra
+// k8s/flyitalyadsb/base/public-api/claims.py
+//   POST /v2/account/claim {token} → {key, key_prefix, plan}; 410 = unknown,
+//   expired (7 days) or already used, deliberately indistinguishable.
+// Link format: /dati/api/chiave/#t=<token>. The token is in the fragment, so
+// it never reaches a server log or a Referer.
+// The page does NOT redeem on load: corporate mail scanners open links (some
+// run JS) and would burn a single-use link. A click on the button does.
+interface Props {
+  lang: 'it' | 'en';
+}
+const { lang } = Astro.props;
+const it = lang === 'it';
+
+const t = it
+  ? {
+      crumb: 'La tua API key',
+      title: 'La tua API key',
+      intro: 'Il link della tua email apre questa pagina. La chiave compare quando premi il pulsante e la mostriamo una volta sola: preparati a copiarla.',
+      show: 'Mostra la chiave',
+      showing: 'Un attimo…',
+      keyLabel: 'API key',
+      copy: 'Copia',
+      copied: 'Copiata negli appunti.',
+      copyFail: 'Copia non riuscita: seleziona la chiave e copiala a mano.',
+      saveNow: 'Salvala ora: non te la possiamo mostrare di nuovo. Se la perdi, puoi rigenerarla da La mia API.',
+      plan: 'Piano',
+      tryTitle: 'Prova la chiave',
+      tryText: "Passala nell'header X-Api-Key, sia per la REST API sia per il server MCP:",
+      tryCmd: 'curl -H "X-Api-Key: LA_TUA_CHIAVE" https://api.flyitalyadsb.com/v2/mil',
+      expired: 'Questo link non è più valido: è scaduto (vale 7 giorni) oppure è già stato usato.',
+      expiredNext: "Se hai già una chiave, rigenerala da La mia API. Se non ne hai ancora una, chiedila di nuovo dalla pagina dell'API.",
+      noToken: "Questa pagina mostra la chiave dal link che ti arriva via email, ma qui il link non c'è. Aprilo direttamente dall'email, oppure rigenera la chiave da La mia API.",
+      busy: 'La chiave di questa email sta cambiando proprio ora: riprova tra qualche secondo.',
+      fail: 'Il servizio non risponde, riprova tra poco: il link resta valido.',
+      plans: { free: 'Free', starter: 'Starter', pro: 'Pro', business: 'Business', enterprise: 'Enterprise' },
+      account: 'La mia API',
+      accountHref: '/dati/api/account/',
+      request: "Pagina dell'API",
+      requestHref: '/dati/api/#api-key',
+      docs: 'Documentazione API',
+      docsHref: '/dati/api/',
+      apiHref: '/dati/api/',
+    }
+  : {
+      crumb: 'Your API key',
+      title: 'Your API key',
+      intro: 'The link in your email opens this page. The key appears when you press the button and is shown only once: be ready to copy it.',
+      show: 'Show my key',
+      showing: 'One moment…',
+      keyLabel: 'API key',
+      copy: 'Copy',
+      copied: 'Copied to the clipboard.',
+      copyFail: 'Could not copy: select the key and copy it by hand.',
+      saveNow: "Save it now: we can't show it to you again. If you lose it, you can regenerate it from My API.",
+      plan: 'Plan',
+      tryTitle: 'Try your key',
+      tryText: 'Pass it in the X-Api-Key header, for both the REST API and the MCP server:',
+      tryCmd: 'curl -H "X-Api-Key: YOUR_KEY" https://api.flyitalyadsb.com/v2/mil',
+      expired: 'This link is no longer valid: it has expired (it lasts 7 days) or it has already been used.',
+      expiredNext: "If you already have a key, regenerate it from My API. If you don't have one yet, request it again from the API page.",
+      noToken: "This page shows your key from the link we email you, but the link isn't here. Open it straight from the email, or regenerate the key from My API.",
+      busy: "This email's key is changing right now: try again in a few seconds.",
+      fail: 'The service is not responding, try again shortly: the link is still valid.',
+      plans: { free: 'Free', starter: 'Starter', pro: 'Pro', business: 'Business', enterprise: 'Enterprise' },
+      account: 'My API',
+      accountHref: '/en/data/api/account/',
+      request: 'API page',
+      requestHref: '/en/data/api/#api-key',
+      docs: 'API documentation',
+      docsHref: '/en/data/api/',
+      apiHref: '/en/data/api/',
+    };
+
+const primary = 'background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830';
+const secondary = 'background:#111e30;color:#cbd5e1;border:1px solid #1e3048';
+---
+
+<div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-3xl mx-auto" id="claim"
+     data-msg={JSON.stringify({ showing: t.showing, show: t.show, copied: t.copied, copyFail: t.copyFail, busy: t.busy, fail: t.fail, plans: t.plans, expired: t.expired, noToken: t.noToken })}
+     data-api="https://api.flyitalyadsb.com/v2">
+  <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
+    <a href={t.apiHref} class="text-slate-600 hover:text-slate-400 no-underline">API</a>
+    <span class="mx-2">/</span><span>{t.crumb}</span>
+  </p>
+  <h1 class="text-4xl font-bold text-slate-100 mb-3">{t.title}</h1>
+  <p class="text-slate-400 mb-10 max-w-2xl">{t.intro}</p>
+
+  <!-- 1. the button (only when the link carries a token) -->
+  <div id="claim-ask" class="hidden rounded-xl p-6 border mb-8" style="background:#0a1320;border-color:#1e3048">
+    <button type="button" id="claim-show" class="px-5 py-2.5 rounded-lg font-medium text-sm" style={primary}>{t.show}</button>
+    <p id="claim-status" class="text-sm mt-3 empty:hidden" role="status"></p>
+  </div>
+
+  <!-- 2. the key, once -->
+  <section id="claim-result" class="hidden focus:outline-none" tabindex="-1" aria-labelledby="claim-key-h">
+    <div class="rounded-xl p-6 border mb-8" style="background:#0a1320;border-color:#1e3048">
+      <div class="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+        <h2 id="claim-key-h" class="text-xs font-semibold uppercase tracking-widest text-slate-500">{t.keyLabel}</h2>
+        <span id="claim-plan" class="text-xs font-semibold uppercase tracking-widest px-2 py-1 rounded" style="background:#111e30;color:#7dd3fc"></span>
+      </div>
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 rounded-lg p-4" style="background:#111e30;border:1px solid #1e3048">
+        <code id="claim-key" class="flex-1 min-w-0 text-sm break-all select-all" style="color:#e2e8f0"></code>
+        <button type="button" id="claim-copy" class="self-start sm:self-auto px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap" style={primary}>{t.copy}</button>
+      </div>
+      <p id="claim-copy-status" class="text-xs mt-2 min-h-[1rem]" role="status"></p>
+      <p class="text-sm mt-3" style="color:#fbbf24">{t.saveNow}</p>
+    </div>
+
+    <div class="rounded-lg p-4 mb-8 border" style="background:#0a1320;border-color:#1e3048">
+      <div class="text-sm font-semibold text-slate-100 mb-1">{t.tryTitle}</div>
+      <p class="text-sm text-slate-400 mb-3">{t.tryText}</p>
+      <pre class="text-xs whitespace-pre-wrap break-all p-3 rounded" style="background:#111e30;color:#7dd3fc"><code>{t.tryCmd}</code></pre>
+    </div>
+  </section>
+
+  <!-- 3. link expired / used / missing -->
+  <div id="claim-dead" class="hidden rounded-xl p-6 border mb-8" style="background:#0a1320;border-color:#1e3048">
+    <p id="claim-dead-text" class="text-sm" style="color:#fbbf24"></p>
+    <p id="claim-dead-next" class="text-sm text-slate-400 mt-2 hidden">{t.expiredNext}</p>
+    <div class="flex flex-wrap gap-3 mt-4">
+      <a href={t.requestHref} id="claim-request" class="hidden px-4 py-2 rounded-lg text-sm no-underline" style={secondary}>{t.request}</a>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap gap-3">
+    <a href={t.accountHref} class="px-5 py-2.5 rounded-lg text-sm font-medium no-underline" style={primary}>{t.account} →</a>
+    <a href={t.docsHref} class="px-5 py-2.5 rounded-lg text-sm no-underline" style={secondary}>{t.docs}</a>
+  </div>
+</div>
+
+<script>
+  const root = document.getElementById('claim') as HTMLElement;
+  const M = JSON.parse(root.dataset.msg || '{}');
+  const API = root.dataset.api as string;
+  const $ = (id: string) => document.getElementById(id) as HTMLElement;
+  const say = (node: HTMLElement, text: string, color = '#94a3b8') => { node.textContent = text; node.style.color = color; };
+
+  const token = new URLSearchParams(location.hash.slice(1)).get('t') || '';
+
+  // The language switch keeps the link usable until it has been redeemed.
+  const langLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('a[hreflang]'));
+  const langBase = langLinks.map((a) => a.getAttribute('href') || '');
+  const carryToken = (on: boolean) => langLinks.forEach((a, i) => a.setAttribute('href', langBase[i] + (on ? `#t=${token}` : '')));
+
+  // Out of the address bar and the history once the link is spent.
+  const forgetToken = () => { history.replaceState(null, '', location.pathname + location.search); carryToken(false); };
+
+  function dead(text: string, next: boolean) {
+    $('claim-ask').classList.add('hidden');
+    say($('claim-dead-text'), text, '#fbbf24');
+    $('claim-dead-next').classList.toggle('hidden', !next);
+    $('claim-request').classList.toggle('hidden', !next);
+    $('claim-dead').classList.remove('hidden');
+  }
+
+  if (!token) {
+    dead(M.noToken, false);
+  } else {
+    carryToken(true);
+    $('claim-ask').classList.remove('hidden');
+  }
+
+  $('claim-show').addEventListener('click', async () => {
+    const btn = $('claim-show') as HTMLButtonElement;
+    const status = $('claim-status');
+    btn.disabled = true;
+    btn.textContent = M.showing;
+    let res: Response;
+    try {
+      res = await fetch(`${API}/account/claim`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+        cache: 'no-store',
+        referrerPolicy: 'no-referrer',
+      });
+    } catch {
+      btn.disabled = false;
+      btn.textContent = M.show;
+      return say(status, M.fail, '#f87171');
+    }
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 200 && data.key) {
+      forgetToken();
+      $('claim-ask').classList.add('hidden');
+      $('claim-key').textContent = data.key;
+      $('claim-plan').textContent = M.plans[data.plan] || data.plan || '';
+      $('claim-result').classList.remove('hidden');
+      $('claim-result').focus();
+      return;
+    }
+    if (res.status === 410 || res.status === 400) {
+      forgetToken();
+      return dead(M.expired, true);
+    }
+    btn.disabled = false;
+    btn.textContent = M.show;
+    say(status, res.status === 409 ? M.busy : M.fail, res.status === 409 ? '#fbbf24' : '#f87171');
+  });
+
+  $('claim-copy').addEventListener('click', async () => {
+    const key = $('claim-key').textContent || '';
+    const status = $('claim-copy-status');
+    try {
+      await navigator.clipboard.writeText(key);
+      say(status, M.copied, '#6ee7b7');
+    } catch {
+      const range = document.createRange();
+      range.selectNodeContents($('claim-key'));
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
+      say(status, M.copyFail, '#fbbf24');
+    }
+  });
+</script>

@@ -10,6 +10,7 @@ export type Lang = 'it' | 'en';
 // path segments, longest first.
 const PREFIXES: [string, string][] = [
   ['/dati/api/account', '/data/api/account'],
+  ['/dati/api/chiave', '/data/api/key'],
   ['/dati/api/grazie', '/data/api/thanks'],
   ['/dati/api', '/data/api'],
   ['/dati/archivio', '/data/archive'],

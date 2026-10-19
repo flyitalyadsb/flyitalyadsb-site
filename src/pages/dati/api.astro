@@ -8,7 +8,7 @@ const SITE = 'https://flyitalyadsb.com';
 const faqs = [
   {
     q: 'Serve una API key?',
-    a: 'Sì, sia per la REST API (api.flyitalyadsb.com/v2/*) sia per il server MCP (flyitalyadsb.com/mcp): stessa chiave per entrambi, passata nell\'header X-Api-Key. È self-service e istantanea: basta un indirizzo email, la chiave arriva via email in pochi secondi, senza approvazione manuale. La chiave è gratuita; i piani a pagamento ne alzano i limiti senza cambiarla.',
+    a: 'Sì, sia per la REST API (api.flyitalyadsb.com/v2/*) sia per il server MCP (flyitalyadsb.com/mcp): stessa chiave per entrambi, passata nell\'header X-Api-Key. È self-service e istantanea: basta un indirizzo email: in pochi secondi ti arriva un link per vedere la chiave, senza approvazione manuale. La chiave è gratuita; i piani a pagamento ne alzano i limiti senza cambiarla.',
   },
   {
     q: 'Posso usare l\'API per scopi commerciali?',
@@ -139,8 +139,9 @@ X-Api-Key: <la-tua-chiave>
       <h3 class="font-semibold text-slate-100 mb-2">Ottieni una API key</h3>
       <p class="text-sm text-slate-400 leading-relaxed mb-6">
         REST API e server MCP condividono la stessa chiave, passata nell'header <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code>.
-        Istantanea e gratuita: inserisci un'email, la chiave arriva lì — non compare mai in questa pagina.
-        Se richiedi di nuovo con la stessa email, quella vecchia smette di funzionare e ne ricevi una nuova
+        Istantanea e gratuita: inserisci un'email e ti arriva un link che mostra la chiave una volta sola
+        (la chiave non viaggia mai per email). Se la richiedi di nuovo con la stessa email, la vecchia continua
+        a funzionare finché non apri il nuovo link, poi la sostituisce la nuova
         (è anche il modo per recuperarla se l'hai persa).
         Hai già una chiave? Piano, consumi e rigenerazione da
         <a href="/dati/api/account/" class="text-sky-400 no-underline hover:text-sky-300">La mia API</a>.
@@ -172,11 +173,11 @@ X-Api-Key: <la-tua-chiave>
                   style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
                   onmouseover="this.style.background='#38bdf825'"
                   onmouseout="this.style.background='#38bdf815'">
-            Invia chiave via email →
+            Invia il link via email →
           </button>
           <p id="key-status" class="text-sm" role="status"></p>
         </div>
-        <p class="text-xs text-slate-500">Se questa email ha già una chiave gratuita, quella smette di funzionare e ricevi la nuova.</p>
+        <p class="text-xs text-slate-500">Se questa email ha già una chiave gratuita, continua a funzionare finché non apri il link: da lì la sostituisce la nuova.</p>
       </form>
     </div>
 
@@ -241,7 +242,7 @@ X-Api-Key: <la-tua-chiave>
         <li>Su <a href="https://claude.ai" target="_blank" rel="noopener" class="text-sky-400 no-underline">claude.ai</a>, apri <strong class="text-slate-300">Impostazioni → Connettori</strong> (dal menu del tuo profilo).</li>
         <li>Clicca <strong class="text-slate-300">"Aggiungi connettore personalizzato"</strong>.</li>
         <li>Incolla l'URL <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">https://flyitalyadsb.com/mcp</code> e dagli un nome, es. "FlyItalyADSB".</li>
-        <li>Nelle impostazioni avanzate del connettore, aggiungi un'intestazione personalizzata: <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> con la chiave ricevuta via email.</li>
+        <li>Nelle impostazioni avanzate del connettore, aggiungi un'intestazione personalizzata: <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> con la tua chiave.</li>
         <li>Salva e prova chiedendo a Claude qualcosa come <em>"che aerei ci sono ora vicino a Roma Fiumicino?"</em></li>
       </ol>
 
@@ -329,7 +330,7 @@ X-Api-Key: <la-tua-chiave>
           body: JSON.stringify({ email, name: name || undefined, use_case: useCase || undefined, lang: 'it' }),
         });
         if (res.status === 202) {
-          setStatus('Fatto — controlla la tua email per la chiave.', '#34d399');
+          setStatus('Fatto — controlla la tua email: c\'è il link per vedere la chiave.', '#34d399');
           form.reset();
         } else if (res.status === 429) {
           setStatus('Hai già richiesto una chiave di recente — riprova tra qualche minuto.', '#fbbf24');

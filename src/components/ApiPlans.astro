@@ -4,7 +4,8 @@
 // {url} of a Stripe Checkout (Managed Payments) → back here with
 // /dati/api/grazie/?plan=<plan> (src/components/ApiThanks.astro) or here with
 // ?checkout=cancel. The key the email already has is upgraded in
-// place by the Stripe webhook (public-api); no key → one is emailed.
+// place by the Stripe webhook (public-api); no key → an email with a
+// one-time link to see the new one.
 import { PLANS, FREE_LIMITS_FROM, CHECKOUT_URL } from '../data/plans';
 
 interface Props {
@@ -49,7 +50,7 @@ const t = it
       boxTitle: (n: string) => `Piano ${n}`,
       emailLabel: 'Email della tua API key',
       emailHint:
-        "Usa l'email con cui hai chiesto la chiave: è quella che verrà promossa. Se non hai ancora una chiave, te ne arriva una nuova.",
+        "Usa l'email con cui hai chiesto la chiave: è quella che verrà promossa. Se non hai ancora una chiave, ti arriva per email il link per vederne una nuova.",
       pay: 'Vai al pagamento sicuro →',
       fine:
         "Prezzi IVA esclusa: l'imposta del tuo paese si aggiunge al checkout. Abbonamento mensile, disdici quando vuoi: la ricevuta che ti arriva per email contiene i link per gestirlo.",
@@ -60,6 +61,7 @@ const t = it
       notYet: 'I piani a pagamento non sono ancora attivi: riprova tra poco.',
       wait: 'Un attimo: riprova tra qualche secondo.',
       fail: 'Il servizio di pagamento non risponde, riprova tra poco.',
+      enterprise: 'Questa email ha un accordo enterprise: per cambiare piano scrivici ad admin@flyitalyadsb.com.',
       bad: 'Inserisci un indirizzo email valido.',
     }
   : {
@@ -95,7 +97,7 @@ const t = it
       boxTitle: (n: string) => `${n} plan`,
       emailLabel: 'Email of your API key',
       emailHint:
-        "Use the email you requested your key with: that's the key that gets upgraded. No key yet? A new one is emailed to you.",
+        "Use the email you requested your key with: that's the key that gets upgraded. No key yet? You'll get an email with a link to see your new one.",
       pay: 'Continue to secure payment →',
       fine:
         "Prices exclude tax: your country's tax is added at checkout. Monthly subscription, cancel any time: the receipt you get by email has the links to manage it.",
@@ -106,6 +108,7 @@ const t = it
       notYet: 'Paid plans are not active yet: please try again shortly.',
       wait: 'One moment: try again in a few seconds.',
       fail: 'The payment service is not responding, try again shortly.',
+      enterprise: 'This email has an enterprise agreement: to change plan, write to admin@flyitalyadsb.com.',
       bad: 'Enter a valid email address.',
     };
 
@@ -118,7 +121,7 @@ const RECOMMENDED = 'pro';
 ---
 
 <section id="piani" class="mb-14 scroll-mt-24" data-lang={lang} data-checkout={CHECKOUT_URL}
-         data-msg={JSON.stringify({ sending: t.sending, success: t.success, cancel: t.cancel, notYet: t.notYet, wait: t.wait, fail: t.fail, bad: t.bad })}>
+         data-msg={JSON.stringify({ sending: t.sending, success: t.success, cancel: t.cancel, notYet: t.notYet, wait: t.wait, fail: t.fail, bad: t.bad, enterprise: t.enterprise })}>
   <h2 class="text-2xl font-bold text-slate-100 mb-4">{t.title}</h2>
   <p class="text-slate-400 text-sm leading-relaxed mb-6 max-w-2xl">{t.intro}</p>
 
@@ -268,6 +271,9 @@ const RECOMMENDED = 'pro';
       if (res.status === 503) setStatus(msg.notYet, '#fbbf24');
       else if (res.status === 429) setStatus(msg.wait, '#fbbf24');
       else if (res.status === 400) setStatus(body?.error || msg.bad, '#f87171');
+      // Accordo enterprise sulla stessa email: il pagamento non partirebbe
+      // nemmeno, l'API lo respinge prima (nesso-infra public_api.py).
+      else if (res.status === 409 && body?.code === 'enterprise') setStatus(msg.enterprise, '#fbbf24');
       else setStatus(msg.fail, '#f87171');
     } catch {
       setStatus(msg.fail, '#f87171');
