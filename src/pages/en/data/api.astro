@@ -8,7 +8,7 @@ const SITE = 'https://flyitalyadsb.com';
 const faqs = [
   {
     q: 'Do I need an API key?',
-    a: 'Yes, for both the REST API (api.flyitalyadsb.com/v2/*) and the MCP server (flyitalyadsb.com/mcp) — same key for both, passed in the X-Api-Key header. It\'s self-service and instant: just an email address, the key arrives by email within seconds, no manual approval. The key is free; paid plans raise its limits without changing it.',
+    a: 'Yes, for both the REST API (api.flyitalyadsb.com/v2/*) and the MCP server (flyitalyadsb.com/mcp) — same key for both, passed in the X-Api-Key header. It\'s self-service and instant: just an email address: within seconds you get a link to see the key, no manual approval. The key is free; paid plans raise its limits without changing it.',
   },
   {
     q: 'Can I use the API commercially?',
@@ -139,9 +139,9 @@ X-Api-Key: <your-key>
       <h3 class="font-semibold text-slate-100 mb-2">Get an API key</h3>
       <p class="text-sm text-slate-400 leading-relaxed mb-6">
         The REST API and the MCP server share the same key, passed in the <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> header.
-        Instant and free: enter an email, the key arrives there — it's never shown on this page.
-        Requesting again with the same email retires the old key and issues a new one
-        (also how to recover a lost key).
+        Instant and free: enter an email and you get a link that shows the key once (the key itself never travels by email).
+        Requesting again with the same email keeps the old key working until you open the new link, then
+        the new key replaces it (also how to recover a lost key).
         Already have a key? See its plan and usage, or rotate it, from
         <a href="/en/data/api/account/" class="text-sky-400 no-underline hover:text-sky-300">My API</a>.
       </p>
@@ -172,11 +172,11 @@ X-Api-Key: <your-key>
                   style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
                   onmouseover="this.style.background='#38bdf825'"
                   onmouseout="this.style.background='#38bdf815'">
-            Email me a key →
+            Email me the link →
           </button>
           <p id="key-status" class="text-sm" role="status"></p>
         </div>
-        <p class="text-xs text-slate-500">If this email already has a free key, that key stops working and you get the new one.</p>
+        <p class="text-xs text-slate-500">If this email already has a free key, it keeps working until you open the link: from then on the new one replaces it.</p>
       </form>
     </div>
 
@@ -241,7 +241,7 @@ X-Api-Key: <your-key>
         <li>On <a href="https://claude.ai" target="_blank" rel="noopener" class="text-sky-400 no-underline">claude.ai</a>, open <strong class="text-slate-300">Settings → Connectors</strong> (from your profile menu).</li>
         <li>Click <strong class="text-slate-300">"Add custom connector"</strong>.</li>
         <li>Paste the URL <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">https://flyitalyadsb.com/mcp</code> and give it a name, e.g. "FlyItalyADSB".</li>
-        <li>In the connector's advanced settings, add a custom header: <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> with the key you got by email.</li>
+        <li>In the connector's advanced settings, add a custom header: <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> with your key.</li>
         <li>Save, then try asking Claude something like <em>"what aircraft are near Rome Fiumicino right now?"</em></li>
       </ol>
 
@@ -329,7 +329,7 @@ X-Api-Key: <your-key>
           body: JSON.stringify({ email, name: name || undefined, use_case: useCase || undefined, lang: 'en' }),
         });
         if (res.status === 202) {
-          setStatus('Done — check your email for the key.', '#34d399');
+          setStatus('Done — check your email for the link to see your key.', '#34d399');
           form.reset();
         } else if (res.status === 429) {
           setStatus('You already requested a key recently — try again in a few minutes.', '#fbbf24');
