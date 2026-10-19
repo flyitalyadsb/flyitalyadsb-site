@@ -8,7 +8,7 @@ const SITE = 'https://flyitalyadsb.com';
 const faqs = [
   {
     q: 'Serve una API key?',
-    a: 'Sì, sia per la REST API (api.flyitalyadsb.com/v2/*) sia per il server MCP (flyitalyadsb.com/mcp): stessa chiave per entrambi, passata nell\'header X-Api-Key. È self-service e istantanea: basta un indirizzo email: in pochi secondi ti arriva un link per vedere la chiave, senza approvazione manuale. La chiave è gratuita; i piani a pagamento ne alzano i limiti senza cambiarla.',
+    a: 'Sì, sia per la REST API (api.flyitalyadsb.com/v2/*) sia per il server MCP (flyitalyadsb.com/mcp): stessa chiave per entrambi, passata nell\'header X-Api-Key. È self-service e istantanea: basta un indirizzo email: in pochi secondi ti arriva un link per vedere la chiave, senza approvazione manuale. La chiave è gratuita; i piani a pagamento ne alzano i limiti senza cambiarla. Una chiave gratuita per casella email: le varianti dello stesso indirizzo (con «+…» o, su Gmail, con i punti in posizioni diverse) contano come lo stesso indirizzo, e gli indirizzi email temporanei non sono accettati.',
   },
   {
     q: 'Posso usare l\'API per scopi commerciali?',
@@ -364,7 +364,11 @@ X-Api-Key: <la-tua-chiave>
           setStatus('Nome o descrizione troppo lunghi, accorciali e riprova.', '#f87171');
         } else {
           const body = await res.json().catch(() => null);
-          setStatus(body?.error || 'Qualcosa è andato storto, riprova.', '#f87171');
+          if (body?.code === 'disposable-email') {
+            setStatus('Gli indirizzi email temporanei non sono accettati: usa un indirizzo che controlli.', '#f87171');
+          } else {
+            setStatus(body?.error || 'Qualcosa è andato storto, riprova.', '#f87171');
+          }
         }
       } catch {
         setStatus('Impossibile contattare il servizio, riprova tra poco.', '#f87171');

@@ -8,7 +8,7 @@ const SITE = 'https://flyitalyadsb.com';
 const faqs = [
   {
     q: 'Do I need an API key?',
-    a: 'Yes, for both the REST API (api.flyitalyadsb.com/v2/*) and the MCP server (flyitalyadsb.com/mcp) — same key for both, passed in the X-Api-Key header. It\'s self-service and instant: just an email address: within seconds you get a link to see the key, no manual approval. The key is free; paid plans raise its limits without changing it.',
+    a: 'Yes, for both the REST API (api.flyitalyadsb.com/v2/*) and the MCP server (flyitalyadsb.com/mcp) — same key for both, passed in the X-Api-Key header. It\'s self-service and instant: just an email address: within seconds you get a link to see the key, no manual approval. The key is free; paid plans raise its limits without changing it. One free key per mailbox: variants of the same address (with “+…” or, on Gmail, with the dots in different places) count as the same address, and temporary email addresses are not accepted.',
   },
   {
     q: 'Can I use the API commercially?',
@@ -363,7 +363,11 @@ X-Api-Key: <your-key>
           setStatus('Name or use case is too long — shorten it and try again.', '#f87171');
         } else {
           const body = await res.json().catch(() => null);
-          setStatus(body?.error || 'Something went wrong, please try again.', '#f87171');
+          if (body?.code === 'disposable-email') {
+            setStatus('Temporary email addresses are not accepted: use an address you control.', '#f87171');
+          } else {
+            setStatus(body?.error || 'Something went wrong, please try again.', '#f87171');
+          }
         }
       } catch {
         setStatus('Could not reach the service, try again shortly.', '#f87171');
