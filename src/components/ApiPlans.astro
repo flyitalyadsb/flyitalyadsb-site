@@ -31,7 +31,6 @@ const t = it
       perMin: 'richieste/min per chiave',
       perMonthReq: 'richieste/mese',
       radius: (km: number | null) => (km ? `raggio fino a ${nf.format(km)} km` : 'raggio mondiale'),
-      ent: 'host enterprise-api (oltre 100/min per IP)',
       priority: 'supporto email prioritario',
       recommended: 'Consigliato',
       price: (eur: number) => `${eur} €`,
@@ -79,7 +78,6 @@ const t = it
       perMin: 'requests/min per key',
       perMonthReq: 'requests/month',
       radius: (km: number | null) => (km ? `radius up to ${nf.format(km)} km` : 'worldwide radius'),
-      ent: 'enterprise-api host (beyond 100/min per IP)',
       priority: 'priority email support',
       recommended: 'Recommended',
       price: (eur: number) => `€${eur}`,
@@ -159,7 +157,6 @@ const RECOMMENDED = 'pro';
           <li><span class="text-slate-200">{nf.format(p.perMin)}</span> {t.perMin}</li>
           <li><span class="text-slate-200">{nf.format(p.perMonth)}</span> {t.perMonthReq}</li>
           <li>{t.radius(p.maxRadiusKm)}</li>
-          {p.enterpriseHost && <li>{t.ent}</li>}
           {p.id === 'business' && <li>{t.priority}</li>}
         </ul>
         )}
