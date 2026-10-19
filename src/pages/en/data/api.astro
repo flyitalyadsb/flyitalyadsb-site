@@ -12,7 +12,11 @@ const faqs = [
   },
   {
     q: 'Can I use the API commercially?',
-    a: 'Yes, on every plan, free included, within that plan\'s limits. Above the free limits you need a paid plan (Starter from €9/month, Pro, Business): self-serve, cancel any time, the key you already have is upgraded in place. Real-time redistribution (relaying our data to third parties), an SLA or custom volume need an enterprise agreement.',
+    a: 'Yes, on every plan, free included, within that plan\'s limits. Above the free limits you need a paid plan (Starter from €9/month, Pro, Business): self-serve, cancel any time, the key you already have is upgraded in place. You can use it inside apps and devices you sell too (see below). An enterprise agreement is needed only to resell the data as an API or feed for other people\'s products, for an SLA or for volume beyond Business.',
+  },
+  {
+    q: 'Can I put the key in an app or a device I sell? And use it from my server?',
+    a: 'Yes. The key can be built into an app or device you distribute or sell, and your server can use it, caching included, to serve your product\'s users. Requests from all the devices and users count together towards that key\'s plan: for example 10 devices asking 12 times a minute, day and night, make 120 requests a minute and over 5 million a month, which is the Pro plan. Use one key per product and credit FlyItalyADSB and flyitalyadsb.com in the product (CC BY-SA 4.0). A key inside an app can be extracted: to keep it safe, use it only from your server. An enterprise agreement is needed only to resell the data as an API or feed for other people\'s products.',
   },
   {
     q: 'How do payment and cancellation work?',
@@ -21,6 +25,22 @@ const faqs = [
   {
     q: 'Is there an SLA? How fast do you reply?',
     a: 'No plan includes an SLA or guaranteed response times, for the API or for email: FlyItalyADSB is a community and the paid plans only cover the cost of servers and bandwidth. The service is best effort and we reply as soon as we can. An SLA can only be agreed in an enterprise agreement.',
+  },
+  {
+    q: 'Where does the data come from?',
+    a: 'Almost all of it from the receivers of the FlyItalyADSB network, which send us their data first-hand, and from our own multilateration (MLAT). A small part comes from outside sources: ADSBHub and, for gliders and ultralights, the Open Glider Network (OGN). Aircraft seen only by those sources are about 1% of the total (measured on 19 October 2026): if one of them stops, the rest is unaffected.',
+  },
+  {
+    q: 'How fresh are the positions?',
+    a: 'The server rewrites the picture of every aircraft every 2 seconds and the API reloads it at most every 3. Each aircraft carries seen_pos, the seconds since its last position: in a measurement on 19 October 2026 half of the positions were under a second old and 9 in 10 under 7 seconds. Positions older than about 60 seconds are not returned.',
+  },
+  {
+    q: 'Which fields does a response have? Is the flight route included?',
+    a: 'Each aircraft is a record in readsb\'s aircraft.json format, the same as tar1090 and adsb.lol: ICAO hex, callsign (flight), registration (r) and type (t) for about 99% of aircraft, position, altitude, speed, track, squawk, category and the military, PIA and LADD flags. There is no route (departure and arrival airports) and no photos: for those you need another source.',
+  },
+  {
+    q: 'Can I get every aircraft in an area in a single request?',
+    a: 'Yes: /v2/lat/<lat>/lon/<lon>/dist/<km> returns every aircraft within the radius. The maximum radius depends on the plan: 500 km on Free, 1000 km on Starter, no limit on Pro and Business, which can ask for the whole world in one request. There is no single request for several aircraft by hex or registration: one request per aircraft, or one per radius.',
   },
   {
     q: 'How do I use the MCP server with Claude or ChatGPT?',
@@ -32,7 +52,7 @@ const faqs = [
   },
   {
     q: 'Is the network limited to Italy?',
-    a: 'No. FlyItalyADSB was born in Italy but is a global network with 3,200+ direct feeders worldwide — both the REST API and the MCP tools accept coordinates anywhere on the planet, not just Italy.',
+    a: 'No. FlyItalyADSB was born in Italy but is a global network with 3,200+ direct feeders worldwide — both the REST API and the MCP tools accept coordinates anywhere on the planet, not just Italy. Coverage follows the receivers: dense in Italy, much of Europe and North America, thinner in Asia, Africa and Oceania. For a given area, check the live map or try a request with a Free key.',
   },
   {
     q: 'How does this compare to other open ADS-B APIs (adsb.fi, airplanes.live, adsb.lol...)?',
@@ -213,8 +233,8 @@ X-Api-Key: <your-key>
         Free plan: 100 requests/minute per IP; paid plans have their own per-key limits (see <a href="#piani" class="text-sky-400 no-underline hover:text-sky-300">Plans</a>). Requests without <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> are rejected at the edge.
       </p>
       <p class="text-xs text-slate-500 mt-2">
-        Commercial use is allowed on every plan within its limits. Real-time redistribution, an SLA or custom volume
-        need an enterprise agreement — <a href="/en/contact" class="text-sky-400 no-underline hover:text-sky-300">contact us</a>.
+        Commercial use is allowed on every plan within its limits, inside apps and devices you sell too. Reselling the data as an API or feed
+        for others, an SLA or volume beyond Business need an enterprise agreement — <a href="/en/contact" class="text-sky-400 no-underline hover:text-sky-300">contact us</a>.
       </p>
     </section>
 

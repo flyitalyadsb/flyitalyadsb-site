@@ -23,6 +23,7 @@ const sections = [
     h: '3. Keys and plans',
     p: [
       'Each API key is personal and tied to an email address. The plans, with their prices and limits (requests per minute per key, requests per month, maximum radius), are described at flyitalyadsb.com/en/data/api. Commercial use is allowed on every plan, Free included, within that plan\'s limits. Requests beyond the limits get an error response (429 or 403) and are not counted.',
+      'A key can be built into an app or device you distribute or sell, and your server can use it to serve your product\'s users, caching the responses too. Requests from all the devices, users and servers of that product count together towards the limits of the key\'s plan: use one key per product and don\'t split the same use across several keys.',
     ],
   },
   {
@@ -41,7 +42,7 @@ const sections = [
   {
     h: '6. Uses that are not allowed',
     p: [
-      'You may not: use the data for safety of life, air traffic control or navigation; share your key with others or work around the limits (several keys or IP addresses for the same use); run a service that forwards the API\'s responses to third parties in real time (relay or proxy) without an enterprise agreement; use the service for unlawful activities, or to follow or harass people.',
+      'You may not: use the data for safety of life, air traffic control or navigation; give your key to others for use in their own products, or work around the limits (several keys or IP addresses for the same use); resell or redistribute the data in real time as an API or feed for other people\'s products without an enterprise agreement; use the service for unlawful activities, or to follow or harass people.',
     ],
   },
   {
