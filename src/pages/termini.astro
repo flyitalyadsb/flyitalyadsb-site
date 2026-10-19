@@ -6,25 +6,25 @@ import Layout from '../layouts/Layout.astro';
 // passo 6): il testo regola l'accesso al servizio, la licenza dei dati resta
 // CC BY-SA 4.0. Ogni modifica sostanziale: nuova data qui sotto + email agli
 // utenti con almeno 30 giorni di preavviso (punto 9).
-const VERSION = '18 ottobre 2026';
+const VERSION = '19 ottobre 2026';
 
 const sections = [
   {
     h: '1. Chi fornisce il servizio',
     p: [
-      'Il servizio API di FlyItalyADSB (REST API su api.flyitalyadsb.com ed enterprise-api.flyitalyadsb.com, server MCP su flyitalyadsb.com/mcp) è fornito da Nesso Labs S.r.l., Via Carlo Cattaneo 3, 25121 Brescia (BS), Italia, P.IVA IT04754860981. Contatto: admin@flyitalyadsb.com.',
+      'Il servizio API di FlyItalyADSB (REST API su api.flyitalyadsb.com, server MCP su flyitalyadsb.com/mcp) è fornito da Nesso Labs S.r.l., Via Carlo Cattaneo 3, 25121 Brescia (BS), Italia, P.IVA IT04754860981. Contatto: admin@flyitalyadsb.com.',
     ],
   },
   {
     h: '2. Il servizio',
     p: [
-      "L'API dà accesso ai dati di traffico aereo raccolti dalla rete FlyItalyADSB (posizioni in tempo reale e storico recente). Il servizio è fornito \"best effort\": nessun livello di servizio garantito (SLA), salvo un accordo enterprise scritto.",
+      "L'API dà accesso ai dati di traffico aereo raccolti dalla rete FlyItalyADSB (posizioni in tempo reale e storico recente). Il servizio è fornito \"best effort\": non garantiamo un livello di servizio (SLA) né tempi di risposta, sia dell'API sia alle email, perché FlyItalyADSB è una community e i piani a pagamento coprono solo i costi di server e banda. Un SLA si può concordare solo con un accordo enterprise scritto.",
     ],
   },
   {
     h: '3. Chiavi e piani',
     p: [
-      "Ogni API key è personale e legata a un indirizzo email. I piani disponibili, con prezzi e limiti (richieste al minuto per chiave, richieste al mese, raggio massimo, host utilizzabili), sono descritti su flyitalyadsb.com/dati/api. L'uso commerciale è consentito con ogni piano, Free compreso, entro i limiti del piano. Le richieste oltre i limiti ricevono una risposta di errore (429 o 403) e non sono conteggiate.",
+      "Ogni API key è personale e legata a un indirizzo email. I piani disponibili, con prezzi e limiti (richieste al minuto per chiave, richieste al mese, raggio massimo), sono descritti su flyitalyadsb.com/dati/api. L'uso commerciale è consentito con ogni piano, Free compreso, entro i limiti del piano. Le richieste oltre i limiti ricevono una risposta di errore (429 o 403) e non sono conteggiate.",
     ],
   },
   {
@@ -37,7 +37,7 @@ const sections = [
   {
     h: '5. Dati e licenza',
     p: [
-      'I dati sono pubblicati con licenza Creative Commons Attribuzione - Condividi allo stesso modo 4.0 (CC BY-SA 4.0): chi li riutilizza deve citare "FlyItalyADSB" con un link a flyitalyadsb.com e distribuire le opere derivate con la stessa licenza. Un piano a pagamento paga l\'accesso al servizio, i limiti e il supporto, non una licenza diversa sui dati.',
+      'I dati sono pubblicati con licenza Creative Commons Attribuzione - Condividi allo stesso modo 4.0 (CC BY-SA 4.0): chi li riutilizza deve citare "FlyItalyADSB" con un link a flyitalyadsb.com e distribuire le opere derivate con la stessa licenza. Un piano a pagamento paga l\'accesso al servizio e limiti più alti, non una licenza diversa sui dati.',
     ],
   },
   {
