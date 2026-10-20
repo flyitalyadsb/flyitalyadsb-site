@@ -1,7 +1,7 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
 import ApiPlans from '../../../components/ApiPlans.astro';
-import { PLANS } from '../../../data/plans';
+import { PLANS, freeLimitsFrom } from '../../../data/plans';
 
 const SITE = 'https://flyitalyadsb.com';
 
@@ -234,7 +234,7 @@ X-Api-Key: <your-key>
         ))}
       </table>
       <p class="text-xs text-slate-500 mt-4">
-        Free plan: 100 requests/minute per IP; paid plans have their own per-key limits (see <a href="#piani" class="text-sky-400 no-underline hover:text-sky-300">Plans</a>). Requests without <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> are rejected at the edge.
+        Free plan: 30 requests/minute per key, 300,000 a month and a radius up to 500 km from {freeLimitsFrom('en')} (until then 100 requests/minute per IP); paid plans have their own per-key limits (see <a href="#piani" class="text-sky-400 no-underline hover:text-sky-300">Plans</a>). Requests without <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> are rejected at the edge.
       </p>
       <p class="text-xs text-slate-500 mt-2">
         Commercial use is allowed on every plan within its limits, inside apps and devices you sell too. Reselling the data as an API or feed

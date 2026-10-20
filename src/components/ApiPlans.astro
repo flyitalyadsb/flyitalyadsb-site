@@ -6,7 +6,7 @@
 // ?checkout=cancel. The key the email already has is upgraded in
 // place by the Stripe webhook (public-api); no key → an email with a
 // one-time link to see the new one.
-import { PLANS, FREE_LIMITS_FROM, CHECKOUT_URL } from '../data/plans';
+import { PLANS, FREE_LIMITS_FROM, CHECKOUT_URL, freeLimitsFrom } from '../data/plans';
 
 interface Props {
   lang: 'it' | 'en';
@@ -39,7 +39,7 @@ const t = it
       summary: (eur: number) => `${eur} €/mese + IVA · rinnovo mensile, disdici quando vuoi`,
       getFree: 'Chiave gratuita ↓',
       choose: (n: string) => `Scegli ${n}`,
-      freeNote: FREE_LIMITS_FROM ? `I limiti del piano Free valgono dal ${FREE_LIMITS_FROM}.` : '',
+      freeNote: FREE_LIMITS_FROM ? `I limiti del piano Free valgono dal ${freeLimitsFrom('it')}; fino ad allora una chiave Free resta a 100 richieste/minuto per IP.` : '',
       enterprise:
         'Rivendere i dati come API o feed per prodotti di altri, SLA o volumi oltre il Business: serve un accordo enterprise —',
       contact: 'scrivici',
@@ -86,7 +86,7 @@ const t = it
       summary: (eur: number) => `€${eur}/month + tax · renews monthly, cancel any time`,
       getFree: 'Free key ↓',
       choose: (n: string) => `Choose ${n}`,
-      freeNote: FREE_LIMITS_FROM ? `Free-plan limits apply from ${FREE_LIMITS_FROM}.` : '',
+      freeNote: FREE_LIMITS_FROM ? `Free-plan limits apply from ${freeLimitsFrom('en')}; until then a Free key stays at 100 requests/minute per IP.` : '',
       enterprise: 'Reselling the data as an API or feed for other people\'s products, an SLA or volume beyond Business need an enterprise agreement —',
       contact: 'get in touch',
       feederTitle: 'Do you run a receiver that feeds the network?',
