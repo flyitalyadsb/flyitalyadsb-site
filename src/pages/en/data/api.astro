@@ -332,6 +332,8 @@ X-Api-Key: <your-key>
   </div>
 
   <script>
+    import { identify, track } from '../../../lib/analytics';
+
     const form = document.getElementById('key-form') as HTMLFormElement;
     const submitBtn = document.getElementById('key-submit') as HTMLButtonElement;
     const status = document.getElementById('key-status') as HTMLParagraphElement;
@@ -356,6 +358,8 @@ X-Api-Key: <your-key>
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, name: name || undefined, use_case: useCase || undefined, lang: 'en' }),
         });
+        if (res.status === 202) identify(email);
+        track('api_key_requested', { status: res.status });
         if (res.status === 202) {
           setStatus('Done — check your email for the link to see your key.', '#34d399');
           form.reset();

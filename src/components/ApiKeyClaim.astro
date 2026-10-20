@@ -102,7 +102,7 @@ const secondary = 'background:#111e30;color:#cbd5e1;border:1px solid #1e3048';
         <h2 id="claim-key-h" class="text-xs font-semibold uppercase tracking-widest text-slate-500">{t.keyLabel}</h2>
         <span id="claim-plan" class="text-xs font-semibold uppercase tracking-widest px-2 py-1 rounded" style="background:#111e30;color:#7dd3fc"></span>
       </div>
-      <div class="flex flex-col sm:flex-row sm:items-center gap-3 rounded-lg p-4" style="background:#111e30;border:1px solid #1e3048">
+      <div class="ph-no-capture flex flex-col sm:flex-row sm:items-center gap-3 rounded-lg p-4" style="background:#111e30;border:1px solid #1e3048">
         <code id="claim-key" class="flex-1 min-w-0 text-sm break-all select-all" style="color:#e2e8f0"></code>
         <button type="button" id="claim-copy" class="self-start sm:self-auto px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap" style={primary}>{t.copy}</button>
       </div>
@@ -133,6 +133,8 @@ const secondary = 'background:#111e30;color:#cbd5e1;border:1px solid #1e3048';
 </div>
 
 <script>
+  import { track } from '../lib/analytics';
+
   const root = document.getElementById('claim') as HTMLElement;
   const M = JSON.parse(root.dataset.msg || '{}');
   const API = root.dataset.api as string;
@@ -185,6 +187,7 @@ const secondary = 'background:#111e30;color:#cbd5e1;border:1px solid #1e3048';
     }
     const data = await res.json().catch(() => ({}));
     if (res.status === 200 && data.key) {
+      track('api_key_claimed', { plan: data.plan });
       forgetToken();
       $('claim-ask').classList.add('hidden');
       $('claim-key').textContent = data.key;
@@ -194,6 +197,7 @@ const secondary = 'background:#111e30;color:#cbd5e1;border:1px solid #1e3048';
       return;
     }
     if (res.status === 410 || res.status === 400) {
+      track('api_key_claim_expired', { status: res.status });
       forgetToken();
       return dead(M.expired, true);
     }

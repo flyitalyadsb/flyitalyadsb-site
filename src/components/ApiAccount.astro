@@ -284,6 +284,8 @@ const msg = {
 </div>
 
 <script>
+  import { forget, identify, track } from '../lib/analytics';
+
   const root = document.getElementById('account') as HTMLElement;
   const M = JSON.parse(root.dataset.msg || '{}');
   const API = root.dataset.api as string;
@@ -398,7 +400,7 @@ const msg = {
     done.addEventListener('click', onDone);
     return el('div', { class: 'mt-4 w-full', tabindex: '-1' },
       el('p', { class: 'text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2' }, M.keyLabel),
-      el('div', { class: 'flex flex-col sm:flex-row sm:items-center gap-3 rounded-lg p-4', style: 'background:#111e30;border:1px solid #1e3048' }, code, copy),
+      el('div', { class: 'ph-no-capture flex flex-col sm:flex-row sm:items-center gap-3 rounded-lg p-4', style: 'background:#111e30;border:1px solid #1e3048' }, code, copy),
       copyStatus,
       el('p', { class: 'text-sm mt-1', style: 'color:#fbbf24' }, M.saveNow),
       done);
@@ -431,6 +433,7 @@ const msg = {
         const r = await api('POST', '/account/rotate', { key_id: k.id, lang: LANG });
         if (r.status === 401) return showLogin(M.expired, '#fbbf24');
         if (r.status !== 200) { say(status, M.rotateFail, '#f87171'); btn.disabled = false; return; }
+        track('api_key_rotated');
         if (typeof r.data?.key === 'string' && r.data.key) {
           // Shown once: no automatic reload, it would wipe the key off the page.
           say(status, M.rotatedShown, '#6ee7b7');
@@ -487,8 +490,9 @@ const msg = {
     try {
       const r = await api('POST', '/account/feeder', { non_commercial: true, lang: LANG });
       if (r.status === 401) return showLogin(M.expired, '#fbbf24');
-      if (r.status === 200) { say(status, M.feederOk, '#6ee7b7'); btn.disabled = false; return load(); }
       const code = r.data?.code;
+      track('feeder_perk_checked', { result: r.status === 200 ? 'ok' : code || r.status });
+      if (r.status === 200) { say(status, M.feederOk, '#6ee7b7'); btn.disabled = false; return load(); }
       if (code === 'not-feeding') {
         status.replaceChildren(M.feederNotFeeding.replace('{ip}', String(r.data.ip || '')) + ' ',
           el('a', { href: M.feederStatusHref, class: 'text-sky-400 no-underline' }, M.feederStatusLink), '.');
@@ -541,6 +545,8 @@ const msg = {
     say(status, M.sending);
     try {
       const r = await api('POST', '/account/login', { email, lang: LANG });
+      if (r.status === 202) identify(email);
+      track('account_login_requested', { status: r.status });
       if (r.status === 202) say(status, M.sent, '#6ee7b7');
       else if (r.status === 429) say(status, M.wait, '#fbbf24');
       else say(status, r.data?.error || M.fail, '#f87171');
@@ -551,6 +557,7 @@ const msg = {
   $('acc-logout').addEventListener('click', async () => {
     try { await api('POST', '/account/logout', {}); } catch {}
     setSession(null);
+    forget();
     showLogin();
   });
 
@@ -558,7 +565,7 @@ const msg = {
     const status = $('acc-sub-status');
     try {
       const r = await api('POST', '/account/portal', { lang: LANG });
-      if (r.status === 200 && r.data.url) { location.href = r.data.url; return; }
+      if (r.status === 200 && r.data.url) { track('billing_portal_opened', {}, true); location.href = r.data.url; return; }
       if (r.status === 401) return showLogin(M.expired, '#fbbf24');
       say(status, r.data?.error || M.fail, '#f87171');
     } catch { say(status, M.fail, '#f87171'); }
@@ -576,6 +583,7 @@ const msg = {
       say($('acc-wait'), M.opening);
       try {
         const r = await api('POST', '/account/session', { token });
+        track('account_signed_in', { status: r.status });
         if (r.status === 200) { setSession(r.data); return load(); }
         return showLogin(M.expired, '#fbbf24');
       } catch { return showLogin(M.fail, '#f87171'); }
