@@ -22,8 +22,8 @@ export const PLANS: Plan[] = [
 ];
 
 // When the free-plan limits start. null = not announced yet: until then a free
-// key keeps today's limit (100 requests/minute per IP, applied by public-api) and the
-// page says the date will be emailed with at least 30 days' notice.
+// key keeps today's limit (100 requests/minute per IP, applied by public-api; the
+// Free card says so). The note about the email notice was removed (owner, 2026-10-20).
 export const FREE_LIMITS_FROM: string | null = null;
 
 export const CHECKOUT_URL = 'https://api.flyitalyadsb.com/v2/billing/checkout';
