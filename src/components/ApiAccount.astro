@@ -19,11 +19,15 @@
 //                                           receiver's network (feeders.py)
 // Everything coming from the API is written with textContent (key names are
 // user input).
+import { freeLimitsFrom } from '../data/plans';
+
 interface Props {
   lang: 'it' | 'en';
 }
 const { lang } = Astro.props;
 const it = lang === 'it';
+const FREE_FROM_IT = freeLimitsFrom('it');
+const FREE_FROM_EN = freeLimitsFrom('en');
 
 const t = it
   ? {
@@ -61,7 +65,9 @@ const t = it
       perMin: 'richieste/min per chiave',
       perMonth: 'richieste/mese',
       radius: (km: number | null) => (km ? `raggio fino a ${km.toLocaleString('it-IT')} km` : 'raggio mondiale'),
-      notEnforced: 'Limiti del piano Free non ancora applicati: fino ad allora vale il limite di 100 richieste/minuto per IP.',
+      notEnforced: FREE_FROM_IT
+        ? `Limiti del piano Free non ancora applicati: valgono dal ${FREE_FROM_IT}, fino ad allora vale il limite di 100 richieste/minuto per IP.`
+        : 'Limiti del piano Free non ancora applicati: fino ad allora vale il limite di 100 richieste/minuto per IP.',
       month: 'Questo mese',
       requests: 'richieste',
       chartTitle: 'Richieste al giorno, ultimi 30 giorni',
@@ -138,7 +144,9 @@ const t = it
       perMin: 'requests/min per key',
       perMonth: 'requests/month',
       radius: (km: number | null) => (km ? `radius up to ${km.toLocaleString('en-US')} km` : 'worldwide radius'),
-      notEnforced: 'Free-plan limits are not applied yet: until then the limit is 100 requests/minute per IP.',
+      notEnforced: FREE_FROM_EN
+        ? `Free-plan limits are not applied yet: they apply from ${FREE_FROM_EN}, until then the limit is 100 requests/minute per IP.`
+        : 'Free-plan limits are not applied yet: until then the limit is 100 requests/minute per IP.',
       month: 'This month',
       requests: 'requests',
       chartTitle: 'Requests per day, last 30 days',

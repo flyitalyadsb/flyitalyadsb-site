@@ -1,7 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import ApiPlans from '../../components/ApiPlans.astro';
-import { PLANS } from '../../data/plans';
+import { PLANS, freeLimitsFrom } from '../../data/plans';
 
 const SITE = 'https://flyitalyadsb.com';
 
@@ -235,7 +235,7 @@ X-Api-Key: <la-tua-chiave>
         ))}
       </table>
       <p class="text-xs text-slate-500 mt-4">
-        Piano free: 100 richieste/minuto per IP; i piani a pagamento hanno limiti propri per chiave (vedi <a href="#piani" class="text-sky-400 no-underline hover:text-sky-300">Piani</a>). Le richieste senza <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> vengono respinte a livello edge.
+        Piano Free: 30 richieste/minuto per chiave, 300.000 al mese e raggio fino a 500 km dal {freeLimitsFrom('it')} (fino ad allora 100 richieste/minuto per IP); i piani a pagamento hanno limiti propri per chiave (vedi <a href="#piani" class="text-sky-400 no-underline hover:text-sky-300">Piani</a>). Le richieste senza <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> vengono respinte a livello edge.
       </p>
       <p class="text-xs text-slate-500 mt-2">
         Uso commerciale consentito con ogni piano, entro i suoi limiti, anche dentro app e dispositivi venduti. Rivendere i dati come API o feed per

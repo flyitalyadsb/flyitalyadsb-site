@@ -1,5 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import { freeLimitsFrom } from '../../../data/plans';
 
 const SITE = 'https://flyitalyadsb.com';
 
@@ -12,7 +13,7 @@ const rows = [
     name: 'FlyItalyADSB',
     highlight: true,
     baseUrl: 'api.flyitalyadsb.com/v2',
-    rateLimit: 'Free plan: 100 requests/min per IP; paid plans from €9/month with per-key limits up to 1,000 requests/min',
+    rateLimit: `Free plan: 30 requests/min per key from ${freeLimitsFrom('en')} (before that 100/min per IP); paid plans from €9/month with per-key limits up to 1,000 requests/min`,
     feederRequired: 'No — key by email, free and instant',
     commercial: 'Allowed on every plan, free included, within its limits, inside apps and devices you sell too; reselling the data as an API or feed, SLA or volume beyond Business need an enterprise agreement',
     notes: 'Also includes an MCP server for AI agents; own MLAT over all of Italy (military included); self-serve history (/v2/history) with a daily per-aircraft track',
