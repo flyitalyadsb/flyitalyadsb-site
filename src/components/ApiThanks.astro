@@ -102,11 +102,14 @@ const t = it
 </div>
 
 <script>
+  import { track } from '../lib/analytics';
+
   const box = document.getElementById('thanks') as HTMLElement;
   const plans = JSON.parse(box.dataset.plans || '[]') as { id: string; name: string; limits: string }[];
   const id = new URLSearchParams(location.search).get('plan');
   const plan = plans.find((p) => p.id === id);
   if (plan) {
+    track('checkout_completed', { plan: plan.id });
     (document.getElementById('thanks-lead') as HTMLElement).textContent =
       (box.dataset.lead || '').replace('{plan}', plan.name);
     (document.getElementById('thanks-limits') as HTMLElement).textContent = plan.limits;

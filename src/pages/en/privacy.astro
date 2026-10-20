@@ -3,7 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 
 // Privacy notice — English version of /privacy (same content; the Italian
 // text prevails). ⚠️ Draft for legal review, see the Italian page's note.
-const VERSION = '19 October 2026';
+const VERSION = '20 October 2026';
 
 const sections = [
   {
@@ -19,36 +19,40 @@ const sections = [
       "Subscriptions: plan, status and the customer and subscription identifiers at the payment provider. Payment data (card, billing address, VAT number) is collected and processed directly by the payment provider named in point 4: we never see it.",
       'Requests to the service: IP address, date and time, requested path and user agent, in the technical logs of Cloudflare and of our servers, for security, usage limits and troubleshooting.',
       "Feeders: the IP address your receiver sends data from and, if you provide it, the receiver's position for multilateration. The \"Are my data arriving?\" page uses the request's IP address only to answer that question. If you turn on the feeder perk in My API, we keep with your email the network (IP address) your receiver sends data from, the date of the check and the date of the last data seen, to know how long the perk applies.",
+      "Browsing the site and the map (mappa.flyitalyadsb.com): pages visited, clicks, where you came from (referring site and campaign parameters), device and browser type, approximate location derived from the IP address, and the outcome of the API forms (requesting a key, signing in to My API, starting and completing a purchase), never the content of the fields. Without your consent we count these anonymously: no cookies, and to tell visitors apart an irreversible code computed from IP address and browser together with a random value that changes every day. With your consent we also use analytics cookies, record visits (movements, clicks and page content; form fields are always hidden and pages that show your key are never recorded) and link your browsing to the email you type into the API forms.",
     ],
   },
   {
     h: '3. Why, and on what basis',
     p: [
-      'Providing the service you ask for (key, plan, My API, service emails): performance of a contract, GDPR art. 6(1)(b). Protecting the service from abuse and enforcing limits: legitimate interest, art. 6(1)(f). Legal obligations (accounting and tax): art. 6(1)(c). We do not use your data for profiling or advertising and we do not sell it.',
+      'Providing the service you ask for (key, plan, My API, service emails): performance of a contract, GDPR art. 6(1)(b). Protecting the service from abuse and enforcing limits: legitimate interest, art. 6(1)(f). Legal obligations (accounting and tax): art. 6(1)(c). Anonymous cookieless statistics: legitimate interest in understanding how the site is used and improving it, art. 6(1)(f). Analytics cookies, visit recordings and linking to your email: consent, art. 6(1)(a), which you can withdraw at any time from “Cookie preferences”, with no effect on using the site. We do not use your data for advertising and we do not sell it.',
     ],
   },
   {
     h: '4. Who we entrust it to',
     p: [
-      'Cloudflare (content delivery, attack protection, cookieless aggregate site statistics); Stripe, through its Link service, which sells the paid plans on our behalf as merchant of record and processes payment data as an independent controller under its own privacy notice; the provider of our transactional email service. Some of these providers also process data outside the European Union, with the safeguards the GDPR requires (standard contractual clauses or an adequacy decision).',
+      'Cloudflare (content delivery, attack protection, cookieless aggregate site statistics); PostHog Inc. (site statistics and visit recordings, with the data hosted in the European Union); Stripe, through its Link service, which sells the paid plans on our behalf as merchant of record and processes payment data as an independent controller under its own privacy notice; the provider of our transactional email service. Some of these providers also process data outside the European Union, with the safeguards the GDPR requires (standard contractual clauses or an adequacy decision).',
     ],
   },
   {
     h: '5. For how long',
     p: [
-      "A key's data and usage for as long as the key is active or the subscription runs, and then for as long as needed to handle any disputes and legal obligations. Technical request logs for a limited period tied to security and troubleshooting. My API sign-in links are valid for 15 minutes, sessions for 2 hours.",
+      "A key's data and usage for as long as the key is active or the subscription runs, and then for as long as needed to handle any disputes and legal obligations. Technical request logs for a limited period tied to security and troubleshooting. My API sign-in links are valid for 15 minutes, sessions for 2 hours. Site statistics: visit recordings for 30 days, other browsing data for the retention period of the analytics service (currently up to 7 years), unless you ask us to delete them.",
     ],
   },
   {
     h: '6. Your rights',
     p: [
-      'You can ask for access, rectification, erasure, restriction and portability, and object to processing based on legitimate interest, by writing to admin@flyitalyadsb.com. You can rotate or revoke your key from My API. You also have the right to lodge a complaint with the Italian data protection authority (garanteprivacy.it) or the authority of your country.',
+      'You can ask for access, rectification, erasure, restriction and portability, and object to processing based on legitimate interest, by writing to admin@flyitalyadsb.com. You can rotate or revoke your key from My API and withdraw your consent to statistics from “Cookie preferences”. You also have the right to lodge a complaint with the Italian data protection authority (garanteprivacy.it) or the authority of your country.',
     ],
   },
   {
+    id: 'cookies',
     h: '7. Cookies',
     p: [
-      "The site uses no profiling cookies and no third-party advertising cookies. My API keeps its session in your browser only (sessionStorage), which clears it when you close the tab.",
+      "Always on, because they are needed: your cookie choice (fia_consent cookie, 6 months, then we ask again; it applies to both the site and the map, and PostHog repeats it in its own __ph_opt_in_out_… cookie) and the My API session (sessionStorage, which your browser clears when you close the tab).",
+      "Statistics without consent: no cookies and nothing stored in your browser. Statistics with consent: the PostHog cookie ph_…_posthog (1 year, shared by the site and the map) and the data stored in your browser for visit recordings.",
+      "We use no third-party advertising cookies. You can change your choice at any time from “Cookie preferences”, at the bottom of every page.",
     ],
   },
 ];
@@ -58,7 +62,8 @@ const linkify = (t: string) =>
   esc(t)
     .replace(/admin@flyitalyadsb\.com/g, '<a href="mailto:admin@flyitalyadsb.com" class="text-sky-400 no-underline hover:text-sky-300">admin@flyitalyadsb.com</a>')
     .replace(/garanteprivacy\.it/g, '<a href="https://www.garanteprivacy.it" rel="noopener" class="text-sky-400 no-underline hover:text-sky-300">garanteprivacy.it</a>')
-    .replace(/My API/g, '<a href="/en/data/api/account/" class="text-sky-400 no-underline hover:text-sky-300">My API</a>');
+    .replace(/My API/g, '<a href="/en/data/api/account/" class="text-sky-400 no-underline hover:text-sky-300">My API</a>')
+    .replace(/“Cookie preferences”/g, '<a href="#cookies" data-cookie-prefs class="text-sky-400 no-underline hover:text-sky-300">Cookie preferences</a>');
 ---
 
 <Layout title="Privacy" description="FlyItalyADSB privacy notice: what data we process for API keys, subscriptions and feeders, why, for how long and your rights.">
@@ -66,7 +71,7 @@ const linkify = (t: string) =>
     <h1 class="text-4xl font-bold text-slate-100 mb-3">Privacy notice</h1>
     <p class="text-sm text-slate-500 mb-10">Version of {VERSION}</p>
     {sections.map((s) => (
-      <section class="mb-8">
+      <section id={s.id} class="mb-8 scroll-mt-20">
         <h2 class="text-lg font-semibold text-slate-100 mb-3">{s.h}</h2>
         {s.p.map((para) => <p class="text-sm text-slate-400 leading-relaxed mb-3" set:html={linkify(para)} />)}
       </section>

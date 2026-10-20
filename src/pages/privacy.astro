@@ -2,10 +2,11 @@
 import Layout from '../layouts/Layout.astro';
 
 // Informativa privacy (GDPR art. 13). ⚠️ Bozza da far rivedere a un legale:
-// descrive i trattamenti come sono implementati il 2026-10-18 (public-api,
-// stats-api, Stripe Managed Payments, Cloudflare). Se cambia un trattamento,
-// cambia questo testo e la data.
-const VERSION = '19 ottobre 2026';
+// descrive i trattamenti come sono implementati il 2026-10-20 (public-api,
+// stats-api, Stripe Managed Payments, Cloudflare, PostHog: src/lib/analytics.ts
+// e nesso-infra terraform/posthog). Se cambia un trattamento, cambia questo
+// testo e la data.
+const VERSION = '20 ottobre 2026';
 
 const sections = [
   {
@@ -21,36 +22,40 @@ const sections = [
       "Abbonamenti: il piano, lo stato e gli identificativi del cliente e dell'abbonamento presso il fornitore dei pagamenti. I dati di pagamento (carta, indirizzo di fatturazione, partita IVA) li raccoglie e li tratta direttamente il fornitore dei pagamenti indicato al punto 4: noi non li vediamo.",
       "Richieste al servizio: indirizzo IP, data e ora, percorso richiesto e user agent, nei log tecnici di Cloudflare e dei nostri server, per sicurezza, limiti di utilizzo e diagnosi dei guasti.",
       "Feeder: l'indirizzo IP da cui il ricevitore invia i dati e, se la indichi, la posizione del ricevitore per la multilaterazione. La pagina \"I miei dati arrivano?\" usa l'indirizzo IP della richiesta solo per rispondere a quella domanda. Se attivi il vantaggio feeder da La mia API, conserviamo insieme alla tua email la rete (indirizzo IP) da cui il ricevitore invia dati, la data della verifica e quella dell'ultimo dato visto, per sapere finché il vantaggio vale.",
+      "Navigazione del sito e della mappa (mappa.flyitalyadsb.com): pagine visitate, clic, provenienza (sito di origine e parametri della campagna), tipo di dispositivo e browser, posizione approssimativa ricavata dall'indirizzo IP, e gli esiti dei moduli API (richiesta di una chiave, accesso a La mia API, avvio e conclusione di un acquisto), mai il contenuto dei campi. Senza il tuo consenso li contiamo in forma anonima: nessun cookie, e per distinguere i visitatori un codice irreversibile calcolato da indirizzo IP e browser insieme a un valore casuale che cambia ogni giorno. Con il tuo consenso usiamo anche cookie di statistica, registriamo le visite (movimenti, clic e contenuto delle pagine; i campi dei moduli restano sempre nascosti e le pagine che mostrano la chiave non vengono mai registrate) e colleghiamo la navigazione all'email che inserisci nei moduli API.",
     ],
   },
   {
     h: '3. Perché e su quale base',
     p: [
-      "Fornire il servizio che chiedi (chiave, piano, La mia API, email di servizio): esecuzione del contratto, art. 6.1.b GDPR. Proteggere il servizio da abusi e far rispettare i limiti: legittimo interesse, art. 6.1.f. Adempiere a obblighi di legge (contabili e fiscali): art. 6.1.c. Non usiamo i tuoi dati per profilazione o pubblicità e non li vendiamo.",
+      "Fornire il servizio che chiedi (chiave, piano, La mia API, email di servizio): esecuzione del contratto, art. 6.1.b GDPR. Proteggere il servizio da abusi e far rispettare i limiti: legittimo interesse, art. 6.1.f. Adempiere a obblighi di legge (contabili e fiscali): art. 6.1.c. Statistiche anonime senza cookie: legittimo interesse a capire come viene usato il sito e a migliorarlo, art. 6.1.f. Cookie di statistica, registrazione delle visite e collegamento all'email: consenso, art. 6.1.a, che puoi revocare in ogni momento da «Preferenze cookie», senza conseguenze sull'uso del sito. Non usiamo i tuoi dati per pubblicità e non li vendiamo.",
     ],
   },
   {
     h: '4. A chi li affidiamo',
     p: [
-      "Cloudflare (rete di distribuzione, protezione da attacchi, statistiche aggregate del sito senza cookie); Stripe, tramite il servizio Link, che vende i piani a pagamento per nostro conto come merchant of record e tratta i dati di pagamento come titolare autonomo secondo la propria informativa; il fornitore del servizio di invio delle email transazionali. Alcuni di questi fornitori trattano dati anche fuori dall'Unione europea, con le garanzie previste dal GDPR (clausole contrattuali tipo o decisione di adeguatezza).",
+      "Cloudflare (rete di distribuzione, protezione da attacchi, statistiche aggregate del sito senza cookie); PostHog Inc. (statistiche del sito e registrazione delle visite, con i dati ospitati nell'Unione europea); Stripe, tramite il servizio Link, che vende i piani a pagamento per nostro conto come merchant of record e tratta i dati di pagamento come titolare autonomo secondo la propria informativa; il fornitore del servizio di invio delle email transazionali. Alcuni di questi fornitori trattano dati anche fuori dall'Unione europea, con le garanzie previste dal GDPR (clausole contrattuali tipo o decisione di adeguatezza).",
     ],
   },
   {
     h: '5. Per quanto tempo',
     p: [
-      "I dati di una chiave e del suo utilizzo finché la chiave è attiva o l'abbonamento è in corso, e poi per il tempo necessario a gestire eventuali contestazioni e gli obblighi di legge. I log tecnici delle richieste per un periodo limitato, legato a sicurezza e diagnosi. I link di accesso a La mia API valgono 15 minuti, le sessioni 2 ore.",
+      "I dati di una chiave e del suo utilizzo finché la chiave è attiva o l'abbonamento è in corso, e poi per il tempo necessario a gestire eventuali contestazioni e gli obblighi di legge. I log tecnici delle richieste per un periodo limitato, legato a sicurezza e diagnosi. I link di accesso a La mia API valgono 15 minuti, le sessioni 2 ore. Statistiche del sito: le registrazioni delle visite 30 giorni, gli altri dati di navigazione per il periodo di conservazione del servizio di statistica (oggi fino a 7 anni), salvo tua richiesta di cancellazione.",
     ],
   },
   {
     h: '6. I tuoi diritti',
     p: [
-      "Puoi chiedere accesso, rettifica, cancellazione, limitazione, portabilità e opporti al trattamento basato sul legittimo interesse scrivendo a admin@flyitalyadsb.com. Puoi rigenerare o revocare la tua chiave da La mia API. Hai inoltre diritto di proporre reclamo al Garante per la protezione dei dati personali (garanteprivacy.it).",
+      "Puoi chiedere accesso, rettifica, cancellazione, limitazione, portabilità e opporti al trattamento basato sul legittimo interesse scrivendo a admin@flyitalyadsb.com. Puoi rigenerare o revocare la tua chiave da La mia API e revocare il consenso alle statistiche da «Preferenze cookie». Hai inoltre diritto di proporre reclamo al Garante per la protezione dei dati personali (garanteprivacy.it).",
     ],
   },
   {
+    id: 'cookie',
     h: '7. Cookie',
     p: [
-      "Il sito non usa cookie di profilazione né di terze parti per pubblicità. La mia API conserva la sessione nel solo browser (sessionStorage), che la cancella alla chiusura della scheda.",
+      "Sempre attivi, perché necessari: la tua scelta sui cookie (cookie fia_consent, 6 mesi, poi te la richiediamo; vale per il sito e per la mappa, e PostHog la ripete nel proprio cookie __ph_opt_in_out_…) e la sessione di La mia API (sessionStorage, che il browser cancella alla chiusura della scheda).",
+      "Statistiche senza consenso: nessun cookie e nessun dato salvato nel browser. Statistiche con consenso: il cookie di PostHog ph_…_posthog (1 anno, comune a sito e mappa) e i dati salvati nel browser per la registrazione delle visite.",
+      "Non usiamo cookie di terze parti per pubblicità. Puoi cambiare scelta in ogni momento da «Preferenze cookie», in fondo a ogni pagina.",
     ],
   },
 ];
@@ -60,7 +65,8 @@ const linkify = (t: string) =>
   esc(t)
     .replace(/admin@flyitalyadsb\.com/g, '<a href="mailto:admin@flyitalyadsb.com" class="text-sky-400 no-underline hover:text-sky-300">admin@flyitalyadsb.com</a>')
     .replace(/garanteprivacy\.it/g, '<a href="https://www.garanteprivacy.it" rel="noopener" class="text-sky-400 no-underline hover:text-sky-300">garanteprivacy.it</a>')
-    .replace(/La mia API/g, '<a href="/dati/api/account/" class="text-sky-400 no-underline hover:text-sky-300">La mia API</a>');
+    .replace(/La mia API/g, '<a href="/dati/api/account/" class="text-sky-400 no-underline hover:text-sky-300">La mia API</a>')
+    .replace(/«Preferenze cookie»/g, '<a href="#cookie" data-cookie-prefs class="text-sky-400 no-underline hover:text-sky-300">Preferenze cookie</a>');
 ---
 
 <Layout title="Privacy" description="Informativa privacy di FlyItalyADSB: quali dati trattiamo per API key, abbonamenti e feeder, perché, per quanto tempo e i tuoi diritti.">
@@ -68,7 +74,7 @@ const linkify = (t: string) =>
     <h1 class="text-4xl font-bold text-slate-100 mb-3">Informativa privacy</h1>
     <p class="text-sm text-slate-500 mb-10">Versione del {VERSION}</p>
     {sections.map((s) => (
-      <section class="mb-8">
+      <section id={s.id} class="mb-8 scroll-mt-20">
         <h2 class="text-lg font-semibold text-slate-100 mb-3">{s.h}</h2>
         {s.p.map((para) => <p class="text-sm text-slate-400 leading-relaxed mb-3" set:html={linkify(para)} />)}
       </section>

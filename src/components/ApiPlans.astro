@@ -215,6 +215,8 @@ const ACCENT = '#38bdf8';
 </section>
 
 <script>
+  import { identify, track } from '../lib/analytics';
+
   const section = document.getElementById('piani') as HTMLElement;
   const msg = JSON.parse(section.dataset.msg || '{}');
   const lang = section.dataset.lang;
@@ -260,6 +262,7 @@ const ACCENT = '#38bdf8';
     e.preventDefault();
     const value = email.value.trim();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value)) return setStatus(msg.bad, '#f87171');
+    identify(value);
     submit.disabled = true;
     setStatus(msg.sending, '#94a3b8');
     try {
@@ -270,9 +273,11 @@ const ACCENT = '#38bdf8';
       });
       const body = await res.json().catch(() => null);
       if (res.ok && body?.url) {
+        track('checkout_started', { plan }, true);
         location.href = body.url;
         return;
       }
+      track('checkout_failed', { plan, status: res.status, code: body?.code });
       if (res.status === 503) setStatus(msg.notYet, '#fbbf24');
       else if (res.status === 429) setStatus(msg.wait, '#fbbf24');
       else if (res.status === 400) setStatus(body?.error || msg.bad, '#f87171');
