@@ -65,7 +65,7 @@ import Layout from '../../../layouts/Layout.astro';
         {[
           { title: 'Italian military aircraft', desc: "Fighters, patrol aircraft, SAR helicopters — most fly with basic Mode-S transponders without ADS-B. MLAT is the only way to track them on the civilian map.", accent: true },
           { title: 'General aviation', desc: 'Many light aircraft, ultralights and gliders carry only Mode-A/C transponders. MLAT makes them visible even at low altitude.', accent: false },
-          { title: 'Meteorological data', desc: 'For the weather-32 research project, aircraft tracked via MLAT also transmit Mode-S messages — enabling BDS50/BDS60 wind data extraction.', accent: false },
+          { title: 'Meteorological data', desc: 'For the weather32 research project, aircraft tracked via MLAT also transmit Mode-S messages — enabling BDS50/BDS60 wind data extraction.', accent: false },
           { title: 'Safety', desc: 'MLAT coverage reduces surveillance "blind spots", useful for traffic analysis and safety in mountainous areas with limited radar coverage.', accent: false },
         ].map(item => (
           <div class="p-5 rounded-xl border" style={`background:#0f1929;border-color:${item.accent ? '#38bdf830' : '#1e3048'}`}>

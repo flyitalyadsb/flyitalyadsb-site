@@ -178,17 +178,20 @@
   }
 }
 
+/* The rail sits in the gap between label and text, not inside the label
+   column: labels are right-aligned, so a long one ("Origine") ran under a
+   rail placed at a fixed x inside the column. */
 .timeline .row {
   display: grid;
   grid-template-columns: 88px 1fr;
-  gap: 20px;
+  gap: 32px;
   position: relative;
   padding-bottom: 32px;
 }
 .timeline .row::before {
   content: "";
   position: absolute;
-  left: 40px;
+  left: 104px;
   top: 8px;
   bottom: -2px;
   width: 1px;
@@ -202,7 +205,7 @@
 }
 .timeline .dot {
   position: absolute;
-  left: 37px;
+  left: 101px;
   top: 6px;
   width: 7px;
   height: 7px;
@@ -220,10 +223,40 @@
   color: #94a3b8;
   line-height: 1.65;
 }
+/* Photos under an entry: one shape for all, so tall phone shots and a 3:4
+   one line up (object-position per image picks what stays); a click opens
+   the full photo. */
+.timeline .photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.timeline .photos figure {
+  margin: 0;
+}
+.timeline .photos img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+.timeline .photos figcaption {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #64748b;
+}
 @media (max-width: 560px) {
+  /* Padding on the row, not just the label: the rail crossed the
+     paragraph's first letters. */
   .timeline .row {
     grid-template-columns: 1fr;
     gap: 6px;
+    padding-left: 20px;
   }
   .timeline .row::before {
     left: 5px;
@@ -233,7 +266,6 @@
   }
   .timeline .year {
     text-align: left;
-    padding-left: 20px;
   }
 }
 

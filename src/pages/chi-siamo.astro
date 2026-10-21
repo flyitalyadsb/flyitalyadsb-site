@@ -13,7 +13,7 @@ import Layout from '../layouts/Layout.astro';
       <h1 class="text-4xl font-bold text-slate-100 mb-4">Chi siamo</h1>
       <p class="text-slate-400 max-w-2xl leading-relaxed text-lg">
         FlyItalyADSB è la prima community italiana di flight tracking ADS-B.
-        Nata da un gruppo di appassionati di aviazione, è cresciuta fino a diventare
+        Nata nel 2020 come passione di Riccardo Sabatti, è cresciuta fino a diventare
         un'infrastruttura di raccolta dati con copertura globale e applicazioni nella ricerca scientifica.
       </p>
     </div>
@@ -33,20 +33,82 @@ import Layout from '../layouts/Layout.astro';
 
       <div class="timeline">
         <div class="row">
-          <span class="dot"></span><span class="year">Origine</span>
-          <p>
-            FlyItalyADSB nasce come community di appassionati di flight tracking in Italia.
-            La rete si espande progressivamente lungo tutto il territorio nazionale — dal nord fino al sud Italia,
-            dalle Alpi al mar Tirreno e alla costa Adriatica — con ricevitori che coprono un raggio fino a 400 km.
-          </p>
+          <span class="dot"></span><span class="year">2020</span>
+          <div>
+            <p>
+              <a href="https://www.linkedin.com/in/riccardo-sabatti/" target="_blank" rel="noopener" class="text-sky-400 no-underline hover:text-sky-300">Riccardo Sabatti</a> installa la sua prima antenna ADS-B e comincia a condividere i dati con ADS-B Exchange.
+              È l'inizio di FlyItalyADSB.
+            </p>
+            <div class="photos">
+              <figure>
+                <a href="/img/storia/2020-antenna.jpg" target="_blank" rel="noopener"><img src="/img/storia/2020-antenna.jpg" alt="L'antenna verticale montata sulla scatola del ricevitore" width="900" height="1600" loading="lazy" style="object-position:50% 100%" /></a>
+                <figcaption>Luglio 2020 · l'antenna sulla scatola del ricevitore</figcaption>
+              </figure>
+              <figure>
+                <a href="/img/storia/2020-ricevitore.jpg" target="_blank" rel="noopener"><img src="/img/storia/2020-ricevitore.jpg" alt="Dentro la scatola: Raspberry Pi, preamplificatore a 1090 MHz e ventola" width="775" height="1600" loading="lazy" /></a>
+                <figcaption>Luglio 2020 · dentro: Raspberry Pi, preamplificatore a 1090 MHz, ventola</figcaption>
+              </figure>
+              <figure>
+                <a href="/img/storia/2020-copertura.jpg" target="_blank" rel="noopener"><img src="/img/storia/2020-copertura.jpg" alt="La mappa di Virtual Radar Server sul portatile, con i primi aerei ricevuti" width="664" height="1182" loading="lazy" /></a>
+                <figcaption>Ottobre 2020 · i primi aerei ricevuti, su Virtual Radar Server</figcaption>
+              </figure>
+              <figure>
+                <a href="/img/storia/2020-dicembre.jpg" target="_blank" rel="noopener"><img src="/img/storia/2020-dicembre.jpg" alt="Un ricevitore completo dentro una scatola stagna" width="768" height="1024" loading="lazy" /></a>
+                <figcaption>Dicembre 2020 · un ricevitore nella sua scatola</figcaption>
+              </figure>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <span class="dot"></span><span class="year">2021</span>
+          <div>
+            <p>
+              All'inizio dell'anno va online flyitalyadsb.com: mappa in tempo reale, uno script per
+              condividere la propria antenna e il MLAT. Ogni antenna riceve aerei fino a 400 km di distanza.
+              La rete cresce nel centro-nord Italia.
+            </p>
+            <div class="photos">
+              <figure>
+                <a href="/img/storia/2021-sito.jpg" target="_blank" rel="noopener"><img src="/img/storia/2021-sito.jpg" alt="La prima home page di flyitalyadsb.com su un telefono" width="615" height="1168" loading="lazy" style="object-position:50% 0%" /></a>
+                <figcaption>Gennaio 2021 · la prima home di flyitalyadsb.com</figcaption>
+              </figure>
+              <figure>
+                <a href="/img/storia/2021-mappa.jpg" target="_blank" rel="noopener"><img src="/img/storia/2021-mappa.jpg" alt="La mappa tar1090 con gli aerei sul nord Italia" width="615" height="1064" loading="lazy" /></a>
+                <figcaption>Gennaio 2021 · la mappa tar1090 sul nord Italia</figcaption>
+              </figure>
+              <figure>
+                <a href="/img/storia/2021-mondo.jpg" target="_blank" rel="noopener"><img src="/img/storia/2021-mondo.jpg" alt="La mappa vista da lontano: tutti gli aerei sono sopra l'Italia" width="923" height="1600" loading="lazy" /></a>
+                <figcaption>Gennaio 2021 · da lontano, tutta la rete sta in Italia</figcaption>
+              </figure>
+            </div>
+          </div>
         </div>
         <div class="row">
           <span class="dot"></span><span class="year">2023</span>
           <p>
-            Dopo l'acquisizione di ADS-B Exchange da parte di JETNET (private equity),
-            la community del tracking aperto si frammenta. FlyItalyADSB mantiene la sua
+            La mappa copre ormai dalla Svezia alla Basilicata e dalla Francia sud-orientale alla Repubblica Ceca.
+            A gennaio JETNET, società di dati aeronautici controllata dal fondo Silversmith Capital Partners,
+            compra ADS-B Exchange e la community del tracking aperto si frammenta. FlyItalyADSB mantiene la sua
             indipendenza e si posiziona accanto alle nuove realtà community come adsb.lol, adsb.fi
             e airplanes.live — tutte basate sullo stesso stack open source, tutte non filtrate.
+            A maggio entra tra gli aggregatori di <a href="https://adsb.im" target="_blank" rel="noopener" class="text-sky-400 no-underline hover:text-sky-300">adsb.im</a>, l'immagine software per ricevitori che manda i dati a più reti insieme.
+            Con la vendita di ADS-B Exchange e con adsb.im, FlyItalyADSB diventa globale.
+            A ottobre parte la collaborazione con adsb.lol: le due reti si scambiano i dati, MLAT compreso.
+          </p>
+        </div>
+        <div class="row">
+          <span class="dot"></span><span class="year">2025</span>
+          <p>
+            I dati Mode-S raccolti dalla rete diventano la base del progetto
+            di ricerca meteorologica <a href="/ricerca/weather" class="text-sky-400 no-underline hover:text-sky-300">weather32</a>,
+            che usa gli aeromobili come sensori di vento ad alta quota per validare le rianalisi ERA5 e i profili IASI.
+          </p>
+        </div>
+        <div class="row">
+          <span class="dot"></span><span class="year">2026</span>
+          <p>
+            A fine agosto partono l'<a href="/dati/api" class="text-sky-400 no-underline hover:text-sky-300">API pubblica</a> e il server MCP:
+            i dati della rete si possono interrogare da codice o da un agente AI come Claude.
           </p>
         </div>
         <div class="row">
@@ -54,16 +116,7 @@ import Layout from '../layouts/Layout.astro';
           <p>
             La copertura è globale: ai ricevitori italiani si sono aggiunti feeder diretti in
             Europa, nelle Americhe, in Asia e in Oceania, che estendono la mappa a tutto il mondo.
-            Il MLAT italiano rimane una caratteristica unica: FlyItalyADSB è l'unica rete
-            con triangolazione MLAT attiva sopra l'Italia, inclusi i voli militari.
-          </p>
-        </div>
-        <div class="row">
-          <span class="dot"></span><span class="year">2025</span>
-          <p>
-            I dati Mode-S raccolti dalla rete diventano la base del progetto
-            di ricerca meteorologica <a href="/ricerca/weather" class="text-sky-400 no-underline hover:text-sky-300">Weather 3.2</a>,
-            che usa gli aeromobili come sensori di vento ad alta quota per validare le rianalisi ERA5 e i profili IASI.
+            Sopra l'Italia la rete calcola il MLAT senza filtri, inclusi i voli militari.
           </p>
         </div>
       </div>
@@ -76,20 +129,10 @@ import Layout from '../layouts/Layout.astro';
         <div class="flex-1">
           <h3 class="font-semibold text-slate-100 mb-2">Nesso Labs</h3>
           <p class="text-sm text-slate-400 leading-relaxed">
-            L'infrastruttura di FlyItalyADSB — cluster Kubernetes, storage distribuito, pipeline dati —
-            è gestita da <a href="https://nessolabs.it" target="_blank" rel="noopener" class="text-sky-400 no-underline">Nesso Labs</a>.
-            FlyItalyADSB è il primo progetto "Nesso Data" nel dominio della mobilità aerea:
-            raccolta, elaborazione e distribuzione di dati pubblici italiani —
-            la stessa filosofia del progetto Nesso Equity nel dominio finanziario.
+            FlyItalyADSB si appoggia a Nesso Labs per hosting e server.
+            Grazie a Nesso Labs per il supporto.
           </p>
         </div>
-        <a href="https://nessolabs.it" target="_blank" rel="noopener"
-           class="shrink-0 px-4 py-2 rounded-lg text-sm font-medium no-underline transition-all"
-           style="background:#ffffff08;color:#94a3b8;border:1px solid #ffffff14"
-           onmouseover="this.style.background='#ffffff12'"
-           onmouseout="this.style.background='#ffffff08'">
-          nessolabs.it ↗
-        </a>
       </div>
     </section>
 
@@ -101,7 +144,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="p-5 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
           <h3 class="font-semibold text-slate-200 mb-1 text-sm">Richieste di ricerca</h3>
           <p class="text-xs text-slate-500 leading-relaxed mb-3">
-            Accesso a dataset storici, dati Mode-S grezzi, MLAT CSV — per ricerca universitaria o istituzionale.
+            Estrazioni bulk dallo storico e file CSV del MLAT — per ricerca universitaria o istituzionale.
           </p>
           <a href="mailto:info@flyitalyadsb.com" class="text-sm text-sky-400 no-underline hover:text-sky-300">
             info@flyitalyadsb.com
@@ -122,8 +165,7 @@ import Layout from '../layouts/Layout.astro';
       <div class="p-6 rounded-xl border" style="background:#0a1320;border-color:#1e3048">
         <p class="text-sm text-slate-400 leading-relaxed">
           Per domande generali, supporto sulla configurazione del feeder o altre richieste,
-          vedi la pagina <a href="/contatti" class="text-sky-400 no-underline">Contattaci</a> —
-          rispondiamo entro 48 ore.
+          vedi la pagina <a href="/contatti" class="text-sky-400 no-underline">Contattaci</a>.
         </p>
       </div>
     </section>

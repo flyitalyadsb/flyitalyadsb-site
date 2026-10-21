@@ -64,7 +64,7 @@ import Layout from '../../layouts/Layout.astro';
               Aeromobili con transponder Mode-A/C o Mode-S base non trasmettono la posizione GPS.
               Attraverso la multilateration — misurando la differenza di tempo di arrivo del segnale
               su almeno 4 ricevitori sincronizzati — il server MLAT ricava la posizione triangolata.
-              FlyItalyADSB è l'unico provider MLAT attivo in Italia, inclusa la copertura su militari.
+              Sopra l'Italia FlyItalyADSB calcola il MLAT senza filtri, militari inclusi.
             </p>
           </div>
         </div>
@@ -98,11 +98,11 @@ import Layout from '../../layouts/Layout.astro';
         </div>
         <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
           <h3 class="font-semibold text-slate-100 mb-2">Ricerca meteorologica</h3>
-          <p class="text-sm text-slate-500">Estrazione del vento troposferico dai messaggi Mode-S. <a href="/ricerca/weather" class="text-sky-400 no-underline">Progetto Weather 3.2 →</a></p>
+          <p class="text-sm text-slate-500">Estrazione del vento troposferico dai messaggi Mode-S. <a href="/ricerca/weather" class="text-sky-400 no-underline">Progetto weather32 →</a></p>
         </div>
         <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
           <h3 class="font-semibold text-slate-100 mb-2">Archive storico</h3>
-          <p class="text-sm text-slate-500">Globe history: tracce per aeromobile, heatmap e statistiche di copertura disponibili tramite <a href="https://dati.flyitalyadsb.com" target="_blank" rel="noopener" class="text-sky-400 no-underline">dati.flyitalyadsb.com →</a></p>
+          <p class="text-sm text-slate-500">Globe history: tracce per aeromobile dal 2022 e copertura, nell'<a href="/dati/archivio" class="text-sky-400 no-underline">archivio storico →</a></p>
         </div>
         <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
           <h3 class="font-semibold text-slate-100 mb-2">API e agenti AI</h3>
@@ -117,8 +117,8 @@ import Layout from '../../layouts/Layout.astro';
         <div class="flex-1">
           <h3 class="font-semibold text-slate-100 mb-2">Sei un ricercatore?</h3>
           <p class="text-sm text-slate-400 leading-relaxed">
-            I dataset storici ADS-B, i file MLAT CSV e i dati Mode-S grezzi non sono distribuiti pubblicamente,
-            ma sono disponibili per ricerche universitarie o istituzionali su richiesta.
+            Lo storico delle tracce ADS-B dal 2022 è già self-serve tramite l'API (vedi l'<a href="/dati/archivio" class="text-sky-400 no-underline">archivio storico</a>).
+            Su richiesta, per ricerche universitarie o istituzionali: estrazioni bulk e i file CSV del MLAT.
           </p>
         </div>
         <a href="/chi-siamo#contatti"

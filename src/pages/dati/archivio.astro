@@ -31,7 +31,7 @@ const toneColor = { purple: '#a78bfa', yellow: '#fbbf24', green: '#34d399' };
 
 <Layout
   title="Archivio storico"
-  description="Archivio storico ADS-B di FlyItalyADSB dal 2022: tracce di volo per aeromobile, self-serve via API REST. Include il progetto di ricerca weather-32 su vento e temperatura da Mode-S."
+  description="Archivio storico ADS-B di FlyItalyADSB dal 2022: tracce di volo per aeromobile, self-serve via API REST. Include il progetto di ricerca weather32 su vento e temperatura da Mode-S."
 >
   <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-4xl mx-auto">
 
@@ -59,14 +59,14 @@ const toneColor = { purple: '#a78bfa', yellow: '#fbbf24', green: '#34d399' };
             tag: 'Globe history',
             color: 'purple',
             title: 'Storico posizioni per aeromobile',
-            desc: "Un file JSON per aeromobile per giorno, nel formato di readsb: posizione, quota, velocità e prua durante la giornata. I giorni recenti sono sul disco del server, quelli più vecchi in un archivio separato da cui l'API legge solo il file richiesto. Per chi chiama non cambia nulla: la risposta è sempre JSON semplice.",
+            desc: "Un file JSON per aeromobile per giorno, nel formato di readsb: posizione, quota, velocità e prua durante la giornata.",
             size: 'dal 10/04/2022 · ~2,5 GB/giorno · tutto self-serve',
           },
           {
             tag: 'Ricerca meteo',
             color: 'green',
-            title: 'Vento e temperatura da Mode-S (weather-32)',
-            desc: "Il progetto weather-32 deriva vento e temperatura in quota dai messaggi Mode-S BDS50/60 (True Air Speed, prua magnetica, IAS, numero di Mach), validati contro ERA5/IASI. È un'analisi di ricerca, non un archivio esportabile: i dati grezzi non sono organizzati in un dataset scaricabile su richiesta.",
+            title: 'Vento e temperatura da Mode-S (weather32)',
+            desc: "Il progetto weather32 deriva vento e temperatura in quota dai messaggi Mode-S BDS50/60 (True Air Speed, prua magnetica, IAS, numero di Mach), validati contro ERA5/IASI. È un'analisi di ricerca, non un archivio esportabile: i dati grezzi non sono organizzati in un dataset scaricabile su richiesta.",
             size: null,
             link: { href: '/ricerca/weather', label: 'Vedi i risultati della ricerca →' },
           },

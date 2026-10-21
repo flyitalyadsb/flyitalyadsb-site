@@ -26,6 +26,7 @@ import Layout from '../../../layouts/Layout.astro';
         <div class="flex flex-col lg:flex-row gap-8">
           <div class="flex-1">
             <div class="flex flex-wrap items-center gap-3 mb-4">
+              <span class="text-xs px-2.5 py-1 rounded-full font-mono font-semibold" style="background:#a78bfa15;color:#c4b5fd;border:1px solid #a78bfa30">weather32</span>
               <span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830">Meteorology</span>
               <span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:#10b98115;color:#34d399;border:1px solid #10b98130">Ongoing</span>
             </div>
@@ -70,8 +71,9 @@ import Layout from '../../../layouts/Layout.astro';
         <div class="flex-1">
           <h3 class="font-semibold text-slate-100 mb-2">Data access for researchers</h3>
           <p class="text-sm text-slate-400 leading-relaxed mb-4">
-            Historical ADS-B datasets, MLAT CSV files and raw Mode-S data are not distributed publicly,
-            but are available for university or institutional research upon request.
+            The ADS-B track history since 2022 is already open: it is self-serve through the API, see the <a href="/en/data/archive" class="text-sky-400 no-underline">historical archive</a>.
+            For university or institutional research, bulk extractions (many aircraft or long periods)
+            and the MLAT CSV files are available on request.
             Contact us with a brief description of your project and institution.
           </p>
           <a href="/en/about#contatti"
