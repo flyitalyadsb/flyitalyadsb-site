@@ -6,7 +6,13 @@
 // header value, extracted and forwarded as-is by functions/mcp.ts — never
 // hardcoded, never a shared secret.
 
-export const V2_BASE = 'https://api.flyitalyadsb.com/v2';
+export let V2_BASE = 'https://api.flyitalyadsb.com/v2';
+
+/** The mcp-worker points this at a local public-api under `wrangler dev`
+ * (its API_BASE var); production keeps the default. */
+export function setV2Base(base: string): void {
+  V2_BASE = `${base.replace(/\/+$/, '')}/v2`;
+}
 
 /** Raw readsb-style aircraft record — field set matches dump1090/readsb's
  * aircraft.json (the same shape adsb.lol and tar1090 expose), not curated

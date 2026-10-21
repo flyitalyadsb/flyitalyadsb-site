@@ -9,9 +9,14 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "mcp:types": "wrangler types -c mcp-worker/wrangler.jsonc mcp-worker/worker-configuration.d.ts",
+    "mcp:check": "npm run mcp:types && tsc -p mcp-worker",
+    "mcp:dev": "wrangler dev -c mcp-worker/wrangler.jsonc --ip 127.0.0.1 --port 8787",
+    "mcp:deploy": "wrangler deploy -c mcp-worker/wrangler.jsonc"
   },
   "dependencies": {
+    "@cloudflare/workers-oauth-provider": "1.2.3",
     "@modelcontextprotocol/server": "^2.0.0",
     "@tailwindcss/vite": "^4.3.1",
     "astro": "^6.4.7",
@@ -19,5 +24,9 @@
     "posthog-js": "1.436.1",
     "tailwindcss": "^4.3.1",
     "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "wrangler": "4.147.0"
   }
 }

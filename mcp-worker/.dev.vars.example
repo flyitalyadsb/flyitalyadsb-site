@@ -1,0 +1,6 @@
+# Local values for `npx wrangler dev -c mcp-worker/wrangler.jsonc` (copy to
+# .dev.vars, which git ignores). SITE must be the URL wrangler dev serves on.
+SITE=http://localhost:8787
+API_BASE=http://127.0.0.1:8081
+CONSENT_SECRET=local-only-consent-secret-change-me-0123456789
+DEVICE_SECRET=local-only-device-secret-change-me-0123456789

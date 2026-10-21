@@ -1,0 +1,29 @@
+// flyitalyadsb-mcp: OAuth + MCP in front of flyitalyadsb.com/mcp (see src/index.ts).
+// Separate from the Pages project's wrangler.toml at the repo root on purpose:
+// that file configures the Pages build and must not change.
+//
+// Routes, the KV namespace and the secrets' existence are managed by Terraform
+// in nesso-infra (terraform/cloudflare/workers-flyitalyadsb-mcp.tf); this file
+// only names what the code binds to. Secrets: CONSENT_SECRET, DEVICE_SECRET
+// (wrangler secret put, values in Infisical nesso-infra prod /flyitalyadsb-mcp).
+// Local: copy .dev.vars.example to .dev.vars, run a local public-api, then
+// `npx wrangler dev -c mcp-worker/wrangler.jsonc`.
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "flyitalyadsb-mcp",
+  "main": "src/index.ts",
+  // Same date as the Pages project (wrangler.toml); CIMD needs >= 2024-11-11.
+  "compatibility_date": "2026-06-15",
+  // CIMD fetches must not use same-zone origin routing (SSRF protection).
+  "compatibility_flags": ["global_fetch_strictly_public"],
+  "workers_dev": false,
+  "observability": { "enabled": true },
+  "vars": {
+    "SITE": "https://flyitalyadsb.com",
+    "API_BASE": "https://api.flyitalyadsb.com"
+  },
+  "kv_namespaces": [
+    // Created by Terraform; the id is filled in from its output.
+    { "binding": "OAUTH_KV", "id": "00000000000000000000000000000000" }
+  ]
+}
