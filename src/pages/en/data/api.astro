@@ -48,7 +48,7 @@ const faqs = [
   },
   {
     q: 'How do I use the MCP server with Claude or ChatGPT?',
-    a: 'Add https://flyitalyadsb.com/mcp as a connector/MCP server in your client\'s settings (e.g. Claude.ai → Settings → Connectors), supplying your X-Api-Key when asked. Then just ask things like "what\'s flying over Fiumicino right now?" or "any military traffic over Rome?" and the agent will call the tools automatically.',
+    a: 'Add https://flyitalyadsb.com/mcp as a custom connector (on claude.ai: Connectors → Add custom connector) and press Connect: you sign in with your email and a 6-digit code, no key to copy. In clients without OAuth, pass your key in the X-Api-Key header. Then just ask things like "what\'s flying over Fiumicino right now?" or "any military traffic over Rome?" and the agent will call the tools automatically.',
   },
   {
     q: 'What can the MCP server do that the map can\'t?',
@@ -268,13 +268,13 @@ X-Api-Key: <your-key>
       <ol class="space-y-2 mb-6 text-sm text-slate-400 list-decimal list-inside marker:text-slate-600">
         <li>On <a href="https://claude.ai/customize/connectors" target="_blank" rel="noopener" class="text-sky-400 no-underline">claude.ai</a>, open <strong class="text-slate-300">Customize → Connectors</strong> and click <strong class="text-slate-300">"Add custom connector"</strong>.</li>
         <li>Give it a name, e.g. "FlyItalyADSB", and paste the URL <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">https://flyitalyadsb.com/mcp</code>.</li>
-        <li>If Claude says it can't tell how the server handles access, choose <strong class="text-slate-300">"Continue anyway"</strong>: the server uses a key, not OAuth.</li>
-        <li>For authentication choose <strong class="text-slate-300">"No sign-in"</strong>, then under <strong class="text-slate-300">Request headers</strong> pick <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">x-api-key</code>, paste your key and mark it required.</li>
-        <li>Save, then try asking Claude something like <em>"what aircraft are near Rome Fiumicino right now?"</em></li>
+        <li>For authentication leave <strong class="text-slate-300">"Sign in now"</strong> (Claude detects it) and for the OAuth client <strong class="text-slate-300">"Use Claude's published identity"</strong>, then add the connector.</li>
+        <li>Press <strong class="text-slate-300">Connect</strong>: a FlyItalyADSB page opens. Type your email, then the 6-digit code you receive, and press <strong class="text-slate-300">Allow</strong>. If you don't have an API key yet, we create a free one right then.</li>
+        <li>Try asking Claude something like <em>"what aircraft are near Rome Fiumicino right now?"</em></li>
       </ol>
       <p class="text-xs text-slate-500 leading-relaxed mb-6">
-        Request headers on claude.ai are still in beta and not every account has them yet. If you don't see
-        <strong class="text-slate-300">Request headers</strong>, <a href="https://code.claude.com/docs/en/mcp-quickstart" target="_blank" rel="noopener" class="text-sky-400 no-underline">Claude Code</a> already works:
+        You can disconnect it at any time from <a href="/en/data/api/account/" class="text-sky-400 no-underline">My API</a>.
+        From <a href="https://code.claude.com/docs/en/mcp-quickstart" target="_blank" rel="noopener" class="text-sky-400 no-underline">Claude Code</a> or a client without OAuth it also works with the key:
         <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">claude mcp add --transport http flyitalyadsb https://flyitalyadsb.com/mcp --header "X-Api-Key: ‹your-key›"</code>
       </p>
 
@@ -297,10 +297,8 @@ X-Api-Key: <your-key>
             <div class="px-3 py-2 rounded text-sm font-mono" style="background:#111e30;border:1px solid #1e3048;color:#7dd3fc">https://flyitalyadsb.com/mcp</div>
           </div>
           <div>
-            <div class="text-xs text-slate-500 mb-1">Request headers</div>
-            <div class="px-3 py-2 rounded text-sm font-mono flex gap-2 items-baseline" style="background:#111e30;border:1px solid #1e3048">
-              <span style="color:#a78bfa">x-api-key</span><span class="text-slate-600">:</span><span class="text-slate-500">‹your-key›</span>
-            </div>
+            <div class="text-xs text-slate-500 mb-1">Authentication</div>
+            <div class="px-3 py-2 rounded text-sm text-slate-300" style="background:#111e30;border:1px solid #1e3048">Sign in now &middot; Use Claude's published identity</div>
           </div>
         </div>
       </div>
@@ -308,8 +306,8 @@ X-Api-Key: <your-key>
 
       <h3 class="text-lg font-semibold text-slate-100 mb-3">For other MCP clients</h3>
       <p class="text-slate-400 text-sm leading-relaxed mb-3">
-        Any MCP client that supports Streamable HTTP with custom headers (ChatGPT, other assistants, your own
-        code) works the same way — including a raw call:
+        Other MCP clients with OAuth connect the same way, with Connect. From your own code, or a client without
+        OAuth, use the key in the X-Api-Key header, including a raw call:
       </p>
       <pre class="p-4 rounded-lg text-xs overflow-auto leading-relaxed" style="background:#0a1320;color:#94a3b8;border:1px solid #1e3048"><code>{mcpCallExample}</code></pre>
     </section>
