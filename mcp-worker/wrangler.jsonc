@@ -23,7 +23,7 @@
     "API_BASE": "https://api.flyitalyadsb.com"
   },
   "kv_namespaces": [
-    // Created by Terraform; the id is filled in from its output.
-    { "binding": "OAUTH_KV", "id": "00000000000000000000000000000000" }
+    // Created by Terraform (nesso-infra #936): output flyitalyadsb_mcp_oauth_kv_id.
+    { "binding": "OAUTH_KV", "id": "d049112e7d2145e0ba5fc2e75470d4e1" }
   ]
 }
