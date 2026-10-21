@@ -31,7 +31,7 @@ const toneColor = { purple: '#a78bfa', yellow: '#fbbf24', green: '#34d399' };
 
 <Layout
   title="Historical archive"
-  description="FlyItalyADSB's historical ADS-B archive since 2022: per-aircraft flight tracks, self-serve via REST API. Includes the weather-32 research project on wind and temperature from Mode-S."
+  description="FlyItalyADSB's historical ADS-B archive since 2022: per-aircraft flight tracks, self-serve via REST API. Includes the weather32 research project on wind and temperature from Mode-S."
 >
   <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-4xl mx-auto">
 
@@ -57,14 +57,14 @@ const toneColor = { purple: '#a78bfa', yellow: '#fbbf24', green: '#34d399' };
             tag: 'Globe history',
             color: 'purple',
             title: 'Per-aircraft position history',
-            desc: "One JSON file per aircraft per day, in readsb's format: position, altitude, speed and heading through the day. Recent days live on the server's disk, older ones in a separate archive from which the API reads only the file you asked for. Nothing changes for the caller: the response is always plain JSON.",
+            desc: "One JSON file per aircraft per day, in readsb's format: position, altitude, speed and heading through the day.",
             size: 'since 2022-04-10 · ~2.5 GB/day · all self-serve',
           },
           {
             tag: 'Weather research',
             color: 'green',
-            title: 'Wind and temperature from Mode-S (weather-32)',
-            desc: 'The weather-32 project derives upper-air wind and temperature from Mode-S BDS50/60 messages (True Air Speed, magnetic heading, IAS, Mach number), validated against ERA5/IASI. This is a research analysis, not an exportable archive: the raw data is not organized into a downloadable dataset on request.',
+            title: 'Wind and temperature from Mode-S (weather32)',
+            desc: 'The weather32 project derives upper-air wind and temperature from Mode-S BDS50/60 messages (True Air Speed, magnetic heading, IAS, Mach number), validated against ERA5/IASI. This is a research analysis, not an exportable archive: the raw data is not organized into a downloadable dataset on request.',
             size: null,
             link: { href: '/en/research/weather', label: 'See the research results →' },
           },

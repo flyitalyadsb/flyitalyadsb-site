@@ -21,7 +21,7 @@ import Layout from '../../../layouts/Layout.astro';
       {[
         { tag: 'ADS-B', color: 'sky', title: 'ADS-B — position and velocity', desc: 'Automatic Dependent Surveillance–Broadcast. Every modern aircraft automatically broadcasts its position (CPR), barometric altitude, ground speed and track. Network receivers capture these signals at 1090 MHz and forward them to the central server. Updated every 200ms.' },
         { tag: 'Mode-S', color: 'amber', title: 'Mode-S EHS — avionics data', desc: 'The Mode-S Enhanced Surveillance protocol transmits detailed avionics data: True Air Speed (BDS50), Magnetic Heading, IAS and Mach number (BDS60), temperature and direct wind (BDS44). These messages enable wind derivation using the technique W = V_ground − V_air.' },
-        { tag: 'MLAT', color: 'purple', title: 'MLAT — multilateration', desc: 'Aircraft with Mode-A/C or basic Mode-S transponders do not broadcast GPS position. Through multilateration — measuring the time difference of arrival of the signal at at least 4 synchronized receivers — the MLAT server computes the triangulated position. FlyItalyADSB is the only MLAT provider active over Italy, including military coverage.' },
+        { tag: 'MLAT', color: 'purple', title: 'MLAT — multilateration', desc: 'Aircraft with Mode-A/C or basic Mode-S transponders do not broadcast GPS position. Through multilateration — measuring the time difference of arrival of the signal at at least 4 synchronized receivers — the MLAT server computes the triangulated position. Over Italy, FlyItalyADSB computes MLAT unfiltered, military aircraft included.' },
         { tag: 'OGN', color: 'green', title: 'OGN — Open Glider Network', desc: 'The Open Glider Network broadcasts positions of gliders, paragliders, drones and ultralight aircraft equipped with FLARM/FANET transponders. The flarm-ogn-to-sbs component converts these data into SBS format compatible with the map.' },
       ].map(item => (
         <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
@@ -50,11 +50,11 @@ import Layout from '../../../layouts/Layout.astro';
         </div>
         <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
           <h3 class="font-semibold text-slate-100 mb-2">Meteorological research</h3>
-          <p class="text-sm text-slate-500">Wind extraction from Mode-S messages. <a href="/en/research/weather" class="text-sky-400 no-underline">Weather 3.2 project →</a></p>
+          <p class="text-sm text-slate-500">Wind extraction from Mode-S messages. <a href="/en/research/weather" class="text-sky-400 no-underline">weather32 project →</a></p>
         </div>
         <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
           <h3 class="font-semibold text-slate-100 mb-2">Historical archive</h3>
-          <p class="text-sm text-slate-500">Globe history: per-aircraft traces, heatmap and coverage statistics available at <a href="https://dati.flyitalyadsb.com" target="_blank" rel="noopener" class="text-sky-400 no-underline">dati.flyitalyadsb.com →</a></p>
+          <p class="text-sm text-slate-500">Globe history: per-aircraft traces since 2022 and coverage, in the <a href="/en/data/archive" class="text-sky-400 no-underline">historical archive →</a></p>
         </div>
         <div class="p-6 rounded-xl border" style="background:#0f1929;border-color:#1e3048">
           <h3 class="font-semibold text-slate-100 mb-2">API & AI agents</h3>
@@ -68,8 +68,8 @@ import Layout from '../../../layouts/Layout.astro';
         <div class="flex-1">
           <h3 class="font-semibold text-slate-100 mb-2">Are you a researcher?</h3>
           <p class="text-sm text-slate-400 leading-relaxed">
-            Historical ADS-B datasets, MLAT CSV files and raw Mode-S data are not distributed publicly,
-            but are available for university or institutional research upon request.
+            The ADS-B track history since 2022 is already self-serve through the API (see the <a href="/en/data/archive" class="text-sky-400 no-underline">historical archive</a>).
+            On request, for university or institutional research: bulk extractions and the MLAT CSV files.
           </p>
         </div>
         <a href="/en/about#contatti"

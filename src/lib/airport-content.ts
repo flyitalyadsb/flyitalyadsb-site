@@ -42,7 +42,7 @@ export function faqs(a: Airport, lang: Lang): Faq[] {
       },
       {
         q: `Does FlyItalyADSB also track military aircraft around ${a.city}?`,
-        a: `Yes. Thanks to multilateration (MLAT) — the only such service active in Italy — the network reconstructs the position of aircraft without full ADS-B too, including military and state flights, whenever they are received by feeders in the area.`,
+        a: `Yes. Thanks to multilateration (MLAT) the network reconstructs the position of aircraft without full ADS-B too, including military and state flights, whenever they are received by feeders in the area. Nothing is filtered out.`,
       },
       {
         q: `What are the codes for ${name}?`,
@@ -61,7 +61,7 @@ export function faqs(a: Airport, lang: Lang): Faq[] {
     },
     {
       q: `FlyItalyADSB traccia anche gli aerei militari intorno a ${a.city}?`,
-      a: `Sì. Grazie alla multilaterazione (MLAT) — unica attiva in Italia — la rete ricostruisce la posizione anche dei velivoli senza ADS-B completo, inclusi mezzi militari e di Stato, quando ricevuti dai feeder dell'area.`,
+      a: `Sì. Grazie alla multilaterazione (MLAT) la rete ricostruisce la posizione anche dei velivoli senza ADS-B completo, inclusi mezzi militari e di Stato, quando ricevuti dai feeder dell'area. Senza filtri.`,
     },
     {
       q: `Quali sono i codici dell'aeroporto di ${a.city}?`,

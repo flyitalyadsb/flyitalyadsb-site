@@ -12,12 +12,13 @@ import Layout from '../../layouts/Layout.astro';
     <div class="flex items-center gap-2 text-xs text-slate-600 mb-10">
       <a href="/ricerca" class="hover:text-slate-400 no-underline">Ricerca</a>
       <span>/</span>
-      <span class="text-slate-500">Meteorologia</span>
+      <span class="text-slate-500">weather32</span>
     </div>
 
     <!-- Header -->
     <div class="mb-12">
       <div class="flex flex-wrap items-center gap-3 mb-5">
+        <span class="text-xs px-2.5 py-1 rounded-full font-mono font-semibold" style="background:#a78bfa15;color:#c4b5fd;border:1px solid #a78bfa30">weather32</span>
         <span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830">Meteorologia</span>
         <span class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:#10b98115;color:#34d399;border:1px solid #10b98130">In corso</span>
         <span class="text-xs text-slate-600">Aggiornato giugno 2025</span>
@@ -253,8 +254,8 @@ import Layout from '../../layouts/Layout.astro';
     <div class="rounded-xl p-6 border" style="background:#0a1320;border-color:#1e3048">
       <h3 class="font-semibold text-slate-200 mb-3">Collaborazione e accesso ai dati</h3>
       <p class="text-sm text-slate-400 leading-relaxed mb-4">
-        I dati Mode-S grezzi, i CSV MLAT e i dataset storici sono disponibili per ricercatori
-        e istituzioni accademiche. Se stai svolgendo ricerca meteorologica o aeronautica
+        Lo storico delle tracce è già self-serve tramite l'API; per ricercatori e istituzioni accademiche
+        ci sono anche estrazioni bulk e i file CSV del MLAT. Se stai svolgendo ricerca meteorologica o aeronautica
         e sei interessato a collaborare, contattaci con una breve descrizione del progetto.
       </p>
       <a href="/chi-siamo#contatti"

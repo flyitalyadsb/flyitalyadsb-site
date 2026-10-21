@@ -161,7 +161,7 @@ const AREAS = [
             { step: '01', title: 'Ingestion', desc: 'Feeders send BEAST TCP data to readsb-ingest (port 4905). Simultaneously, readsb-globe receives the ADSBHub and OGN feeds.', tags: ['readsb-ingest', 'readsb-globe'] },
             { step: '02', title: 'MLAT', desc: 'MLAT clients (port 30100) send time-stamped measurements to mlat-server. With at least 4 synchronized receivers, the server triangulates aircraft position without GPS.', tags: ['mlat-server', 'port 30100'] },
             { step: '03', title: 'Aggregation', desc: 'readsb-globe merges all feeds: direct feeders, computed MLAT, ADSBHub, OGN. Outputs aircraft.json every 2 seconds and updates heatmap history.', tags: ['aircraft.json', '2s', 'heatmap'] },
-            { step: '04', title: 'Distribution', desc: 'Data is served to the tar1090 map via local Unix socket and used by the weather-32 meteorological pipeline.', tags: ['tar1090', 'weather-32'] },
+            { step: '04', title: 'Distribution', desc: 'Data is served to the tar1090 map via local Unix socket and used by the weather32 meteorological pipeline.', tags: ['tar1090', 'weather32'] },
           ].map(item => (
             <div class="flex gap-6 pl-12 relative">
               <div class="absolute left-0 top-4 w-10 h-10 rounded-full flex items-center justify-center text-xs font-mono font-bold shrink-0"
