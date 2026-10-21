@@ -267,12 +267,17 @@ X-Api-Key: <la-tua-chiave>
       </table>
       <h3 id="come-collegarlo" class="text-lg font-semibold text-slate-100 mb-3 mt-8 scroll-mt-24">Come collegarlo a Claude</h3>
       <ol class="space-y-2 mb-6 text-sm text-slate-400 list-decimal list-inside marker:text-slate-600">
-        <li>Su <a href="https://claude.ai" target="_blank" rel="noopener" class="text-sky-400 no-underline">claude.ai</a>, apri <strong class="text-slate-300">Impostazioni → Connettori</strong> (dal menu del tuo profilo).</li>
-        <li>Clicca <strong class="text-slate-300">"Aggiungi connettore personalizzato"</strong>.</li>
-        <li>Incolla l'URL <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">https://flyitalyadsb.com/mcp</code> e dagli un nome, es. "FlyItalyADSB".</li>
-        <li>Nelle impostazioni avanzate del connettore, aggiungi un'intestazione personalizzata: <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> con la tua chiave.</li>
+        <li>Su <a href="https://claude.ai/customize/connectors" target="_blank" rel="noopener" class="text-sky-400 no-underline">claude.ai</a>, apri la pagina <strong class="text-slate-300">Connettori</strong> e clicca <strong class="text-slate-300">"Aggiungi connettore personalizzato"</strong>.</li>
+        <li>Dagli un nome, es. "FlyItalyADSB", e incolla l'URL <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">https://flyitalyadsb.com/mcp</code>.</li>
+        <li>Se Claude dice che non riesce a verificare come il server gestisce l'accesso, scegli <strong class="text-slate-300">"Continua comunque"</strong>: il server non usa OAuth, usa la chiave.</li>
+        <li>Come autenticazione scegli quella senza accesso (<strong class="text-slate-300">"No sign-in"</strong>), poi in <strong class="text-slate-300">Request headers</strong> scegli <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">x-api-key</code>, incolla la tua chiave e segnala come obbligatoria.</li>
         <li>Salva e prova chiedendo a Claude qualcosa come <em>"che aerei ci sono ora vicino a Roma Fiumicino?"</em></li>
       </ol>
+      <p class="text-xs text-slate-500 leading-relaxed mb-6">
+        Le intestazioni personalizzate su claude.ai sono ancora in beta e non tutti gli account le hanno: se non vedi
+        <strong class="text-slate-300">Request headers</strong>, da <a href="https://code.claude.com/docs/en/mcp-quickstart" target="_blank" rel="noopener" class="text-sky-400 no-underline">Claude Code</a> funziona già:
+        <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">claude mcp add --transport http flyitalyadsb https://flyitalyadsb.com/mcp --header "X-Api-Key: ‹la-tua-chiave›"</code>
+      </p>
 
       <!-- Illustrative mockup, not a literal screenshot: Claude's actual UI can
            differ slightly and would go stale fast if copied pixel-for-pixel. -->
@@ -281,7 +286,7 @@ X-Api-Key: <la-tua-chiave>
           <span class="w-2 h-2 rounded-full" style="background:#f87171"></span>
           <span class="w-2 h-2 rounded-full" style="background:#fbbf24"></span>
           <span class="w-2 h-2 rounded-full" style="background:#34d399"></span>
-          <span class="ml-2 text-xs font-semibold text-slate-500">claude.ai — Impostazioni → Connettori</span>
+          <span class="ml-2 text-xs font-semibold text-slate-500">claude.ai — Connettori</span>
         </div>
         <div class="p-5 space-y-3" style="background:#0a1320">
           <div>
@@ -293,9 +298,9 @@ X-Api-Key: <la-tua-chiave>
             <div class="px-3 py-2 rounded text-sm font-mono" style="background:#111e30;border:1px solid #1e3048;color:#7dd3fc">https://flyitalyadsb.com/mcp</div>
           </div>
           <div>
-            <div class="text-xs text-slate-500 mb-1">Intestazioni personalizzate (avanzate)</div>
+            <div class="text-xs text-slate-500 mb-1">Request headers</div>
             <div class="px-3 py-2 rounded text-sm font-mono flex gap-2 items-baseline" style="background:#111e30;border:1px solid #1e3048">
-              <span style="color:#a78bfa">X-Api-Key</span><span class="text-slate-600">:</span><span class="text-slate-500">‹la-tua-chiave›</span>
+              <span style="color:#a78bfa">x-api-key</span><span class="text-slate-600">:</span><span class="text-slate-500">‹la-tua-chiave›</span>
             </div>
           </div>
         </div>

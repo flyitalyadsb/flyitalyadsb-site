@@ -266,12 +266,17 @@ X-Api-Key: <your-key>
       </table>
       <h3 id="connect-claude" class="text-lg font-semibold text-slate-100 mb-3 mt-8 scroll-mt-24">How to connect it to Claude</h3>
       <ol class="space-y-2 mb-6 text-sm text-slate-400 list-decimal list-inside marker:text-slate-600">
-        <li>On <a href="https://claude.ai" target="_blank" rel="noopener" class="text-sky-400 no-underline">claude.ai</a>, open <strong class="text-slate-300">Settings → Connectors</strong> (from your profile menu).</li>
-        <li>Click <strong class="text-slate-300">"Add custom connector"</strong>.</li>
-        <li>Paste the URL <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">https://flyitalyadsb.com/mcp</code> and give it a name, e.g. "FlyItalyADSB".</li>
-        <li>In the connector's advanced settings, add a custom header: <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> with your key.</li>
+        <li>On <a href="https://claude.ai/customize/connectors" target="_blank" rel="noopener" class="text-sky-400 no-underline">claude.ai</a>, open <strong class="text-slate-300">Customize → Connectors</strong> and click <strong class="text-slate-300">"Add custom connector"</strong>.</li>
+        <li>Give it a name, e.g. "FlyItalyADSB", and paste the URL <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">https://flyitalyadsb.com/mcp</code>.</li>
+        <li>If Claude says it can't tell how the server handles access, choose <strong class="text-slate-300">"Continue anyway"</strong>: the server uses a key, not OAuth.</li>
+        <li>For authentication choose <strong class="text-slate-300">"No sign-in"</strong>, then under <strong class="text-slate-300">Request headers</strong> pick <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">x-api-key</code>, paste your key and mark it required.</li>
         <li>Save, then try asking Claude something like <em>"what aircraft are near Rome Fiumicino right now?"</em></li>
       </ol>
+      <p class="text-xs text-slate-500 leading-relaxed mb-6">
+        Request headers on claude.ai are still in beta and not every account has them yet. If you don't see
+        <strong class="text-slate-300">Request headers</strong>, <a href="https://code.claude.com/docs/en/mcp-quickstart" target="_blank" rel="noopener" class="text-sky-400 no-underline">Claude Code</a> already works:
+        <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">claude mcp add --transport http flyitalyadsb https://flyitalyadsb.com/mcp --header "X-Api-Key: ‹your-key›"</code>
+      </p>
 
       <!-- Illustrative mockup, not a literal screenshot: Claude's actual UI can
            differ slightly and would go stale fast if copied pixel-for-pixel. -->
@@ -280,7 +285,7 @@ X-Api-Key: <your-key>
           <span class="w-2 h-2 rounded-full" style="background:#f87171"></span>
           <span class="w-2 h-2 rounded-full" style="background:#fbbf24"></span>
           <span class="w-2 h-2 rounded-full" style="background:#34d399"></span>
-          <span class="ml-2 text-xs font-semibold text-slate-500">claude.ai — Settings → Connectors</span>
+          <span class="ml-2 text-xs font-semibold text-slate-500">claude.ai — Customize → Connectors</span>
         </div>
         <div class="p-5 space-y-3" style="background:#0a1320">
           <div>
@@ -292,9 +297,9 @@ X-Api-Key: <your-key>
             <div class="px-3 py-2 rounded text-sm font-mono" style="background:#111e30;border:1px solid #1e3048;color:#7dd3fc">https://flyitalyadsb.com/mcp</div>
           </div>
           <div>
-            <div class="text-xs text-slate-500 mb-1">Custom headers (advanced)</div>
+            <div class="text-xs text-slate-500 mb-1">Request headers</div>
             <div class="px-3 py-2 rounded text-sm font-mono flex gap-2 items-baseline" style="background:#111e30;border:1px solid #1e3048">
-              <span style="color:#a78bfa">X-Api-Key</span><span class="text-slate-600">:</span><span class="text-slate-500">‹your-key›</span>
+              <span style="color:#a78bfa">x-api-key</span><span class="text-slate-600">:</span><span class="text-slate-500">‹your-key›</span>
             </div>
           </div>
         </div>
