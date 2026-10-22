@@ -22,6 +22,13 @@
     "SITE": "https://flyitalyadsb.com",
     "API_BASE": "https://api.flyitalyadsb.com"
   },
+  // The in-chat aircraft map (src/lib/mcp/apps/aircraft-map.ts) inlines its
+  // view script and Leaflet as text, and the brand mark as bytes. *.html is
+  // Text by default; fallthrough keeps that default rule.
+  "rules": [
+    { "type": "Text", "globs": ["**/*.view.js", "**/leaflet/dist/leaflet.js", "**/leaflet/dist/leaflet.css"], "fallthrough": true },
+    { "type": "Data", "globs": ["**/*.webp"], "fallthrough": true }
+  ],
   "kv_namespaces": [
     // Created by Terraform (nesso-infra #936): output flyitalyadsb_mcp_oauth_kv_id.
     { "binding": "OAUTH_KV", "id": "d049112e7d2145e0ba5fc2e75470d4e1" }

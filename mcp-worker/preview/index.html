@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aircraft map preview</title>
+<style>
+  :root { color-scheme: dark; --bg: #262624; --panel: #1f1e1d; --ink: #faf9f5; --muted: #9c9a92; --rule: #3d3d3a; --card-rule: rgba(222, 220, 209, 0.18); }
+  body[data-theme="light"] { color-scheme: light; --bg: #faf9f5; --panel: #f0eee6; --ink: #141413; --muted: #73726c; --rule: #dedcd1; --card-rule: rgba(31, 30, 29, 0.16); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .shell { display: grid; grid-template-columns: 300px 1fr; min-height: 100vh; }
+  .controls { background: var(--panel); border-right: 1px solid var(--rule); padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .controls h1 { margin: 0; font-size: 15px; }
+  .controls fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .controls legend { font-weight: 600; margin-bottom: 4px; }
+  .controls select, .controls button { font: inherit; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink); }
+  .controls label { display: flex; gap: 6px; align-items: center; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  #log { flex: 1; min-height: 160px; margin: 0; padding: 8px; overflow: auto; font: 11px/1.45 ui-monospace, Menlo, monospace; background: var(--bg); border: 1px solid var(--rule); border-radius: 6px; white-space: pre-wrap; }
+  .stagewrap { padding: 24px; overflow: auto; }
+  .chat { margin: 0 auto; }
+  .bubble { color: var(--muted); margin: 0 0 10px; }
+  .card { border: 1px solid var(--card-rule); border-radius: 12px; overflow: hidden; background: var(--bg); }
+  iframe { display: block; border: 0; width: 100%; height: 360px; background: transparent; }
+  /* Fullscreen: the view takes the whole frame. */
+  body[data-mode="fullscreen"] .stagewrap { padding: 0; }
+  body[data-mode="fullscreen"] .bubble { display: none; }
+  body[data-mode="fullscreen"] .card { border: 0; border-radius: 0; }
+  /* Screenshots: no controls. */
+  body.shot .shell { display: block; }
+  body.shot .controls { display: none; }
+  body.shot .stagewrap { padding: 16px; }
+  body.shot[data-mode="fullscreen"] .stagewrap { padding: 0; }
+  body.shot[data-device="mobile"][data-mode="inline"] .stagewrap { padding: 12px 0; }
+  body.shot[data-device="mobile"][data-mode="inline"] .card { border-radius: 0; border-left: 0; border-right: 0; }
+  #status { display: none; }
+</style>
+</head>
+<body data-theme="dark">
+<div class="shell">
+  <form class="controls" id="controls">
+    <h1>Aircraft map preview</h1>
+    <fieldset><legend>Tool result</legend><select name="scenario" id="scenario"></select></fieldset>
+    <fieldset><legend>Host</legend>
+      <div class="row">
+        <label><input type="radio" name="theme" value="dark" checked> dark</label>
+        <label><input type="radio" name="theme" value="light"> light</label>
+      </div>
+      <div class="row">
+        <label><input type="radio" name="locale" value="en" checked> English</label>
+        <label><input type="radio" name="locale" value="it"> Italiano</label>
+      </div>
+      <div class="row">
+        <label><input type="radio" name="device" value="desktop" checked> desktop chat</label>
+        <label><input type="radio" name="device" value="mobile"> phone (360)</label>
+      </div>
+      <div class="row">
+        <label><input type="radio" name="mode" value="inline" checked> inline</label>
+        <label><input type="radio" name="mode" value="fullscreen"> fullscreen</label>
+      </div>
+    </fieldset>
+    <fieldset><legend>Host capabilities</legend>
+      <label><input type="checkbox" name="cap" value="serverTools" checked> tool calls (refresh)</label>
+      <label><input type="checkbox" name="cap" value="message" checked> ui/message (ask)</label>
+      <label><input type="checkbox" name="cap" value="openLinks" checked> ui/open-link</label>
+      <label><input type="checkbox" name="cap" value="updateModelContext" checked> model context</label>
+      <label><input type="checkbox" name="cap" value="fullscreen" checked> fullscreen mode</label>
+    </fieldset>
+    <button type="button" id="replay">Replay the tool call</button>
+    <pre id="log" aria-label="Messages between host and view"></pre>
+  </form>
+  <main class="stagewrap">
+    <div class="chat" id="chat">
+      <p class="bubble" id="bubble"></p>
+      <div class="card" id="card"><iframe id="frame" title="FlyItalyADSB aircraft map" sandbox="allow-scripts"></iframe></div>
+    </div>
+  </main>
+</div>
+<pre id="status"></pre>
+<script type="module" src="/host.js"></script>
+</body>
+</html>

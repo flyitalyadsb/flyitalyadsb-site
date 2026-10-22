@@ -15,6 +15,28 @@ connect with **Connect → email code → Allow** instead of a pasted key. Desig
 The Worker runs on these paths only, through Worker routes on the zone. Everything else on `flyitalyadsb.com` is the
 Pages site.
 
+## In-chat map (MCP Apps)
+
+`aircraft_near`, `special_traffic` and `find_aircraft` carry `_meta.ui.resourceUri` =
+`ui://flyitalyadsb/aircraft-map.html` ([MCP Apps](https://github.com/modelcontextprotocol/ext-apps), spec
+2026-01-26). Hosts that support it (claude.ai, Claude desktop and mobile, ChatGPT) read that resource and draw the
+tool's result on a map in the conversation; other clients ignore `_meta` and get the same JSON text as before.
+
+- `src/lib/mcp/apps/aircraft-map.ts`: the resource, its CSP (OpenStreetMap tiles only, nothing fetched) and the tools'
+  `_meta`. `aircraft-map.html` + `aircraft-map.view.js` are the page; wrangler inlines them and Leaflet as text, and
+  the brand mark (`flyitalyadsb-mark.webp`, the site's logo at 48 px) as a data: image (`rules` in
+  `wrangler.jsonc`), so the page loads nothing but tiles.
+- The view reads the JSON text of the tool result (no `structuredContent`, so ChatGPT's model doesn't get the list
+  twice). It talks to the host directly over postMessage (verified against the SDK's own `AppBridge`, ext-apps
+  2.0.3, when written).
+
+Preview with fake results (every state, dark/light, IT/EN, inline/fullscreen, phone width):
+
+```sh
+npm run mcp:dev        # the Worker, http://127.0.0.1:8787
+npm run mcp:preview    # http://127.0.0.1:8790/ : the page comes from the Worker's resources/read
+```
+
 ## Local
 
 ```sh
@@ -31,6 +53,7 @@ uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/e2e_profile.py /tmp
 GLOBE_HISTORY_DIR=… OVERFLIGHTS_INDEX_DIR=… uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/e2e_overflights.py /tmp/mail.jsonl <nesso-infra>/k8s/flyitalyadsb/base/public-api  # 14 checks
 # notable_traffic: start the public-api above with FIA_E2E_EVENTS=1 (a 7700 + a military aircraft, the events detector on)
 uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/e2e_notable_traffic.py /tmp/mail.jsonl  # 10 checks
+uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/e2e_map_widget.py /tmp/mail.jsonl  # 21 checks, the in-chat map
 # both expect a fresh local public-api: it recreates its e2e schema at start
 npm run mcp:check                                  # wrangler types + tsc
 ```
