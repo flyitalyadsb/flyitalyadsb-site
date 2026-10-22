@@ -73,7 +73,14 @@ export function aircraftMapToolMeta(): Record<string, unknown> {
 // uses neither, and the CSP would block them anyway.
 const css = leafletCss.replace(/url\(images\/[^)]*\)/g, 'none');
 const js = leafletJs.replace(/\n\/\/# sourceMappingURL=\S+\s*$/, '\n');
-const config = JSON.stringify({ tiles: TILES }).replace(/</g, '\\u003c');
+/**
+ * The map's Live mode (off until the user turns it on): the same tool call
+ * again every `everyS` seconds through the host, while the map is on screen,
+ * for at most `maxMinutes`. Each update is one API request on the user's key:
+ * at 30 s that is 2 a minute, 20 per Live session.
+ */
+const LIVE = { everyS: 30, maxMinutes: 10 };
+const config = JSON.stringify({ tiles: TILES, live: LIVE }).replace(/</g, '\\u003c');
 // A data: image: the spec's CSP for MCP Apps has `img-src 'self' data:` whatever
 // the resource declares, so the mark adds no origin. The view falls back to a
 // drawn mark if a host blocks it anyway.

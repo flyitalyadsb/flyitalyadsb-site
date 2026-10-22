@@ -19,6 +19,11 @@ for (const [key, q] of Object.entries(HOST_QUIRKS)) $('quirk').add(new Option(q.
 // ?frame=700x500: an iframe of that size whatever the view asks (a host that
 // doesn't honour size-changed).
 const FRAME = /^(\d+)x(\d+)$/.exec(params.get('frame') || '');
+// ?fail=3: the 3rd tool call from the view answers 429, as the API does.
+const FAIL_AT = Number(params.get('fail') || 0);
+// ?offscreen=8-20: the map scrolled out of view from 8 s to 20 s.
+const OFFSCREEN = /^(\d+)-(\d+)$/.exec(params.get('offscreen') || '');
+const T0 = Date.now();
 for (const [k, v] of params) {
   const el = form.elements[k];
   if (!el) continue;
@@ -115,7 +120,12 @@ async function onRequest(m) {
     }
     case 'tools/call':
       if (!S.caps.has('serverTools')) throw Object.assign(new Error('Tool calls are not supported'), { code: -32601 });
+      status.requests.push({ method: 'tools/call', at: Math.round((Date.now() - T0) / 100) / 10 });
       await new Promise((r) => setTimeout(r, 600));
+      if (FAIL_AT && refreshes + 1 >= FAIL_AT) {
+        refreshes++;
+        return { content: [{ type: 'text', text: 'Rate limit exceeded on the flyitalyadsb API — try again shortly. What to do: https://flyitalyadsb.com/faq/#api-429' }], isError: true };
+      }
       // The host's proxy hands the view the server's whole result (ext-apps#696).
       return toolResult(S.scenario, ++refreshes, { structured: S.structured });
     case 'ui/open-link':
@@ -193,9 +203,17 @@ async function load() {
   layout();
   widget = widget || (await (await fetch('/widget.json')).json());
   const csp = cspFor(widget.resource._meta);
+  // ?fast=1: Live every 3 s, paused after 30 s, to see it all in a minute.
+  const html = params.get('fast') === '1'
+    ? widget.resource.text.replace(/"live":\{"everyS":\d+,"maxMinutes":\d+\}/, '"live":{"everyS":3,"maxMinutes":0.5}')
+    : widget.resource.text;
   status.csp = csp;
   status.mimeType = widget.resource.mimeType;
-  frame.srcdoc = widget.resource.text.replace(/<head>/i, `<head><meta http-equiv="Content-Security-Policy" content="${csp.replace(/"/g, '&quot;')}">`);
+  if (OFFSCREEN) {
+    setTimeout(() => { $('chat').style.transform = 'translateY(5000px)'; }, Number(OFFSCREEN[1]) * 1000);
+    setTimeout(() => { $('chat').style.transform = ''; }, Number(OFFSCREEN[2]) * 1000);
+  }
+  frame.srcdoc = html.replace(/<head>/i, `<head><meta http-equiv="Content-Security-Policy" content="${csp.replace(/"/g, '&quot;')}">`);
   report();
 }
 

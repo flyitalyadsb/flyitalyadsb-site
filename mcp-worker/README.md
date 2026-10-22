@@ -32,6 +32,10 @@ tool's result on a map in the conversation; other clients ignore `_meta` and get
   does it asks the host to run the call again (`tools/call`, once). Failing that it shows what arrived (field names,
   lengths, no data) under the notice and logs it. Hosts lose fields on the way: ext-apps#696,
   claude-ai-mcp#1158, claude-code#103809. The preview reproduces them ("What the host makes of the result").
+- Between updates, airborne aircraft move by dead reckoning (track, ground speed, position time) for up to 60 s,
+  then stop and fade. **Live** (off by default) repeats the call every 30 s through the host's `tools/call`, only
+  while the map is visible, for at most 10 minutes: 2 requests a minute on the user's key. Any error stops it.
+  Preview: `?fast=1` (every 3 s, pause after 30 s), `?fail=3` (the 3rd call answers 429), `?offscreen=8-20`.
 - It talks to the host directly over postMessage (verified against the SDK's own `AppBridge`, ext-apps 2.0.3).
 
 Preview with fake results (every state, dark/light, IT/EN, inline/fullscreen, phone width):
@@ -57,7 +61,7 @@ uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/e2e_profile.py /tmp
 GLOBE_HISTORY_DIR=… OVERFLIGHTS_INDEX_DIR=… uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/e2e_overflights.py /tmp/mail.jsonl <nesso-infra>/k8s/flyitalyadsb/base/public-api  # 14 checks
 # notable_traffic: start the public-api above with FIA_E2E_EVENTS=1 (a 7700 + a military aircraft, the events detector on)
 uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/e2e_notable_traffic.py /tmp/mail.jsonl  # 10 checks
-uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/e2e_map_widget.py /tmp/mail.jsonl  # 24 checks, the in-chat map
+uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/e2e_map_widget.py /tmp/mail.jsonl  # 26 checks, the in-chat map
 # both expect a fresh local public-api: it recreates its e2e schema at start
 npm run mcp:check                                  # wrangler types + tsc
 ```

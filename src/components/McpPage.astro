@@ -129,7 +129,7 @@ const T = it
         ['Colore', 'la quota, da 0 a oltre 40.000 piedi'],
         ['Pieno', 'posizione inviata dall’aereo (ADS-B)'],
         ['Contorno', 'posizione calcolata dalla rete (MLAT)'],
-        ['Sbiadito', 'posizione di oltre 30 secondi fa'],
+        ['Sbiadito', 'posizione di oltre un minuto fa'],
         ['Grigio', 'a terra, o quota sconosciuta'],
         ['Rombo, anello', 'militare; PIA o LADD'],
         ['Anello rosso', 'squawk di emergenza'],
@@ -137,6 +137,7 @@ const T = it
       buttonsH: 'I pulsanti',
       buttons: [
         ['Aggiorna', 'ripete la ricerca: conta come una richiesta'],
+        ['Live', 'ripete la ricerca ogni 30 s per al massimo 10 minuti, mentre la mappa è sullo schermo: 2 richieste al minuto'],
         ['Schermo intero', 'dove l’assistente lo permette'],
         ['Chiedi di più', 'scrive in chat una domanda sull’aereo'],
         ['Apri la mappa live', 'lo stesso aereo su mappa.flyitalyadsb.com'],
@@ -278,7 +279,7 @@ const T = it
         ['Colour', 'altitude, from 0 to over 40,000 feet'],
         ['Filled', 'position sent by the aircraft (ADS-B)'],
         ['Outline', 'position computed by the network (MLAT)'],
-        ['Faded', 'position older than 30 seconds'],
+        ['Faded', 'position more than a minute old'],
         ['Grey', 'on the ground, or altitude unknown'],
         ['Diamond, ring', 'military; PIA or LADD'],
         ['Red ring', 'emergency squawk'],
@@ -286,6 +287,7 @@ const T = it
       buttonsH: 'The buttons',
       buttons: [
         ['Refresh', 'repeats the search: it counts as one request'],
+        ['Live', 'repeats the search every 30 s for up to 10 minutes while the map is on screen: 2 requests a minute'],
         ['Full screen', 'where the assistant allows it'],
         ['Ask about it', 'writes a question about the aircraft in the chat'],
         ['Open live map', 'the same aircraft on mappa.flyitalyadsb.com'],

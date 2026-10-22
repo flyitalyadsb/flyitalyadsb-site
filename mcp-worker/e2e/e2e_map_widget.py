@@ -72,6 +72,11 @@ ok("the only tile template is the declared tile origin", tile_hosts == {TILES.sp
 view = html.rsplit("<script>", 1)[-1]
 ok("the view reads any field the host puts the data in, and can ask the host to run the call again",
    "function payloadOf(" in view and "'tools/call'" in view and "function shapeOf(" in view)
+ok("Live: off until pressed, every 30 s for at most 10 minutes, through the host's tools/call, paused when off screen",
+   '"live":{"everyS":30,"maxMinutes":10}' in html and 'aria-pressed="false"' in html and "IntersectionObserver" in view
+   and "visibilitychange" in view and "'tools/call'" in view)
+ok("estimated motion: at most 60 s, not on the ground or below 40 kt",
+   "const MAX_EST_S = 60" in view and "const MIN_EST_KT = 40" in view and "!ac.ground" in view)
 ok("the view makes no network call of its own and asks for no location",
    not re.search(r"\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon|geolocation", view))
 ok("page fits comfortably in one resource read (< 400 kB)", len(html.encode()) < 400_000, f"{len(html.encode())} bytes")

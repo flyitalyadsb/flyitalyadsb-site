@@ -14,8 +14,17 @@
   const CFG = JSON.parse(document.getElementById('fia-config').textContent);
   const PROTOCOL_VERSION = '2026-01-26';
   const APP_INFO = { name: 'flyitalyadsb-aircraft-map', version: '1.0.0' };
-  const STALE_S = 30;
-  const REDUCED_MOTION = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Estimated motion: an airborne aircraft moves on along its track at its
+  // ground speed from the time of its position, for at most MAX_EST_S; past
+  // that it stays put and is drawn faded (stale), positions aren't invented.
+  const MAX_EST_S = 60;
+  const MIN_EST_KT = 40;
+  const LIVE = { everyS: 30, maxMinutes: 10, ...(CFG.live || {}) };
+  // Read when it matters, so a change of the setting applies at once (Leaflet's
+  // own animations are chosen at start).
+  const RM_QUERY = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+  const reducedMotion = () => RM_QUERY.matches;
+  const REDUCED_MOTION = reducedMotion();
   const LIVE_MAP = 'https://mappa.flyitalyadsb.com/';
   const EMERGENCY = { '7500': 'hijack', '7600': 'radio', '7700': 'emergency' };
 
@@ -59,11 +68,24 @@
       fullscreen: 'Full screen', exitFullscreen: 'Exit full screen',
       refresh: 'Refresh', refreshed: (time) => `Updated at ${time}`,
       refreshFailed: (msg) => `Couldn’t refresh: ${msg}`,
+      live: 'Live', liveResume: 'Resume',
+      liveTip: (s, m) => `Live: updates the map every ${s} s while it is on screen, for up to ${m} minutes. Each update is one request on your FlyItalyADSB key.`,
+      liveFirst: (s, m) => `Live: an update every ${s} s for up to ${m} minutes. Each one counts as a request on your key.`,
+      liveUpdated: (s) => (s < 2 ? 'updated just now' : s < 90 ? `updated ${s} s ago` : `updated ${Math.round(s / 60)} min ago`),
+      liveUpdating: 'updating…',
+      livePaused: (m) => `Live paused after ${m} min`,
+      liveStopped: (why) => `Live stopped: ${why}`,
+      liveRate: 'too many requests, try again in a minute',
+      liveTimeout: 'no answer in time',
+      liveOff: 'the host stopped answering',
+      liveError: 'the search returned an error',
+      liveGone: (label) => `${label} is no longer in the result`,
+      estimated: 'Position', estimatedValue: 'estimated',
       zoomIn: 'Zoom in', zoomOut: 'Zoom out', fit: 'Show all aircraft',
       key: 'What the symbols mean',
       keyAdsb: 'Filled: position sent by the aircraft (ADS-B)',
       keyMlat: 'Outline: position computed by the network (MLAT)',
-      keyStale: 'Faded: position older than 30 s',
+      keyStale: 'Faded: position more than a minute old',
       keyGround: 'Grey: on the ground or altitude unknown',
       keyMil: 'Diamond: military; ring: PIA or LADD',
       keyEmg: 'Red ring: emergency squawk',
@@ -126,11 +148,24 @@
       fullscreen: 'Schermo intero', exitFullscreen: 'Esci da schermo intero',
       refresh: 'Aggiorna', refreshed: (time) => `Aggiornato alle ${time}`,
       refreshFailed: (msg) => `Aggiornamento non riuscito: ${msg}`,
+      live: 'Live', liveResume: 'Riprendi',
+      liveTip: (s, m) => `Live: aggiorna la mappa ogni ${s} s mentre è sullo schermo, per al massimo ${m} minuti. Ogni aggiornamento è una richiesta sulla tua chiave FlyItalyADSB.`,
+      liveFirst: (s, m) => `Live: un aggiornamento ogni ${s} s per al massimo ${m} minuti. Ognuno conta come una richiesta sulla tua chiave.`,
+      liveUpdated: (s) => (s < 2 ? 'aggiornato ora' : s < 90 ? `aggiornato ${s} s fa` : `aggiornato ${Math.round(s / 60)} min fa`),
+      liveUpdating: 'aggiorno…',
+      livePaused: (m) => `Live in pausa dopo ${m} min`,
+      liveStopped: (why) => `Live fermato: ${why}`,
+      liveRate: 'troppe richieste, riprova tra un minuto',
+      liveTimeout: 'nessuna risposta in tempo',
+      liveOff: 'l’host non risponde più',
+      liveError: 'la ricerca ha dato un errore',
+      liveGone: (label) => `${label} non è più nel risultato`,
+      estimated: 'Posizione', estimatedValue: 'stimata',
       zoomIn: 'Ingrandisci', zoomOut: 'Riduci', fit: 'Mostra tutti gli aerei',
       key: 'Cosa vogliono dire i simboli',
       keyAdsb: 'Pieno: posizione inviata dall’aereo (ADS-B)',
       keyMlat: 'Contorno: posizione calcolata dalla rete (MLAT)',
-      keyStale: 'Sbiadito: posizione di oltre 30 s fa',
+      keyStale: 'Sbiadito: posizione di oltre un minuto fa',
       keyGround: 'Grigio: a terra o quota sconosciuta',
       keyMil: 'Rombo: militare; anello: PIA o LADD',
       keyEmg: 'Anello rosso: squawk di emergenza',
@@ -163,6 +198,10 @@
     mode: 'inline', fixed: false, layout: 'strip',
     toolName: null, args: null, hostInfo: null,
     recalled: false, diag: '', desiredH: 0, desiredMapH: 0, userMoved: false,
+    // Estimated motion and Live (see "motion" and "live" below).
+    recvAt: 0, fresh: true, inView: true, zooming: false,
+    live: { state: 'off', since: 0, last: 0, timer: 0, waiting: false, reason: '', told: false },
+    order: [], stableList: false, listTouchedAt: 0,
     status: 'loading', data: null, sort: null,
     sel: null, hot: null, items: new Map(),
     touchHinted: false,
@@ -314,6 +353,8 @@
 
   function teardown() {
     clearInterval(ticker);
+    clearTimeout(S.live.timer);
+    S.live.state = 'off';
   }
 
   // ----------------------------------------------------------- host context
@@ -735,6 +776,7 @@
     relayout();
     renderTitle();
     renderList();
+    renderLive();
   }
 
   // Tool errors are written for the model ("call aircraft_near again with
@@ -750,9 +792,30 @@
     if (d.kind === 'unreadable') { S.data = null; clearMap(); setStatus('unreadable'); return; }
     if (d.kind === 'notfound') { S.data = null; clearMap(); setStatus('notfound', d.value || (S.args && S.args.value) || ''); return; }
     if (opts.keepPlace && S.data && S.data.center && d.center) d.center = { ...d.center, label: S.data.center.label, source: S.data.center.source };
+    // An update of what is on the map (Refresh, Live): markers move, appear and
+    // fade out instead of the map being drawn again.
+    const merge = !!opts.merge && !!S.data && S.status === 'ready' && d.kind === S.data.kind;
+    const gone = merge && S.sel && !d.aircraft.some((a) => a.hex === S.sel) && S.items.get(S.sel);
     S.data = d;
+    S.recvAt = Date.now() / 1000;
+    S.fresh = Math.abs(S.recvAt - d.now) < 300;
+    for (const ac of d.aircraft) ac.ageAtRecv = posAge(ac);
+    S.live.last = Date.now();
     if (!S.sort || (S.sort === 'nearest' && !d.center)) S.sort = d.center ? 'nearest' : 'lowest';
-    if (S.sel && !d.aircraft.some((a) => a.hex === S.sel)) S.sel = null;
+    if (gone) toast(t('liveGone', gone.ac.label));
+    if (S.sel && !d.aircraft.some((a) => a.hex === S.sel)) select(null, { from: merge ? 'merge' : 'auto' });
+    if (merge) {
+      mergeMap(d);
+      // The search area doesn't move; a network-wide result is fitted again
+      // unless the user has moved the map.
+      if (!S.userMoved && d.kind !== 'near') fitView(false);
+      S.stableList = true;
+      setStatus(d.aircraft.length ? 'ready' : 'empty');
+      S.stableList = false;
+      renderSort();
+      if (S.sel) select(S.sel, { from: 'merge', keepView: true });
+      return;
+    }
     drawMap();
     if (!opts.keepView) fitView(false);
     setStatus(d.aircraft.length ? 'ready' : 'empty');
@@ -859,6 +922,7 @@
     $('ico-full').setAttribute('d', S.mode === 'fullscreen' ? 'M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5' : 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5');
     $('btn-refresh').hidden = !canRefresh;
     $('ctrl-top').hidden = !canFull && !canRefresh;
+    renderLive();
   }
 
   function renderTitle() {
@@ -874,7 +938,8 @@
     $('title-count').textContent = count || ' ';
     $('title-where').textContent = where;
     $('title-where').hidden = !where;
-    $('title-time').textContent = d && S.status !== 'loading' ? whenText(d.now) : '';
+    if (!d || S.status === 'loading') $('title-time').textContent = '';
+    else renderLiveTime();
     $('map').setAttribute('aria-label', t('mapLabel', `${count} ${where}`.trim()));
     const meta = d && d.total > d.count ? t('shown', fmt(d.count), fmt(d.total)) : '';
     $('tray-meta').textContent = meta;
@@ -956,6 +1021,22 @@
     }).addTo(ringLayer);
   }
 
+  const zOf = (ac) => (ac.emg ? 900 : Math.round((ac.alt || 0) / 100));
+  function iconFor(ac, labeled, appear) {
+    const size = SIZE[ac.kind] || 24;
+    const cls = ['acm', isStale(ac) && 'stale', labeled && 'labeled', ac.emg && 'emg', appear && 'appear'].filter(Boolean).join(' ');
+    const html = `${ac.emg ? '<span class="ring"></span>' : ''}<span class="sel"></span>${acSvg(ac)}${badgeHtml(ac)}<span class="tag">${esc(ac.label)}</span>`;
+    return L.divIcon({ className: cls, html, iconSize: [size, size], iconAnchor: [size / 2, size / 2] });
+  }
+  function makeMarker(ac, labeled, appear) {
+    const p = estimate(ac);
+    const marker = L.marker([p.lat, p.lon], { icon: iconFor(ac, labeled, appear), keyboard: false, title: '', zIndexOffset: zOf(ac), riseOffset: 1200 });
+    marker.on('click', (e) => { L.DomEvent.stopPropagation(e); select(ac.hex, { from: 'map' }); });
+    marker.on('mouseover', () => hover(ac.hex, true, 'map'));
+    marker.on('mouseout', () => hover(ac.hex, false, 'map'));
+    return marker.addTo(acLayer);
+  }
+
   function drawMap() {
     const d = S.data;
     ringLayer.clearLayers();
@@ -963,31 +1044,91 @@
     S.items.clear();
     if (!d) return;
     if (d.center && d.radiusKm) drawRings(d.center, d.radiusKm);
-    const positioned = d.aircraft.filter((a) => a.has);
-    const labeled = positioned.length <= 10;
+    const labeled = d.aircraft.filter((a) => a.has).length <= 10;
     for (const ac of d.aircraft) {
-      const item = { ac, marker: null, row: null };
-      S.items.set(ac.hex, item);
-      if (!ac.has) continue;
-      const size = SIZE[ac.kind] || 24;
-      const stale = ac.seen > STALE_S;
-      const cls = ['acm', stale && 'stale', labeled && 'labeled', ac.emg && 'emg'].filter(Boolean).join(' ');
-      const html = `${ac.emg ? '<span class="ring"></span>' : ''}<span class="sel"></span>${acSvg(ac)}${badgeHtml(ac)}<span class="tag">${esc(ac.label)}</span>`;
-      const marker = L.marker([ac.lat, ac.lon], {
-        icon: L.divIcon({ className: cls, html, iconSize: [size, size], iconAnchor: [size / 2, size / 2] }),
-        keyboard: false,
-        title: '',
-        zIndexOffset: ac.emg ? 900 : Math.round((ac.alt || 0) / 100),
-        riseOffset: 1200,
-      });
-      marker.on('click', (e) => { L.DomEvent.stopPropagation(e); select(ac.hex, { from: 'map' }); });
-      marker.on('mouseover', () => hover(ac.hex, true, 'map'));
-      marker.on('mouseout', () => hover(ac.hex, false, 'map'));
-      marker.addTo(acLayer);
-      item.marker = marker;
+      S.items.set(ac.hex, { ac, marker: ac.has ? makeMarker(ac, labeled, false) : null, row: null, fresh: false });
     }
     scaleMarkers();
   }
+
+  // An update: the same aircraft keep their marker (it moves to the new
+  // position), new ones fade in, the ones no longer in the result fade out.
+  function mergeMap(d) {
+    const old = S.items;
+    S.items = new Map();
+    const labeled = d.aircraft.filter((a) => a.has).length <= 10;
+    for (const ac of d.aircraft) {
+      const prev = old.get(ac.hex);
+      const item = { ac, marker: null, row: null, fresh: !prev };
+      S.items.set(ac.hex, item);
+      if (!ac.has) { if (prev && prev.marker) vanish(prev.marker); continue; }
+      if (!prev || !prev.marker) { item.marker = makeMarker(ac, labeled, true); continue; }
+      const m = (item.marker = prev.marker);
+      const p = estimate(ac);
+      m.setLatLng([p.lat, p.lon]);
+      m.setIcon(iconFor(ac, labeled, false));
+      m.setZIndexOffset(ac.hex === S.sel ? 2000 : ac.hex === S.hot ? 1500 : zOf(ac));
+      const el = m.getElement();
+      if (el) { el.classList.toggle('is-sel', ac.hex === S.sel); el.classList.toggle('is-hot', ac.hex === S.hot); }
+    }
+    for (const [hex, prev] of old) if (!S.items.has(hex) && prev.marker) vanish(prev.marker);
+    scaleMarkers();
+  }
+  function vanish(marker) {
+    const el = marker.getElement();
+    if (!el || reducedMotion()) { acLayer.removeLayer(marker); return; }
+    el.classList.add('vanish');
+    setTimeout(() => acLayer.removeLayer(marker), 650);
+  }
+
+  // ---------------------------------------------------------------- motion
+  // The server's clock now: its `now` plus the time since the result arrived,
+  // so a device clock that is off doesn't move anything. A result already
+  // minutes old when it arrived (a replayed chat) keeps the wall clock.
+  function serverNow() {
+    const nowS = Date.now() / 1000;
+    if (!S.data) return nowS;
+    return S.fresh ? S.data.now + (nowS - S.recvAt) : nowS;
+  }
+  const posAge = (ac) => (S.data ? Math.max(0, serverNow() - (S.data.now - (ac.seen || 0))) : 0);
+  const isStale = (ac) => posAge(ac) > MAX_EST_S;
+  // Where the aircraft probably is: dead reckoning from its position, for an
+  // airborne aircraft with a track and some speed, up to MAX_EST_S; none for a
+  // position that was already older than that when it arrived.
+  function estimate(ac) {
+    const moving = !ac.ground && ac.gs != null && ac.gs >= MIN_EST_KT && ac.track != null;
+    const age = posAge(ac);
+    const tS = !moving ? 0 : age <= MAX_EST_S ? age : (ac.ageAtRecv ?? age) <= MAX_EST_S ? MAX_EST_S : 0;
+    if (tS < 0.5) return { lat: ac.lat, lon: ac.lon, est: false };
+    const [lat, lon] = dest({ lat: ac.lat, lon: ac.lon }, (ac.gs * 1.852 * tS) / 3600, ac.track);
+    return { lat, lon, est: true };
+  }
+  function estDist(ac) {
+    if (!S.data || !S.data.center || !ac.has) return ac.dist;
+    const p = estimate(ac);
+    return haversineKm(S.data.center.lat, S.data.center.lon, p.lat, p.lon);
+  }
+  // Once a second, while the map is on screen. Markers glide between steps
+  // (a 1 s CSS transition on the marker pane), except during zooms and view
+  // resets, when Leaflet places them itself; with reduced motion they step.
+  function motionTick() {
+    if (!S.data || S.zooming || document.visibilityState === 'hidden' || !S.inView) return;
+    map.getPane('markerPane').classList.toggle('glide', !reducedMotion());
+    for (const item of S.items.values()) {
+      const stale = isStale(item.ac);
+      if (item.row && item.row.classList.contains('stale') !== stale) item.row.classList.toggle('stale', stale);
+      if (!item.marker) continue;
+      const p = estimate(item.ac);
+      const ll = item.marker.getLatLng();
+      if (ll.lat !== p.lat || ll.lng !== p.lon) item.marker.setLatLng([p.lat, p.lon]);
+      const el = item.marker.getElement();
+      if (el && el.classList.contains('stale') !== stale) el.classList.toggle('stale', stale);
+    }
+  }
+  const unglide = () => map.getPane('markerPane').classList.remove('glide');
+  map.on('zoomstart', () => { S.zooming = true; unglide(); });
+  map.on('zoomend', () => { S.zooming = false; });
+  map.on('viewreset resize', unglide);
 
   // Many aircraft at a low zoom overlap less when drawn a little smaller.
   function scaleMarkers() {
@@ -1024,7 +1165,7 @@
 
   $('btn-in').addEventListener('click', () => map.zoomIn());
   $('btn-out').addEventListener('click', () => map.zoomOut());
-  $('btn-fit').addEventListener('click', () => fitView(!REDUCED_MOTION));
+  $('btn-fit').addEventListener('click', () => fitView(!reducedMotion()));
   $('btn-full').addEventListener('click', async () => {
     const want = S.mode === 'fullscreen' ? 'inline' : 'fullscreen';
     try {
@@ -1077,6 +1218,24 @@
   const trend = (ac) => (ac.ground || ac.vr == null ? '' : ac.vr > 256 ? '↑' : ac.vr < -256 ? '↓' : '');
   const distText = (ac) => (ac.dist == null ? '' : `${fmt(ac.dist, ac.dist < 10 ? 1 : 0)} ${t('km')}`);
 
+  // The list keeps its order across updates while someone is using it (touch,
+  // hover, focus, the last 5 s), so a row doesn't move under the finger; new
+  // aircraft go at the end, a new emergency at the top. Otherwise it is sorted.
+  const listBusy = () => Date.now() - S.listTouchedAt < 5000 || $('list').matches(':hover') || $('list').contains(document.activeElement);
+  for (const ev of ['pointerdown', 'pointermove', 'wheel', 'scroll', 'touchstart']) {
+    $('list').addEventListener(ev, () => { S.listTouchedAt = Date.now(); }, { passive: true });
+  }
+  function listOrder() {
+    const ids = sorted().map((a) => a.hex);
+    if (!S.stableList || !S.order.length || !listBusy()) return ids;
+    const now = new Set(ids);
+    const keep = S.order.filter((h) => now.has(h));
+    const kept = new Set(keep);
+    const added = ids.filter((h) => !kept.has(h));
+    const emg = added.filter((h) => S.items.get(h) && S.items.get(h).ac.emg);
+    return [...emg, ...keep, ...added.filter((h) => !emg.includes(h))];
+  }
+
   function renderList() {
     const list = $('list');
     const empty = $('tray-empty');
@@ -1089,24 +1248,37 @@
     const d = S.data;
     if (!d || !d.aircraft.length) {
       list.innerHTML = '';
+      S.order = [];
       empty.textContent = S.status === 'ready' || S.status === 'empty' ? t('noneListed') : '';
       empty.hidden = !empty.textContent;
       return;
     }
-    list.innerHTML = sorted().map((ac) => {
+    const focused = document.activeElement && list.contains(document.activeElement) && document.activeElement.dataset ? document.activeElement.dataset.hex : null;
+    const scroll = [list.scrollLeft, list.scrollTop];
+    const order = listOrder();
+    list.innerHTML = order.map((hex) => {
+      const item = S.items.get(hex);
+      const ac = item.ac;
       const sub = [ac.type, ac.cs && ac.reg].filter(Boolean).join('  ');
       const tr = trend(ac);
       const aria = [ac.label, ac.desc || ac.type, altText(ac), tr === '↑' ? t('climbing') : tr === '↓' ? t('descending') : '', distText(ac),
         ac.emg ? t(`emergency.${ac.emg}`) : '', ac.has ? '' : t('noPosition')].filter(Boolean).join(', ');
-      return `<li><button type="button" class="row${ac.emg ? ' emg' : ''}" data-hex="${esc(ac.hex)}" aria-pressed="${S.sel === ac.hex}" aria-label="${esc(aria)}">` +
+      const cls = ['row', ac.emg && 'emg', isStale(ac) && 'stale', item.fresh && S.stableList && 'fresh'].filter(Boolean).join(' ');
+      return `<li><button type="button" class="${cls}" data-hex="${esc(ac.hex)}" aria-pressed="${S.sel === ac.hex}" aria-label="${esc(aria)}">` +
         `<span class="ico">${acSvg(ac)}${badgeHtml(ac)}</span>` +
-        `<span class="id"><span class="cs">${esc(ac.label)}${ac.emg ? `<span class="sq">${esc(ac.squawk || '')}</span>` : ''}</span><span class="sub">${esc(sub || ' ')}</span></span>` +
+        `<span class="id"><span class="cs">${esc(ac.label)}${ac.emg ? `<span class="sq">${esc(ac.squawk || '')}</span>` : ''}</span><span class="sub">${esc(sub || '\u00a0')}</span></span>` +
         `<span class="vals"><span class="alt">${esc(altText(ac))}<span class="trend" aria-hidden="true">${tr}</span></span><span class="dist">${esc(ac.has ? distText(ac) : t('noPosition'))}</span></span>` +
         '</button></li>';
     }).join('');
     for (const btn of list.querySelectorAll('.row')) {
       const item = S.items.get(btn.dataset.hex);
       if (item) item.row = btn;
+    }
+    [list.scrollLeft, list.scrollTop] = scroll;
+    S.order = order;
+    if (focused) {
+      const b = S.items.get(focused) && S.items.get(focused).row;
+      if (b) b.focus({ preventScroll: true });
     }
   }
   $('list').addEventListener('click', (e) => {
@@ -1160,7 +1332,9 @@
     if (!S.sel) {
       card.hidden = true;
       syncTray();
-      if (prev) shareSelection(null);
+      // An update that drops the selected aircraft says so with a toast, not
+      // in the model's context: only the user's own choices go there.
+      if (prev && opts.from !== 'merge') shareSelection(null);
       return;
     }
     const item = S.items.get(S.sel);
@@ -1196,7 +1370,7 @@
     const f = freeRect();
     const p = map.latLngToContainerPoint([ac.lat, ac.lon]);
     if (p.x >= f.x0 && p.x <= f.x1 && p.y >= f.y0 && p.y <= f.y1) return;
-    map.panBy([p.x - (f.x0 + f.x1) / 2, p.y - (f.y0 + f.y1) / 2], { animate: animate && !REDUCED_MOTION });
+    map.panBy([p.x - (f.x0 + f.x1) / 2, p.y - (f.y0 + f.y1) / 2], { animate: animate && !reducedMotion() });
   }
 
   // Scrolls the list only: scrollIntoView() could also scroll the chat around
@@ -1228,7 +1402,7 @@
   }
 
   function seenText(ac, now) {
-    const s = Math.max(0, Math.round(Date.now() / 1000 - (now - (ac.seen || 0))));
+    const s = Math.max(0, Math.round(serverNow() - (now - (ac.seen || 0))));
     if (s < 90) return t('secondsAgo', s);
     if (s < 5400) return t('minutesAgo', Math.round(s / 60));
     return t('hoursAgo', Math.round(s / 3600));
@@ -1263,7 +1437,10 @@
     const facts = [
       `<span>${esc(t('source'))} <b>${esc(t(`sources.${ac.src}`))}</b></span>`,
       `<span>${esc(t('seen'))} <b id="card-seen">${esc(seenText(ac, d.now))}</b></span>`,
-      ac.dist != null ? `<span>${esc(t('distance'))} <b>${esc(distText(ac))}</b></span>` : '',
+      ac.dist != null ? `<span>${esc(t('distance'))} <b id="card-dist">${esc(distText({ dist: estDist(ac) }))}</b></span>` : '',
+      // Altitude and speed are the last ones received; the position on the
+      // map may be an estimate, and then the card says so.
+      `<span id="card-est"${estimate(ac).est ? '' : ' hidden'}>${esc(t('estimated'))} <b>${esc(t('estimatedValue'))}</b></span>`,
     ].join('');
     const actions = [
       S.caps.message ? `<button type="button" class="btn primary" data-act="ask">${esc(t('ask'))}</button>` : '',
@@ -1322,32 +1499,144 @@
     }
     return { name, args };
   }
-  $('btn-refresh').addEventListener('click', async () => {
+  // Refresh and Live share this: the same call again, merged into the map.
+  // Anything but a readable result stops Live (never a retry loop) and says why.
+  let refreshing = null;
+  function refreshNow(source) {
+    if (refreshing) return refreshing;
     const call = refreshCall();
+    if (!call) return Promise.resolve(false);
+    $('btn-refresh').classList.add('is-busy');
+    refreshing = (async () => {
+      try {
+        const res = await request('tools/call', { name: call.name, arguments: call.args }, 30000);
+        const d = parse(res);
+        if (d.kind === 'error' || (res && res.isError)) throw new Error(d.message || textOf(res) || 'error');
+        if (d.kind === 'notfound') throw new Error(t('notFoundTitle', d.value || call.args.value || ''));
+        if (d.kind === 'unreadable') throw new Error(t('unreadableTitle'));
+        show(res, { keepView: true, keepPlace: true, merge: true });
+        if (source === 'button') toast(t('refreshed', clock(S.data.now, true)));
+        return true;
+      } catch (err) {
+        const why = reasonOf(err);
+        if (S.live.state === 'on') setLive('stopped', why);
+        toast(source === 'live' ? t('liveStopped', why) : t('refreshFailed', why));
+        log('warning', { event: 'refresh-failed', source, reason: why });
+        return false;
+      } finally {
+        $('btn-refresh').classList.remove('is-busy');
+        refreshing = null;
+        renderLive();
+      }
+    })();
+    renderLive();
+    return refreshing;
+  }
+  function reasonOf(err) {
+    const msg = String((err && err.message) || err || '');
+    if (/rate limit|\b429\b|too many requests/i.test(msg)) return t('liveRate');
+    if (/timeout/i.test(msg)) return t('liveTimeout');
+    if (!msg) return t('liveOff');
+    const first = userMessage(msg);
+    return (first === t('errorBody') ? t('liveError') : first).slice(0, 100);
+  }
+  $('btn-refresh').addEventListener('click', () => {
     const btn = $('btn-refresh');
-    if (!call || btn.disabled) return;
+    if (btn.disabled) return;
     btn.disabled = true;
-    btn.classList.add('is-busy');
-    try {
-      const res = await request('tools/call', { name: call.name, arguments: call.args }, 30000);
-      if (res && res.isError) throw new Error(textOf(res) || 'error');
-      show(res, { keepView: true, keepPlace: true });
-      toast(t('refreshed', clock(S.data ? S.data.now : Date.now() / 1000, true)));
-    } catch (err) {
-      toast(t('refreshFailed', String((err && err.message) || err).slice(0, 140)));
-    } finally {
-      btn.classList.remove('is-busy');
+    refreshNow('button').finally(() => {
       setTimeout(() => { btn.disabled = false; }, 4000);
-    }
+      if (S.live.state === 'on') scheduleLive();
+    });
   });
 
-  // Ticks: the card's "last seen" and the title's age.
+  // ------------------------------------------------------------------ live
+  // Off until the user presses it. While on: the same call every LIVE.everyS
+  // seconds, only while the tab is visible and the map is on screen, for at
+  // most LIVE.maxMinutes, then paused until pressed again. Each update is one
+  // request on the user's key (the tooltip and a first-time toast say so).
+  // Updates don't go into the model's context: the conversation's tool result
+  // stays what the model and the user both saw; asking again gives fresh data.
+  const visibleNow = () => document.visibilityState !== 'hidden' && S.inView;
+  function setLive(state, reason = '') {
+    const lv = S.live;
+    lv.state = state;
+    lv.reason = reason;
+    lv.waiting = false;
+    clearTimeout(lv.timer);
+    if (state === 'on') scheduleLive();
+    renderLive();
+  }
+  function scheduleLive() {
+    const lv = S.live;
+    clearTimeout(lv.timer);
+    if (lv.state !== 'on') return;
+    lv.timer = setTimeout(liveTick, Math.max(0, lv.last + LIVE.everyS * 1000 - Date.now()));
+  }
+  async function liveTick() {
+    const lv = S.live;
+    if (lv.state !== 'on') return;
+    if (Date.now() - lv.since >= LIVE.maxMinutes * 60000) { setLive('paused'); return; }
+    if (!visibleNow()) { lv.waiting = true; return; }
+    await refreshNow('live');
+    scheduleLive();
+  }
+  function onVisible() {
+    if (S.live.state === 'on' && S.live.waiting && visibleNow()) { S.live.waiting = false; scheduleLive(); }
+  }
+  document.addEventListener('visibilitychange', onVisible);
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((entries) => { S.inView = entries[entries.length - 1].isIntersecting; onVisible(); }).observe(app);
+  }
+  $('live-btn').addEventListener('click', () => {
+    if (S.live.state === 'on') { setLive('off'); return; }
+    S.live.since = Date.now();
+    if (!S.live.told) { S.live.told = true; toast(t('liveFirst', LIVE.everyS, LIVE.maxMinutes)); }
+    // Right away if the data is older than the interval, otherwise on time.
+    setLive('on');
+  });
+  const liveTip = () => t('liveTip', LIVE.everyS, LIVE.maxMinutes);
+  function renderLive() {
+    const btn = $('live-btn');
+    btn.hidden = !(S.connected && S.caps.serverTools && S.data && (S.status === 'ready' || S.status === 'empty') && refreshCall());
+    const st = S.live.state;
+    btn.setAttribute('aria-pressed', String(st === 'on'));
+    btn.classList.toggle('paused', st === 'paused');
+    btn.classList.toggle('busy', st === 'on' && !!refreshing);
+    $('live-label').textContent = st === 'paused' ? t('liveResume') : t('live');
+    btn.title = liveTip();
+    btn.setAttribute('aria-label', `${st === 'paused' ? t('liveResume') : t('live')}. ${liveTip()}`);
+    renderLiveTime();
+  }
+  function renderLiveTime() {
+    const el = $('title-time');
+    if (!S.data || S.status === 'loading') return;
+    const st = S.live.state;
+    el.className = `title-time${st === 'off' ? '' : ` ${st === 'on' ? 'live' : st}`}`;
+    const text = st === 'on' ? (refreshing ? t('liveUpdating') : t('liveUpdated', Math.max(0, Math.round((Date.now() - S.live.last) / 1000))))
+      : st === 'paused' ? t('livePaused', LIVE.maxMinutes)
+      : st === 'stopped' ? t('liveStopped', S.live.reason)
+      : whenText(S.data.now);
+    if (el.textContent !== text) el.textContent = text;
+    el.title = st === 'stopped' ? text : '';
+  }
+
+  // Once a second: estimated motion, the card's last seen and distance, the
+  // Live indicator.
   const ticker = setInterval(() => {
-    const el = $('card-seen');
+    motionTick();
     const item = S.sel && S.items.get(S.sel);
-    if (el && item && S.data) el.textContent = seenText(item.ac, S.data.now);
+    if (item && S.data) {
+      const seen = $('card-seen');
+      if (seen) seen.textContent = seenText(item.ac, S.data.now);
+      const dist = $('card-dist');
+      if (dist) dist.textContent = distText({ dist: estDist(item.ac) });
+      const est = $('card-est');
+      if (est) est.hidden = !estimate(item.ac).est;
+    }
+    if (S.live.state === 'on') renderLiveTime();
   }, 1000);
-  setInterval(() => { if (S.data) renderTitle(); }, 30000);
+  setInterval(() => { if (S.data && S.live.state === 'off') renderLiveTime(); }, 30000);
 
   // ------------------------------------------------------------------ brand
   // The mark is a data: image, which the spec's CSP allows; if a host blocks

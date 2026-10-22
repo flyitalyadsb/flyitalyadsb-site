@@ -263,6 +263,19 @@ export function toolResult(name, refreshIndex = 0, { structured = true } = {}) {
   const sc = SCENARIOS[name];
   if (sc.error) return { content: [{ type: 'text', text: sc.error }], isError: true };
   const data = sc.result();
+  if (refreshIndex && Array.isArray(data.aircraft) && data.aircraft.length >= 6) {
+    // Each update: two aircraft leave, two new ones come in at the edge.
+    const n = data.aircraft.length;
+    const out = new Set([(refreshIndex * 3) % n, (refreshIndex * 7 + 1) % n]);
+    const fresh = [0, 1].map((k) => {
+      const base = data.aircraft[(refreshIndex * 5 + k * 11) % n];
+      const hex = `${(0xe00000 + refreshIndex * 16 + k).toString(16)}`;
+      const lat = typeof base.lat === 'number' ? +(base.lat + 0.12 * (k ? 1 : -1)).toFixed(4) : base.lat;
+      return { ...base, hex, flight: `NEW${refreshIndex}${k}`.padEnd(8, ' '), r: undefined, lat, seen_pos: 0.6, squawk: '2000', emergency: 'none' };
+    });
+    data.aircraft = data.aircraft.filter((_, i) => !out.has(i)).concat(fresh);
+    data.count = data.aircraft.length;
+  }
   if (refreshIndex && Array.isArray(data.aircraft)) {
     // Dead reckoning: everything moves on by `refreshIndex` × 20 s.
     const dt = refreshIndex * 20;
