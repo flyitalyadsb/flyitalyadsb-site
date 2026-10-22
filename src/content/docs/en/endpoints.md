@@ -1,6 +1,6 @@
 ---
 title: Endpoints
-description: "Every endpoint of the FlyItalyADSB REST API v2: one aircraft by ICAO hex, callsign or registration, aircraft within a radius, military, PIA, LADD, history and one aircraft's profile."
+description: "Every endpoint of the FlyItalyADSB REST API v2: one aircraft by ICAO hex, callsign or registration, aircraft within a radius, military, PIA, LADD, history, one aircraft's profile and overflights."
 key: endpoints
 order: 3
 updated: 2026-10-22
@@ -20,6 +20,7 @@ updated: 2026-10-22
 | `/history/{icao}` | the dates with a track for one aircraft |
 | `/history/{icao}/{date}` | one aircraft's track on one day |
 | `/profile/{icao}` | what we know about one aircraft: identity, live status, history summary |
+| `/overflights?lat=&lon=&dist=&from=&to=` | the aircraft that flew within `dist` km of a point between two times |
 
 ## One aircraft
 
@@ -47,6 +48,8 @@ The answer is `{"now", "count", "ac": [...]}`, with the same fields for every ai
 ## History
 
 `/history/{icao}` lists the dates available for one aircraft, and `/history/{icao}/{YYYY-MM-DD}` returns that day's track. Coverage and format are in [History](/en/data/api/docs/history/).
+
+`/overflights` answers "what flew over this place between these two times": one entry per aircraft, with the time and distance of its closest point. Parameters, coverage and limits are in [History](/en/data/api/docs/history/#what-flew-over-a-place).
 
 ## Aircraft profile
 

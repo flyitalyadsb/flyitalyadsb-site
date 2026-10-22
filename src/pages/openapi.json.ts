@@ -89,7 +89,7 @@ const spec = {
   security: [{ ApiKey: [] }],
   tags: [
     { name: 'live', description: 'What the network is receiving now.' },
-    { name: 'history', description: 'Per-aircraft daily tracks since 2022-04-10, with gaps.' },
+    { name: 'history', description: 'Per-aircraft daily tracks since 2022-04-10, with gaps, and the aircraft that flew over a place (since 2026-08-17).' },
     { name: 'keys', description: 'Self-serve API keys.' },
     { name: 'account', description: 'The key\'s account: the position saved for "aircraft near me".' },
   ],
@@ -198,6 +198,58 @@ const spec = {
           '404': error('Not received now and no recorded history for this aircraft.'),
           '429': { $ref: '#/components/responses/TooManyRequests' },
           '503': error('Live data or the archive is briefly unavailable: retry shortly.'),
+        },
+      },
+    },
+    '/v2/overflights': {
+      get: {
+        summary: 'Aircraft that flew over a place in a time window',
+        description:
+          'Every aircraft whose recorded track passed within `dist` km of the point between `from` and `to`, one entry per ' +
+          'aircraft, sorted by the time of its closest point. Tracks are interpolated between received positions (gaps over ' +
+          '5 minutes are not). Covers the days since 2026-08-17; the current day lags by up to ~40 minutes, and the periods ' +
+          'not searched are listed in `coverage.gaps`. One request per call. The maximum `dist` and window depend on the ' +
+          `plan (Free 10 km / 6 h, Starter 25 km / 24 h, others 50 km / 24 h): ${PLANS}. ` +
+          'Aircraft data only: registration, type, description and dbFlags, never the owner or operator.',
+        tags: ['history'],
+        parameters: [
+          { name: 'lat', in: 'query', required: true, description: 'Latitude, decimal degrees.', schema: { type: 'number', minimum: -90, maximum: 90 } },
+          { name: 'lon', in: 'query', required: true, description: 'Longitude, decimal degrees.', schema: { type: 'number', minimum: -180, maximum: 180 } },
+          { name: 'dist', in: 'query', required: true, description: 'Radius in km.', schema: { type: 'number', exclusiveMinimum: 0, maximum: 50 } },
+          {
+            name: 'from',
+            in: 'query',
+            required: true,
+            description: 'Start: ISO 8601 (UTC when there is no offset) or Unix seconds.',
+            schema: { type: 'string', examples: ['2026-10-21T08:00:00Z'] },
+          },
+          {
+            name: 'to',
+            in: 'query',
+            required: true,
+            description: 'End, after `from`: ISO 8601 or Unix seconds. A time in the future is cut to now.',
+            schema: { type: 'string', examples: ['2026-10-21T10:00:00Z'] },
+          },
+          {
+            name: 'max_alt_ft',
+            in: 'query',
+            required: false,
+            description: 'Only the part of each track at or below this altitude (feet); positions without altitude are left out.',
+            schema: { type: 'number', minimum: 0, maximum: 100000 },
+          },
+          { name: 'limit', in: 'query', required: false, description: 'At most this many aircraft.', schema: { type: 'integer', minimum: 1, maximum: 500, default: 100 } },
+        ],
+        responses: {
+          '200': {
+            description: 'The overflights, with what was searched.',
+            headers: planHeaders,
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Overflights' } } },
+          },
+          '400': error('A parameter is missing or malformed, `to` is not after `from`, or the circle contains a pole.'),
+          '401': { $ref: '#/components/responses/Unauthorized' },
+          '403': error("`dist` or the window is above the plan's maximum (the body carries max_dist_km and max_window_hours)."),
+          '429': { $ref: '#/components/responses/TooManyRequests' },
+          '503': error('Too many searches at once, or the index is briefly unavailable: retry shortly (Retry-After).'),
         },
       },
     },
@@ -452,6 +504,64 @@ const spec = {
               withheld: { type: ['string', 'null'], enum: ['pia', 'ladd', null], description: 'Why there is no photo link.' },
             },
           },
+        },
+      },
+      Overflights: {
+        type: 'object',
+        required: ['count', 'truncated', 'coverage', 'overflights'],
+        properties: {
+          lat: { type: 'number' },
+          lon: { type: 'number' },
+          dist_km: { type: 'number' },
+          from: { type: 'string', format: 'date-time' },
+          to: { type: 'string', format: 'date-time' },
+          max_alt_ft: { type: ['number', 'null'] },
+          count: { type: 'integer' },
+          truncated: { type: 'boolean', description: 'More passes exist than were returned.' },
+          complete_until: {
+            type: ['string', 'null'],
+            format: 'date-time',
+            description: 'When truncated: every pass whose closest_time is before this is listed. Ask again from here.',
+          },
+          coverage: {
+            type: 'object',
+            properties: {
+              complete: { type: 'boolean' },
+              gaps: {
+                type: 'array',
+                description: 'Periods NOT searched (not indexed yet, not covered, or tracks that could not be read).',
+                items: {
+                  type: 'object',
+                  properties: { from: { type: 'string', format: 'date-time' }, to: { type: 'string', format: 'date-time' }, reason: { type: 'string' } },
+                },
+              },
+            },
+          },
+          candidates: { type: 'integer', description: 'Aircraft examined.' },
+          overflights: { type: 'array', items: { $ref: '#/components/schemas/Overflight' } },
+        },
+      },
+      Overflight: {
+        type: 'object',
+        properties: {
+          icao: { type: 'string' },
+          r: { type: ['string', 'null'], description: 'Registration.' },
+          t: { type: ['string', 'null'], description: 'ICAO type code.' },
+          desc: { type: ['string', 'null'] },
+          dbFlags: { type: 'integer' },
+          callsigns: { type: 'array', items: { type: 'string' } },
+          closest_time: { type: 'string', format: 'date-time' },
+          closest_ts: { type: 'number', description: 'Unix seconds.' },
+          closest_km: { type: 'number' },
+          closest_alt_ft: { oneOf: [{ type: 'number' }, { const: 'ground' }, { type: 'null' }] },
+          min_alt_ft: { oneOf: [{ type: 'number' }, { const: 'ground' }, { type: 'null' }], description: 'Lowest altitude inside the circle.' },
+          entered: { type: 'string', format: 'date-time' },
+          left: { type: 'string', format: 'date-time' },
+          passes: { type: 'integer', description: 'Separate times it entered the circle.' },
+          positions: { type: 'integer', description: 'Received positions inside the circle; 0 = interpolated between positions outside it.' },
+          source: { type: 'string', enum: ['adsb', 'mlat', 'tisb', 'other'], description: 'Source of the closest position.' },
+          sources: { type: 'array', items: { type: 'string' } },
+          history: { type: 'array', items: { type: 'string' }, description: 'The /v2/history paths of the days read.' },
         },
       },
       Trace: {
