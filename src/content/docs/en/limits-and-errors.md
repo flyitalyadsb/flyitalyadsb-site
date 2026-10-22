@@ -26,7 +26,7 @@ Every answer reports your state in its headers:
 
 ## Errors
 
-The body is always JSON with an `error` field.
+The body is always JSON with an `error` field. On 401, 403 and 429 there is also `help`, the link to the answer in the [FAQ](/en/faq/).
 
 | Code | When | What to do |
 |---|---|---|

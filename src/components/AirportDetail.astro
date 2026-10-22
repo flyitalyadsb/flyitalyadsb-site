@@ -16,6 +16,10 @@ const nearby = nearbyAirports(airport, 4);
 const localFaqs = faqs(airport, lang);
 // English pages have English paths (src/lib/routes.ts): never '/en' + an Italian segment.
 const p = (path: string) => localePath(isEn ? 'en' : 'it', path);
+// The same airport through the API: the airport pages bring most of the
+// site's search traffic, the API pages almost none (Search Console, 09/2026).
+const apiCurl = (key: string) =>
+  `curl -H "X-Api-Key: ${key}" \\\n  https://api.flyitalyadsb.com/v2/lat/${airport.lat}/lon/${airport.lon}/dist/${RADIUS_KM}`;
 // mapSrc is also the "open full map" outbound link target (below) — someone
 // clicking through explicitly wants the real interactive tool, sidebar and
 // all, so the hide params live only on the embed's own src, not this one.
@@ -44,6 +48,12 @@ const t = isEn
       contribTitle: 'Improve coverage over ' + airport.city,
       contribBody: `Coverage quality depends on the density of receivers. With a Raspberry Pi and an RTL-SDR antenna you can help track flights over ${airport.region}.`,
       contribCta: 'Become a feeder →',
+      apiTitle: 'This data in your app',
+      apiBody: `Every aircraft within ${RADIUS_KM} km of ${name}, as JSON, with a free key that also allows commercial use:`,
+      apiAsk: `Or ask Claude, with the FlyItalyADSB connector: “which aircraft are near ${airport.city} right now?”`,
+      apiKey: 'Get a free key →',
+      apiDocs: 'Quickstart',
+      apiPlaceholder: 'YOUR_KEY',
     }
   : {
       crumbHome: 'Home',
@@ -66,6 +76,12 @@ const t = isEn
       contribTitle: 'Migliora la copertura su ' + airport.city,
       contribBody: `La qualità della copertura dipende dalla densità dei ricevitori. Con un Raspberry Pi e un'antenna RTL-SDR puoi aiutare a tracciare i voli sopra ${airport.region}.`,
       contribCta: 'Diventa feeder →',
+      apiTitle: 'Questi dati nella tua app',
+      apiBody: `Tutti gli aerei entro ${RADIUS_KM} km da ${name}, in JSON, con una chiave gratuita valida anche per uso commerciale:`,
+      apiAsk: `Oppure chiedi a Claude, con il connettore FlyItalyADSB: «che aerei ci sono ora vicino a ${airport.city}?»`,
+      apiKey: 'Chiave gratuita →',
+      apiDocs: 'Guida rapida',
+      apiPlaceholder: 'LA_TUA_CHIAVE',
     };
 ---
 
@@ -130,6 +146,18 @@ const t = isEn
     </div>
   </div>
 
+  <!-- The same data through the API -->
+  <div class="mb-16 p-6 rounded-xl border" style="background:#0a1320;border-color:#1e3048" data-airport-api={airport.icao}>
+    <h2 class="font-semibold text-slate-100 mb-2">{t.apiTitle}</h2>
+    <p class="text-sm text-slate-400 leading-relaxed mb-4">{t.apiBody}</p>
+    <pre class="text-xs leading-relaxed rounded-lg p-4 mb-4 overflow-x-auto" style="background:#070d1a;border:1px solid #1e3048;color:#cbd5e1"><code>{apiCurl(t.apiPlaceholder)}</code></pre>
+    <p class="text-sm text-slate-400 leading-relaxed mb-4">{t.apiAsk}</p>
+    <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+      <a href={p('/dati/api/') + '#api-key'} data-cta="key" class="text-sky-400 hover:text-sky-300 no-underline">{t.apiKey}</a>
+      <a href={p('/dati/api/docs/guida-rapida/')} data-cta="docs" class="text-sky-400 hover:text-sky-300 no-underline">{t.apiDocs}</a>
+    </div>
+  </div>
+
   <!-- FAQ -->
   <div class="mb-16">
     <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-6">{t.faqTitle}</h2>
@@ -175,6 +203,13 @@ const t = isEn
 </div>
 
 <script>
+  import { track } from '../lib/analytics';
+
+  // Which airports send people to the API (PostHog, with consent only).
+  const box = document.querySelector<HTMLElement>('[data-airport-api]');
+  box?.querySelectorAll<HTMLAnchorElement>('a[data-cta]').forEach((a) =>
+    a.addEventListener('click', () => track('airport_api_cta_clicked', { icao: box.dataset.airportApi, target: a.dataset.cta }, true)));
+
   // Live count of aircraft within RADIUS_KM of this airport. The count is computed
   // server-side (the API never returns the full feed): just pass lat/lon/radius.
   const el = document.getElementById('ac-count');

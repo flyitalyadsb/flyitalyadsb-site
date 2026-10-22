@@ -26,7 +26,7 @@ Ogni risposta riporta il tuo stato negli header:
 
 ## Errori
 
-Il corpo è sempre JSON con un campo `error`.
+Il corpo è sempre JSON con un campo `error`. Con 401, 403 e 429 c'è anche `help`, il link alla risposta nelle [domande frequenti](/faq/).
 
 | Codice | Quando | Cosa fare |
 |---|---|---|

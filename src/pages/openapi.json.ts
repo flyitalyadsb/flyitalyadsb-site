@@ -241,7 +241,11 @@ const spec = {
       Error: {
         type: 'object',
         required: ['error'],
-        properties: { error: { type: 'string' }, code: { type: 'string' } },
+        properties: {
+          error: { type: 'string' },
+          code: { type: 'string' },
+          help: { type: 'string', format: 'uri', description: 'On 401, 403 and 429: the FAQ answer for this error.' },
+        },
         additionalProperties: true,
       },
       Aircraft: {

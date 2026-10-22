@@ -50,6 +50,26 @@ export class V2ApiError extends Error {
   }
 }
 
+/** The error for a 401/403/429, with the API's `help` link to the FAQ answer
+ * when the body has one, so the assistant can tell the user what to do.
+ * `own`: use the API's own `error` text (the 403 says which radius the plan
+ * allows), otherwise `message`. An edge block is HTML, not JSON: then
+ * `message` alone. */
+async function errorWithHelp(res: Response, message: string, own = false): Promise<V2ApiError> {
+  let body: { error?: unknown; help?: unknown } = {};
+  try {
+    body = (await res.json()) as typeof body;
+  } catch {
+    // not JSON
+  }
+  const text = own && typeof body.error === 'string' ? `${body.error}.` : message;
+  const help = typeof body.help === 'string' ? ` What to do: ${body.help}` : '';
+  return new V2ApiError(res.status, `${text}${help}`);
+}
+
+const KEY_REJECTED = 'The flyitalyadsb API rejected this API key — check that your X-Api-Key is correct.';
+const RATE_LIMITED = 'Rate limit exceeded on the flyitalyadsb API — try again shortly.';
+
 async function v2Fetch<T>(path: string, apiKey: string): Promise<T> {
   let res: Response;
   try {
@@ -72,8 +92,9 @@ async function v2Fetch<T>(path: string, apiKey: string): Promise<T> {
     throw new V2ApiError(0, `Network error reaching the flyitalyadsb API: ${(err as Error).message}`);
   }
   if (res.status === 404) throw new V2ApiError(404, 'No matching aircraft found.');
-  if (res.status === 401) throw new V2ApiError(401, 'The flyitalyadsb API rejected this API key — check that your X-Api-Key is correct.');
-  if (res.status === 429) throw new V2ApiError(429, 'Rate limit exceeded on the flyitalyadsb API — try again shortly.');
+  if (res.status === 401) throw await errorWithHelp(res, KEY_REJECTED);
+  if (res.status === 429) throw await errorWithHelp(res, RATE_LIMITED);
+  if (res.status === 403) throw await errorWithHelp(res, 'The flyitalyadsb API refused this request.', true);
   if (!res.ok) throw new V2ApiError(res.status, `flyitalyadsb API returned ${res.status}.`);
   return res.json() as Promise<T>;
 }
@@ -131,8 +152,8 @@ async function v2FetchHistory<T>(path: string, apiKey: string): Promise<T> {
   } catch (err) {
     throw new V2ApiError(0, `Network error reaching the flyitalyadsb API: ${(err as Error).message}`);
   }
-  if (res.status === 401) throw new V2ApiError(401, 'The flyitalyadsb API rejected this API key — check that your X-Api-Key is correct.');
-  if (res.status === 429) throw new V2ApiError(429, 'Rate limit exceeded on the flyitalyadsb API — try again shortly.');
+  if (res.status === 401) throw await errorWithHelp(res, KEY_REJECTED);
+  if (res.status === 429) throw await errorWithHelp(res, RATE_LIMITED);
   if (!res.ok) {
     let detail = `flyitalyadsb API returned ${res.status}.`;
     try {
