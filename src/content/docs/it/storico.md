@@ -44,7 +44,7 @@ curl -H "X-Api-Key: LA_TUA_CHIAVE" "https://api.flyitalyadsb.com/v2/overflights?
   - `source`: `adsb`, `mlat`, `tisb` o `other`;
   - `positions`: le posizioni ricevute dentro il cerchio. `0` vuol dire che il passaggio è la retta tra due posizioni appena fuori.
 - `from` e `to` accettano ISO 8601 (UTC se manca il fuso) o secondi Unix. `max_alt_ft` tiene solo la parte bassa di ogni traccia, `limit` limita l'elenco (predefinito 100, massimo 500).
-- **Copertura:** ogni giorno dal 17/08/2026. Il giorno in corso arriva fino a circa 15 minuti fa. I periodi non cercati sono in `coverage.gaps`: lì "nessun aereo" non vuol dire che non è passato niente.
+- **Copertura:** ogni giorno dal 17/08/2026. Il giorno in corso non è ancora cercabile: si aggiunge dopo la mezzanotte UTC, entro le 02:00 UTC circa. Per quello che vola adesso usa `/v2/lat/…`. I periodi non cercati sono in `coverage.gaps`: lì "nessun aereo" non vuol dire che non è passato niente.
 - **Limiti:** raggio e finestra dipendono dal piano: Free 10 km e 6 ore, Starter 25 km e 24 ore, gli altri piani 50 km e 24 ore. Oltre, la risposta è `403`. Ogni ricerca conta come una richiesta, e ogni chiave ne può fare al massimo 10 al minuto.
 - **Risposte troncate:** se i passaggi sono più di quelli che stanno nella risposta, `truncated` vale `true`. `complete_until` dice fino a quando l'elenco è completo; per il resto, richiedi con `from` uguale a quell'istante.
 - Riguarda gli aerei, non le persone: nessun campo dice chi c'era a bordo.

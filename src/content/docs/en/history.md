@@ -44,7 +44,7 @@ curl -H "X-Api-Key: YOUR_KEY" "https://api.flyitalyadsb.com/v2/overflights?lat=4
   - `source`: `adsb`, `mlat`, `tisb` or `other`;
   - `positions`: the positions received inside the circle. `0` means the pass is a straight line between two positions just outside it.
 - `from` and `to` take ISO 8601 (UTC when there is no offset) or Unix seconds. `max_alt_ft` keeps only the low part of each track, `limit` caps the list (default 100, max 500).
-- **Coverage:** every day since 17/08/2026. The current day lags by up to ~15 minutes. The periods that were not searched are in `coverage.gaps`: there, "no aircraft" doesn't mean nothing flew over.
+- **Coverage:** every day since 17/08/2026. The current day isn't searchable yet: it is added after midnight UTC, by about 02:00 UTC. For what is flying now, use `/v2/lat/…`. The periods that were not searched are in `coverage.gaps`: there, "no aircraft" doesn't mean nothing flew over.
 - **Limits:** radius and window depend on the plan: Free 10 km and 6 hours, Starter 25 km and 24 hours, the other plans 50 km and 24 hours. Above them the answer is `403`. Every search counts as one request, with at most 10 searches a minute per key.
 - **Truncated answers:** when there are more passes than fit, `truncated` is `true`. `complete_until` says up to when the list is complete; ask again with `from` set to it for the rest.
 - It is about aircraft, not people: no field says who was on board.
