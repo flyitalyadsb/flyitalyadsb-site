@@ -2,6 +2,16 @@ import { OAuthAuthorizationServer, OAuthResourceServer, insufficientScope } from
 import { createMcpHandler } from 'mcp-handler';
 import { initializeMcpServer } from '../../src/lib/mcp/server';
 import { setV2Base } from '../../src/lib/mcp/v2-client';
+import {
+  CLAIM_GRANT,
+  claimGrant,
+  continueAgent,
+  registerAgent,
+  reinitiateClaim,
+  rootResourceMetadata,
+  startAgentClaim,
+  withAgentAuth,
+} from './agent';
 import { continueAuthorize, linkLanding, SCOPES, startAuthorize } from './authorize';
 
 /**
@@ -12,8 +22,11 @@ import { continueAuthorize, linkLanding, SCOPES, startAuthorize } from './author
  *   /mcp + X-Api-Key        the MCP server as before, the caller's own key
  *   /mcp + Bearer           OAuth: the token's props carry a connection token
  *                           (public-api connect.py) used as the X-Api-Key
+ *   /mcp + Bearer fiamcp_   an auth.md agent's connection token (agent.ts)
  *   /authorize[/email]      sign-in with an email code, then consent
- *   /oauth/token, /oauth/register, /.well-known/oauth-*   the library
+ *   /oauth/agent/identity[/claim], /authorize/agent   auth.md registration
+ *   /oauth/token, /oauth/register, /.well-known/oauth-*   the library, plus
+ *                           the auth.md claim grant and metadata (agent.ts)
  *
  * Design: nesso-infra docs/FLYITALYADSB-MCP-OAUTH.md.
  */
@@ -62,7 +75,7 @@ function rolesFor(env: Env) {
       refreshTokenIdleTTL: REFRESH_TOKEN_IDLE_TTL_S,
     });
     const resource = new OAuthResourceServer<Env, Props>({
-      resourceMetadata: { resource: `${site}/mcp`, authorization_servers: [site] },
+      resourceMetadata: { resource: `${site}/mcp`, authorization_servers: [site], resource_name: 'FlyItalyADSB' },
       requiredScopes: ['mcp'],
       validateToken: (e) => (res, token) => auth.validateToken(res, token, e),
       handler: {
@@ -87,9 +100,26 @@ export default {
     if (pathname === '/mcp' || pathname.startsWith('/mcp/')) {
       const apiKey = request.headers.get('x-api-key');
       if (apiKey) return mcp(request, apiKey);
+      // auth.md agents get a connection token, not a library token: it is
+      // already the key the tools send to the API.
+      const agent = /^Bearer\s+(fiamcp_[A-Za-z0-9_-]+)$/i.exec(request.headers.get('authorization') ?? '');
+      if (agent) return mcp(request, agent[1]);
       return resource.fetch(request, env, ctx);
     }
+    if (pathname === '/.well-known/oauth-protected-resource') return rootResourceMetadata(env);
     if (pathname.startsWith('/.well-known/oauth-protected-resource')) return resource.fetch(request, env, ctx);
+    if (pathname === '/.well-known/oauth-authorization-server') return withAgentAuth(await auth.fetch(request, env, ctx), env);
+
+    if (request.method === 'POST' && pathname === '/oauth/agent/identity') return registerAgent(request, env);
+    if (request.method === 'POST' && pathname === '/oauth/agent/identity/claim') return reinitiateClaim(request, env);
+    if (request.method === 'POST' && pathname === '/oauth/token'
+      && (request.headers.get('content-type') ?? '').includes('application/x-www-form-urlencoded')) {
+      const form = new URLSearchParams(await request.clone().text());
+      if (form.get('grant_type') === CLAIM_GRANT) return claimGrant(form, env);
+    }
+    if (pathname === '/authorize/agent') {
+      return request.method === 'POST' ? continueAgent(request, env) : startAgentClaim(request, env);
+    }
 
     if (pathname === '/authorize') {
       const oauth = auth.getOAuthApi(env);

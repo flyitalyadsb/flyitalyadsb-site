@@ -4,6 +4,7 @@ import {
   type AuthRequest,
   type OAuthHelpers,
 } from '@cloudflare/workers-oauth-provider';
+import { AGENT_FLOW_PREFIX, continueAgent } from './agent';
 import * as api from './api';
 import { ApiError, type Lang } from './api';
 import { codePage, consentPage, emailPage, errorPage, linkPage, texts } from './pages';
@@ -30,7 +31,7 @@ export const SCOPES = ['mcp', 'offline_access'];
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, business: 3, enterprise: 4 };
 
-const langOf = (req: Request): Lang =>
+export const langOf = (req: Request): Lang =>
   (req.headers.get('accept-language') ?? '').trim().toLowerCase().startsWith('it') ? 'it' : 'en';
 
 /** What the client asked for, among what this server grants, and always `mcp`. */
@@ -38,7 +39,7 @@ export function grantedScopes(request: AuthRequest): string[] {
   return [...new Set(['mcp', ...request.scope.filter((s) => SCOPES.includes(s))])];
 }
 
-function page(body: string, nonce: string, status = 200, base?: Headers, cookies: string[] = []): Response {
+export function page(body: string, nonce: string, status = 200, base?: Headers, cookies: string[] = []): Response {
   const headers = new Headers(base);
   headers.set('content-type', 'text/html; charset=utf-8');
   headers.set('cache-control', 'no-store');
@@ -140,6 +141,9 @@ export async function continueAuthorize(req: Request, env: Env, oauth: OAuthHelp
   const form = await req.formData();
   const step = String(form.get('step') ?? '');
   const id = String(form.get('f') ?? '');
+  // The link in the code email always comes back here (/authorize/email posts
+  // to /authorize): an auth.md claim is a flow of its own (agent.ts).
+  if (id.startsWith(AGENT_FLOW_PREFIX)) return continueAgent(req, env, form);
   const nonce = randomId(16);
   const flow = await loadFlow(env.OAUTH_KV, req, id);
   const lang = flow?.lang ?? langOf(req);

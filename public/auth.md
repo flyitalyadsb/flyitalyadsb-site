@@ -14,6 +14,7 @@ Agents and programs that call either of these:
 | Method | Works on | For |
 |---|---|---|
 | **OAuth 2.1** | the MCP server | assistants with OAuth connectors, such as claude.ai |
+| **Agent registration** ([auth.md](https://github.com/workos/auth.md) `service_auth`) | the MCP server and the REST API | an agent that knows the user's email and has no browser redirect |
 | **API key** in `X-Api-Key` | the MCP server and the REST API | your own code, Claude Code, clients without OAuth |
 
 Both act as the same account: the plan, limits and usage are those of the email's API key.
@@ -37,6 +38,47 @@ Both act as the same account: the plan, limits and usage are those of the email'
 - Authorizing the same client again replaces the previous grant.
 
 **Revoking:** the person can disconnect an assistant from [My API](https://flyitalyadsb.com/en/data/api/account/). The API key itself is not touched.
+
+## Agent registration (auth.md)
+
+For an agent that has only the user's email: it registers, the user confirms in their browser, the agent polls for the credential. This follows auth.md v0.6.0, `service_auth` only.
+
+**Discovery:**
+- `GET https://flyitalyadsb.com/.well-known/oauth-protected-resource`: `resource` (`https://flyitalyadsb.com/mcp`), `resource_name`, `resource_logo_uri`, `authorization_servers`.
+- `GET https://flyitalyadsb.com/.well-known/oauth-authorization-server`, block `agent_auth`:
+  - `identity_endpoint`: `https://flyitalyadsb.com/oauth/agent/identity`
+  - `claim_endpoint`: `https://flyitalyadsb.com/oauth/agent/identity/claim`
+  - `identity_types_supported`: `["service_auth"]`
+  - `grant_types_supported` lists `urn:workos:agent-auth:grant-type:claim`.
+  - `register_uri`, `claim_uri` and `identity_assertion.assertion_types_supported: ["verified_email"]` are the auth.md v0.1 names of the same endpoints and method. The ceremony is v0.6's below.
+
+**1. Register:** `POST /oauth/agent/identity`, JSON `{"type": "service_auth", "login_hint": "<user's email>"}`. Optional: `"lang": "it"` or `"en"`.
+- `200` with `claim_token` (keep it in memory; it is shown once) and `claim: {user_code, verification_uri, expires_in: 600, interval: 5}`. The registration is valid for 1 hour.
+- Nothing is emailed at this step.
+- Errors:
+  - `anonymous_not_enabled`, `issuer_not_enabled` (no anonymous or ID-JAG registration here);
+  - `invalid_login_hint`;
+  - `429 rate_limited` (20 registrations an hour per IP).
+- The v0.1 body `{"type": "identity_assertion", "assertion_type": "verified_email", "assertion": "<email>"}` is accepted as the same thing.
+
+**2. Hand off to the user:** show them `verification_uri` and `user_code` together. On that page they:
+- ask for a code sent to that email and type it (this proves the mailbox is theirs);
+- then type **your** `user_code`, accept the terms if the email has no key yet (a free key is created), and press Allow.
+
+They can only sign in as the email you registered.
+
+**3. Poll:** `POST https://flyitalyadsb.com/oauth/token`, form `grant_type=urn:workos:agent-auth:grant-type:claim&claim_token=<claim_token>`, every `interval` seconds.
+- `authorization_pending`: wait;
+- `slow_down`: you polled faster than `interval`;
+- `expired_token`: the 10-minute code window closed. Call `POST /oauth/agent/identity/claim` with `{"claim_token", "email"}` for a new `claim_attempt` (`user_code` + `verification_uri`), or register again if that answers `410 claim_expired`;
+- `access_denied`: the user declined.
+- `200`: `{"access_token": "fiamcp_…", "token_type": "Bearer", "scope": "mcp"}`. It is handed out once; a second poll answers `invalid_grant`.
+
+**4. Use it:**
+- on the MCP server as `Authorization: Bearer fiamcp_…`;
+- on the REST API as `X-Api-Key: fiamcp_…`.
+
+It has the plan, limits and usage of the email's API key, and it doesn't expire. The user disconnects it from [My API](https://flyitalyadsb.com/en/data/api/account/) (it shows as "AI agent (auth.md)"). After that it answers `401`: register again.
 
 ## API key
 
