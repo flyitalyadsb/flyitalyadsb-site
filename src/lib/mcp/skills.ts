@@ -229,7 +229,7 @@ function overflightsSkillMd(): string {
     '  error with a link to the answer.',
     '- Optional `maxAltFt` (only the part of each track at or below that altitude) and `limit` (default',
     '  50, max 200).',
-    '- Coverage: every day since 2026-08-17. Today lags by up to ~40 minutes; for right now use',
+    '- Coverage: every day since 2026-08-17. Today lags by up to ~15 minutes; for right now use',
     '  `aircraft_near`.',
     '',
     '## Read the answer',
