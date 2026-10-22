@@ -57,6 +57,12 @@ export interface AccountKey {
   plan: string;
 }
 
+/** Who a session belongs to, and its keys: the auth.md claim page checks that
+ * the person who signed in is the one the agent named. */
+export function accountMe(base: string, session: string): Promise<{ email: string; keys: AccountKey[] }> {
+  return call(base, '/v2/account/me', { headers: { authorization: `Bearer ${session}` } });
+}
+
 /** Only what the consent page needs: whether the email has a key, and its plan. */
 export async function accountKeys(base: string, session: string): Promise<AccountKey[]> {
   const me = await call<{ keys: AccountKey[] }>(base, '/v2/account/me', {

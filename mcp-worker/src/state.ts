@@ -57,7 +57,7 @@ export async function userIdFor(email: string): Promise<string> {
   return (await sha256hex(`fia-user:${email}`)).slice(0, 32);
 }
 
-function cookie(request: Request, name: string): string | undefined {
+export function cookie(request: Request, name: string): string | undefined {
   for (const part of (request.headers.get('cookie') ?? '').split(';')) {
     const [k, ...v] = part.trim().split('=');
     if (k === name) return v.join('=');
@@ -65,7 +65,7 @@ function cookie(request: Request, name: string): string | undefined {
   return undefined;
 }
 
-function setCookie(name: string, value: string, maxAge: number): string {
+export function setCookie(name: string, value: string, maxAge: number): string {
   return `${name}=${value}; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=${maxAge}`;
 }
 
@@ -138,4 +138,29 @@ export async function rememberedDevice(
 
 export function forgetDevice(): string {
   return setCookie(DEVICE_COOKIE, '', 0);
+}
+
+// --- sealed values ------------------------------------------------------------
+// A connection token waiting in KV for an auth.md agent to collect it
+// (agent.ts), AES-GCM with a key from the CONSENT_SECRET Worker secret: KV
+// holds it for minutes, but never in clear.
+
+async function sealKey(secret: string): Promise<CryptoKey> {
+  const raw = await crypto.subtle.digest('SHA-256', enc.encode(`fia-agent:${secret}`));
+  return crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']);
+}
+
+export async function seal(secret: string, value: string): Promise<string> {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const sealed = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await sealKey(secret), enc.encode(value));
+  const out = new Uint8Array(iv.length + sealed.byteLength);
+  out.set(iv);
+  out.set(new Uint8Array(sealed), iv.length);
+  return b64url(out);
+}
+
+export async function unseal(secret: string, value: string): Promise<string> {
+  const raw = unb64url(value);
+  const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: raw.slice(0, 12) }, await sealKey(secret), raw.slice(12));
+  return new TextDecoder().decode(plain);
 }

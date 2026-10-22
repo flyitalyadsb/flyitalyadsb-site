@@ -9,6 +9,7 @@ connect with **Connect → email code → Allow** instead of a pasted key. Desig
 | `/mcp` + `X-Api-Key` | as before: the caller's own key goes to `api.flyitalyadsb.com/v2` |
 | `/mcp` + `Bearer` | OAuth (`@cloudflare/workers-oauth-provider`). The grant's props carry a public-api connection token, used as the key. |
 | `/authorize`, `/authorize/email` | sign-in with a 6-digit code or the link in the same email, then consent (`src/authorize.ts`, `src/pages.ts`) |
+| `/oauth/agent/identity[/claim]`, `/authorize/agent`, the claim grant on `/oauth/token`, `/mcp` + `Bearer fiamcp_…` | [auth.md](https://github.com/workos/auth.md) v0.6 agent registration, `service_auth` only (`src/agent.ts`): the agent names the email, the user signs in and types the agent's code, the agent polls and receives a connection token |
 | `/oauth/token`, `/oauth/register`, `/.well-known/oauth-*` | the library: CIMD (Claude's published identity), DCR, PKCE, RFC 8414/9728 |
 
 The Worker runs on these paths only, through Worker routes on the zone. Everything else on `flyitalyadsb.com` is the
@@ -21,7 +22,9 @@ cp mcp-worker/.dev.vars.example mcp-worker/.dev.vars
 # a local public-api (nesso-infra checkout, local Postgres on 54341): emails go to a file
 uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/run_public_api_local.py <nesso-infra>/k8s/flyitalyadsb/base/public-api /tmp/mail.jsonl 8081
 npm run mcp:dev                                    # http://localhost:8787
-python3 mcp-worker/e2e/e2e_mcp_oauth.py /tmp/mail.jsonl   # 26 checks, the whole flow
+python3 mcp-worker/e2e/e2e_mcp_oauth.py /tmp/mail.jsonl   # 26 checks, the whole OAuth flow
+python3 mcp-worker/e2e/e2e_auth_md.py /tmp/mail.jsonl     # 36 checks, auth.md agent registration
+# both expect a fresh local public-api: it recreates its e2e schema at start
 npm run mcp:check                                  # wrangler types + tsc
 ```
 

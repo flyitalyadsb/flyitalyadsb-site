@@ -43,6 +43,19 @@ const T = {
     noFreeKey: 'Questa casella ha già una chiave gratuita con un’altra forma dell’indirizzo: collegati con quell’indirizzo.',
     disposable: 'Le email temporanee non sono accettate: usa un indirizzo che controlli.',
     unavailable: 'Il servizio non risponde in questo momento. Riprova tra poco.',
+    // auth.md: an agent that only knows the email (agent.ts)
+    agentTitle: 'Collega un agente AI a FlyItalyADSB',
+    agentIntro: (e: string) => `Un agente AI ha chiesto di usare i dati FlyItalyADSB a nome di <strong>${e}</strong>. Ti mandiamo un codice a questa email per verificare che sei tu; poi scrivi il codice che ti ha mostrato l’agente.`,
+    agentWarn: 'Continua solo se l’hai chiesto tu al tuo assistente. Senza il codice dell’email nessuno ottiene l’accesso.',
+    agentConfirmTitle: 'Scrivi il codice del tuo assistente',
+    agentConfirmIntro: (e: string) => `Accesso come <strong>${e}</strong>. Scrivi il codice di 6 cifre che ti ha mostrato l’agente AI: non quello dell’email.`,
+    agentCode: 'Codice dell’agente',
+    agentWrongCode: (n: number) => `Questo non è il codice che ti ha mostrato l’agente. Tentativi rimasti: ${n}.`,
+    agentTooMany: 'Troppi tentativi. Chiedi al tuo assistente un codice nuovo e riapri il link che ti dà.',
+    agentDone: 'Fatto: l’agente è collegato. Puoi chiudere questa pagina e tornare alla conversazione.',
+    agentDenied: 'Hai rifiutato: l’agente non avrà accesso. Puoi chiudere questa pagina.',
+    agentExpired: 'Questo link è scaduto o è già stato usato. Chiedi al tuo assistente di ricominciare.',
+    agentWrongAccount: 'Hai fatto l’accesso con un’altra email: l’agente ha chiesto l’accesso per un indirizzo diverso.',
   },
   en: {
     title: (c: string) => `Connect ${c} to FlyItalyADSB`,
@@ -77,6 +90,18 @@ const T = {
     noFreeKey: 'This mailbox already has a free key under another form of the address: connect with that address.',
     disposable: 'Temporary email addresses are not accepted: use an address you control.',
     unavailable: 'The service is not responding right now. Try again shortly.',
+    agentTitle: 'Connect an AI agent to FlyItalyADSB',
+    agentIntro: (e: string) => `An AI agent asked to use FlyItalyADSB data on behalf of <strong>${e}</strong>. We’ll send a code to this email to check it’s you; then type the code the agent showed you.`,
+    agentWarn: 'Only continue if you asked your assistant to do this. Without the code from the email nobody gets access.',
+    agentConfirmTitle: 'Type your assistant’s code',
+    agentConfirmIntro: (e: string) => `Signed in as <strong>${e}</strong>. Type the 6-digit code the AI agent showed you: not the one from the email.`,
+    agentCode: 'Agent’s code',
+    agentWrongCode: (n: number) => `That isn’t the code the agent showed you. Attempts left: ${n}.`,
+    agentTooMany: 'Too many attempts. Ask your assistant for a new code and open the new link it gives you.',
+    agentDone: 'Done: the agent is connected. You can close this page and go back to the conversation.',
+    agentDenied: 'You declined: the agent won’t have access. You can close this page.',
+    agentExpired: 'This link has expired or was already used. Ask your assistant to start again.',
+    agentWrongAccount: 'You signed in with another email: the agent asked for access for a different address.',
   },
 } as const;
 
@@ -222,6 +247,63 @@ const p = new URLSearchParams(location.hash.slice(1));
 document.getElementById('t').value = p.get('t') || '';
 document.getElementById('f').value = p.get('f') || '';
 history.replaceState(null, '', location.pathname);`);
+}
+
+// --- auth.md claim pages (/authorize/agent, agent.ts) ---------------------------
+// The email is the one the agent named (login_hint): the person can't change
+// it here, only sign in as it or leave.
+
+export function agentStartPage(lang: Lang, nonce: string, flow: string, email: string): string {
+  const t = texts(lang);
+  return layout(lang, nonce, escape(t.agentTitle), `
+<h1>${t.agentTitle}</h1>
+<p class="muted">${t.agentIntro(escape(email))}</p>
+<div class="box warn">${t.agentWarn}</div>
+<form method="post" action="/authorize/agent">
+<input type="hidden" name="f" value="${escape(flow)}">
+<input type="hidden" name="step" value="send">
+<button type="submit">${t.sendCode}</button>
+</form>`);
+}
+
+export function agentCodePage(lang: Lang, nonce: string, flow: string, email: string,
+  notice?: { kind: 'error' | 'warn'; message: string }): string {
+  const t = texts(lang);
+  return layout(lang, nonce, escape(t.codeTitle), `
+<h1>${t.codeTitle}</h1>
+<p class="muted">${t.codeIntro(escape(email))}</p>
+${notice ? alert(notice.kind, notice.message) : ''}
+<form method="post" action="/authorize/agent">
+<input type="hidden" name="f" value="${escape(flow)}">
+<input type="hidden" name="step" value="code">
+<label for="code">${t.code}</label>
+<input id="code" class="code" name="code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autocomplete="one-time-code" autofocus>
+<button type="submit">${t.continue}</button>
+</form>
+<form method="post" action="/authorize/agent" class="links">
+<input type="hidden" name="f" value="${escape(flow)}">
+<button type="submit" name="step" value="resend">${t.resend}</button>
+</form>`);
+}
+
+export function agentConfirmPage(lang: Lang, nonce: string, flow: string, email: string, needsTerms: boolean,
+  error?: string): string {
+  const t = texts(lang);
+  return layout(lang, nonce, escape(t.agentConfirmTitle), `
+<h1>${t.agentConfirmTitle}</h1>
+<p class="muted">${t.agentConfirmIntro(escape(email))}</p>
+<p class="muted">${t.can}</p>
+${alert('error', error)}
+<form method="post" action="/authorize/agent">
+<input type="hidden" name="f" value="${escape(flow)}">
+<input type="hidden" name="step" value="confirm">
+<label for="user_code">${t.agentCode}</label>
+<input id="user_code" class="code" name="user_code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autocomplete="off" autofocus>
+${needsTerms ? `<label class="check"><input type="checkbox" name="accept_terms" value="1" required> <span>${t.terms}</span></label>` : ''}
+<div class="row"><button type="submit" name="decision" value="deny" class="secondary" formnovalidate>${t.deny}</button>
+<button type="submit" name="decision" value="approve">${t.allow}</button></div>
+</form>
+<p class="small">${t.revoke}</p>`);
 }
 
 export function errorPage(lang: Lang, nonce: string, message: string): string {
