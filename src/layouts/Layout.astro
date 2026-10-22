@@ -90,52 +90,52 @@ type NavLink = { href: string; label: string; external: boolean; match?: string[
 const navLinks: NavLink[] = isEn
   ? [
       { href: 'https://mappa.flyitalyadsb.com', label: nav.map, external: true },
-      { href: '/en/airports', label: nav.airports, external: false },
-      { href: '/en/aircraft', label: nav.aircraft, external: false },
-      { href: '/en/data', label: nav.data, external: false, children: [
-          { href: '/en/data', label: 'About our data' },
-          { href: '/en/data/archive', label: 'Archive' },
-          { href: '/en/data/api', label: 'API & AI agents' },
-          { href: '/en/data/comparison', label: 'API comparison' },
+      { href: '/en/airports/', label: nav.airports, external: false },
+      { href: '/en/aircraft/', label: nav.aircraft, external: false },
+      { href: '/en/data/', label: nav.data, external: false, children: [
+          { href: '/en/data/', label: 'About our data' },
+          { href: '/en/data/archive/', label: 'Archive' },
+          { href: '/en/data/api/', label: 'API & AI agents' },
+          { href: '/en/data/comparison/', label: 'API comparison' },
         ] },
-      { href: '/en/network', label: nav.network, external: false, match: ['/en/community'], children: [
-          { href: '/en/network', label: 'The network' },
-          { href: '/en/community/feeder', label: 'Become a feeder' },
-          { href: '/en/community/feeder-status', label: 'Is my data arriving?' },
-          { href: '/en/community/mlat', label: 'How MLAT works' },
+      { href: '/en/network/', label: nav.network, external: false, match: ['/en/community'], children: [
+          { href: '/en/network/', label: 'The network' },
+          { href: '/en/community/feeder/', label: 'Become a feeder' },
+          { href: '/en/community/feeder-status/', label: 'Is my data arriving?' },
+          { href: '/en/community/mlat/', label: 'How MLAT works' },
         ] },
-      { href: '/en/research', label: nav.research, external: false, children: [
-          { href: '/en/research', label: 'All projects' },
-          { href: '/en/research/weather', label: 'weather32' },
+      { href: '/en/research/', label: nav.research, external: false, children: [
+          { href: '/en/research/', label: 'All projects' },
+          { href: '/en/research/weather/', label: 'weather32' },
         ] },
-      { href: '/en/about', label: nav.about, external: false, match: ['/en/contact'], children: [
-          { href: '/en/about', label: 'About' },
-          { href: '/en/contact', label: 'Contact us' },
+      { href: '/en/about/', label: nav.about, external: false, match: ['/en/contact/'], children: [
+          { href: '/en/about/', label: 'About' },
+          { href: '/en/contact/', label: 'Contact us' },
         ] },
     ]
   : [
       { href: 'https://mappa.flyitalyadsb.com', label: nav.map, external: true },
-      { href: '/aeroporti', label: nav.airports, external: false },
-      { href: '/aeromobili', label: nav.aircraft, external: false },
-      { href: '/dati', label: nav.data, external: false, children: [
-          { href: '/dati', label: 'I nostri dati' },
-          { href: '/dati/archivio', label: 'Archivio storico' },
-          { href: '/dati/api', label: 'API e agenti AI' },
-          { href: '/dati/confronto', label: 'Confronto API' },
+      { href: '/aeroporti/', label: nav.airports, external: false },
+      { href: '/aeromobili/', label: nav.aircraft, external: false },
+      { href: '/dati/', label: nav.data, external: false, children: [
+          { href: '/dati/', label: 'I nostri dati' },
+          { href: '/dati/archivio/', label: 'Archivio storico' },
+          { href: '/dati/api/', label: 'API e agenti AI' },
+          { href: '/dati/confronto/', label: 'Confronto API' },
         ] },
-      { href: '/rete', label: nav.network, external: false, match: ['/community'], children: [
-          { href: '/rete', label: 'La rete' },
-          { href: '/community/feeder', label: 'Diventa feeder' },
-          { href: '/community/stato-feeder', label: 'I miei dati arrivano?' },
-          { href: '/community/mlat', label: 'Come funziona MLAT' },
+      { href: '/rete/', label: nav.network, external: false, match: ['/community'], children: [
+          { href: '/rete/', label: 'La rete' },
+          { href: '/community/feeder/', label: 'Diventa feeder' },
+          { href: '/community/stato-feeder/', label: 'I miei dati arrivano?' },
+          { href: '/community/mlat/', label: 'Come funziona MLAT' },
         ] },
-      { href: '/ricerca', label: nav.research, external: false, children: [
-          { href: '/ricerca', label: 'Tutti i progetti' },
-          { href: '/ricerca/weather', label: 'weather32' },
+      { href: '/ricerca/', label: nav.research, external: false, children: [
+          { href: '/ricerca/', label: 'Tutti i progetti' },
+          { href: '/ricerca/weather/', label: 'weather32' },
         ] },
-      { href: '/chi-siamo', label: nav.about, external: false, match: ['/contatti'], children: [
-          { href: '/chi-siamo', label: 'Chi siamo' },
-          { href: '/contatti', label: 'Contattaci' },
+      { href: '/chi-siamo/', label: nav.about, external: false, match: ['/contatti/'], children: [
+          { href: '/chi-siamo/', label: 'Chi siamo' },
+          { href: '/contatti/', label: 'Contattaci' },
         ] },
     ];
 
@@ -143,7 +143,7 @@ const navLinks: NavLink[] = isEn
 // link) so the API/MCP docs — the thing an adsb.lol-style visitor actively
 // looks for — read as a distinct destination instead of blending into the
 // content nav next to "Rete" or "Ricerca".
-const apiHref = isEn ? '/en/data/api' : '/dati/api';
+const apiHref = isEn ? '/en/data/api/' : '/dati/api/';
 // Section of the current page, for aria-current on the nav (a section link
 // stays current on its sub-pages: /aeroporti/pisa/ → Aeroporti).
 const here = Astro.url.pathname.replace(/\/+$/, '');
@@ -234,7 +234,7 @@ const apiLabel = 'API';
          style="background:#070d1aee;backdrop-filter:blur(12px)">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
 
-        <a href={isEn ? '/en' : '/'} class="flex items-center gap-2 no-underline group">
+        <a href={isEn ? '/en/' : '/'} class="flex items-center gap-2 no-underline group">
           <img src="/img/logo-64.png" alt="" width="26" height="26" class="rounded-full" />
           <span class="font-semibold text-sm tracking-wide text-slate-100 group-hover:text-white transition-colors">
             FlyItalyADSB
@@ -375,30 +375,30 @@ const apiLabel = 'API';
           <div>
             <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">{isEn ? 'Data' : 'Dati'}</div>
             <ul class="space-y-2 text-sm">
-              <li><a href={isEn ? '/en/data' : '/dati'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'About our data' : 'I nostri dati'}</a></li>
-              <li><a href={isEn ? '/en/airports' : '/aeroporti'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Airports' : 'Aeroporti'}</a></li>
-              <li><a href={isEn ? '/en/aircraft' : '/aeromobili'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Aircraft types' : 'Aeromobili'}</a></li>
-              <li><a href={isEn ? '/en/data/archive' : '/dati/archivio'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Archive' : 'Archivio storico'}</a></li>
-              <li><a href={isEn ? '/en/data/api' : '/dati/api'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'API & AI agents' : 'API e agenti AI'}</a></li>
+              <li><a href={isEn ? '/en/data/' : '/dati/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'About our data' : 'I nostri dati'}</a></li>
+              <li><a href={isEn ? '/en/airports/' : '/aeroporti/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Airports' : 'Aeroporti'}</a></li>
+              <li><a href={isEn ? '/en/aircraft/' : '/aeromobili/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Aircraft types' : 'Aeromobili'}</a></li>
+              <li><a href={isEn ? '/en/data/archive/' : '/dati/archivio/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Archive' : 'Archivio storico'}</a></li>
+              <li><a href={isEn ? '/en/data/api/' : '/dati/api/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'API & AI agents' : 'API e agenti AI'}</a></li>
             </ul>
           </div>
 
           <div>
             <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">{isEn ? 'Community' : 'Community'}</div>
             <ul class="space-y-2 text-sm">
-              <li><a href={isEn ? '/en/network' : '/rete'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'The network' : 'La rete'}</a></li>
-              <li><a href={isEn ? '/en/community/feeder' : '/community/feeder'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Become a feeder' : 'Diventa feeder'}</a></li>
-              <li><a href={isEn ? '/en/community/feeder-status' : '/community/stato-feeder'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Is my data arriving?' : 'I miei dati arrivano?'}</a></li>
-              <li><a href={isEn ? '/en/community/mlat' : '/community/mlat'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'How MLAT works' : 'Come funziona MLAT'}</a></li>
-              <li><a href={isEn ? '/en/research' : '/ricerca'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Research' : 'Ricerca'}</a></li>
+              <li><a href={isEn ? '/en/network/' : '/rete/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'The network' : 'La rete'}</a></li>
+              <li><a href={isEn ? '/en/community/feeder/' : '/community/feeder/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Become a feeder' : 'Diventa feeder'}</a></li>
+              <li><a href={isEn ? '/en/community/feeder-status/' : '/community/stato-feeder/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Is my data arriving?' : 'I miei dati arrivano?'}</a></li>
+              <li><a href={isEn ? '/en/community/mlat/' : '/community/mlat/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'How MLAT works' : 'Come funziona MLAT'}</a></li>
+              <li><a href={isEn ? '/en/research/' : '/ricerca/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Research' : 'Ricerca'}</a></li>
             </ul>
           </div>
 
           <div>
             <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">{isEn ? 'Project' : 'Progetto'}</div>
             <ul class="space-y-2 text-sm">
-              <li><a href={isEn ? '/en/about' : '/chi-siamo'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'About' : 'Chi siamo'}</a></li>
-              <li><a href={isEn ? '/en/contact' : '/contatti'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Contact us' : 'Contattaci'}</a></li>
+              <li><a href={isEn ? '/en/about/' : '/chi-siamo/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'About' : 'Chi siamo'}</a></li>
+              <li><a href={isEn ? '/en/contact/' : '/contatti/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Contact us' : 'Contattaci'}</a></li>
               <li>
                 <a href="https://github.com/flyitalyadsb" target="_blank" rel="noopener"
                    class="text-slate-500 hover:text-slate-300 no-underline">GitHub ↗</a>
@@ -421,9 +421,9 @@ const apiLabel = 'API';
             {isEn ? 'Service provided by' : 'Servizio fornito da'} Nesso Labs S.r.l.
             · Via Carlo Cattaneo 3, 25121 Brescia (BS), {isEn ? 'Italy' : 'Italia'}
             · {isEn ? 'VAT' : 'P.IVA'} IT04754860981
-            · <a href={isEn ? '/en/terms' : '/termini'} class="hover:text-slate-400">{isEn ? 'Terms' : 'Condizioni'}</a>
-            · <a href={isEn ? '/en/privacy' : '/privacy'} class="hover:text-slate-400">Privacy</a>
-            · <a href={isEn ? '/en/privacy#cookies' : '/privacy#cookie'} data-cookie-prefs class="hover:text-slate-400">{isEn ? 'Cookie preferences' : 'Preferenze cookie'}</a>
+            · <a href={isEn ? '/en/terms/' : '/termini/'} class="hover:text-slate-400">{isEn ? 'Terms' : 'Condizioni'}</a>
+            · <a href={isEn ? '/en/privacy/' : '/privacy/'} class="hover:text-slate-400">Privacy</a>
+            · <a href={isEn ? '/en/privacy/#cookies' : '/privacy/#cookie'} data-cookie-prefs class="hover:text-slate-400">{isEn ? 'Cookie preferences' : 'Preferenze cookie'}</a>
           </p>
         </div>
       </div>

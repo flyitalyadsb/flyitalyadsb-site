@@ -44,7 +44,7 @@ const t = isEn
         <ul>
           {g.items.map((a) => (
             <li class="border-b" style="border-color:#1e304866">
-              <a href={p(`/aeroporti/${a.slug}`)} class="block py-3 no-underline group">
+              <a href={p(`/aeroporti/${a.slug}/`)} class="block py-3 no-underline group">
                 <span class="flex items-baseline justify-between gap-3">
                   <span class="text-slate-100 font-semibold text-sm group-hover:text-sky-300 transition-colors">{fullName(a)}</span>
                   <span class="text-xs font-mono text-slate-500 shrink-0">{a.iata} · {a.icao}</span>

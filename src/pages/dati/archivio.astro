@@ -37,7 +37,7 @@ const toneColor = { purple: '#a78bfa', yellow: '#fbbf24', green: '#34d399' };
 
     <div class="mb-14">
       <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
-        <a href="/dati" class="text-slate-600 hover:text-slate-400 no-underline">Dati</a>
+        <a href="/dati/" class="text-slate-600 hover:text-slate-400 no-underline">Dati</a>
         <span class="mx-2">/</span>
         <span class="text-slate-500">Archivio</span>
       </p>
@@ -68,7 +68,7 @@ const toneColor = { purple: '#a78bfa', yellow: '#fbbf24', green: '#34d399' };
             title: 'Vento e temperatura da Mode-S (weather32)',
             desc: "Il progetto weather32 deriva vento e temperatura in quota dai messaggi Mode-S BDS50/60 (True Air Speed, prua magnetica, IAS, numero di Mach), validati contro ERA5/IASI. È un'analisi di ricerca, non un archivio esportabile: i dati grezzi non sono organizzati in un dataset scaricabile su richiesta.",
             size: null,
-            link: { href: '/ricerca/weather', label: 'Vedi i risultati della ricerca →' },
+            link: { href: '/ricerca/weather/', label: 'Vedi i risultati della ricerca →' },
           },
         ].map(item => (
           <div class="p-6 rounded-xl border flex flex-col sm:flex-row gap-5" style="background:#0f1929;border-color:#1e3048">
@@ -127,7 +127,7 @@ const toneColor = { purple: '#a78bfa', yellow: '#fbbf24', green: '#34d399' };
         </table>
         <p class="text-sm text-slate-400 leading-relaxed mb-3">
           Stessa API key e stessi limiti del piano del resto di <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">/v2/*</code> —
-          vedi la <a href="/dati/api#rest-api" class="text-sky-400 no-underline hover:text-sky-300">documentazione API</a> per come ottenere una chiave.
+          vedi la <a href="/dati/api/#rest-api" class="text-sky-400 no-underline hover:text-sky-300">documentazione API</a> per come ottenere una chiave.
         </p>
         <p class="text-sm text-slate-400 leading-relaxed">
           L'header <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-History-Source</code> indica
@@ -155,7 +155,7 @@ const toneColor = { purple: '#a78bfa', yellow: '#fbbf24', green: '#34d399' };
             Per estrazioni bulk (molti aeromobili o periodi lunghi) o progetti di ricerca
             universitaria/istituzionale, scrivici con una descrizione del progetto.
           </p>
-          <a href="/contatti"
+          <a href="/contatti/"
              class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium no-underline transition-all"
              style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830"
              onmouseover="this.style.background='#38bdf825'"

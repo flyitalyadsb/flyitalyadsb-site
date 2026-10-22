@@ -110,9 +110,9 @@ const t = it
       bad: 'Enter a valid email address.',
     };
 
-const contactHref = it ? '/contatti' : '/en/contact';
+const contactHref = it ? '/contatti/' : '/en/contact/';
 const accountHref = it ? '/dati/api/account/' : '/en/data/api/account/';
-const termsHref = it ? '/termini' : '/en/terms';
+const termsHref = it ? '/termini/' : '/en/terms/';
 // One accent for every plan (status colours like green stay reserved for
 // states). No "recommended" plan and no perks beyond the limits (owner,
 // 2026-10-19): a community project, the paid plans only help cover costs.
@@ -208,7 +208,7 @@ const ACCENT = '#38bdf8';
         <p id="checkout-status" class="text-sm" role="status"></p>
       </div>
       <p class="text-xs text-slate-500 max-w-xl pt-2">
-        {t.fine} <a href={termsHref} class="text-slate-400 hover:text-slate-300">{t.terms}</a> · <a href={it ? '/privacy' : '/en/privacy'} class="text-slate-400 hover:text-slate-300">Privacy</a>.
+        {t.fine} <a href={termsHref} class="text-slate-400 hover:text-slate-300">{t.terms}</a> · <a href={it ? '/privacy/' : '/en/privacy/'} class="text-slate-400 hover:text-slate-300">Privacy</a>.
       </p>
     </form>
   </div>
