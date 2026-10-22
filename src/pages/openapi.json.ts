@@ -169,7 +169,7 @@ const spec = {
         description:
           "readsb's trace_full file for that aircraft and day, passed through as written. From 2022-04-10 to " +
           '2023-10-04 the archive holds imported Virtual Radar Server data: only the first and last point of each flight ' +
-          '("version": "vrs-basestation-import"). The current day may answer 503 while the file is being written.',
+          '("version": "vrs-basestation-import"). The current day is built from readsb\'s live trace files (X-History-Source live), or from the overflights store once readsb no longer has the aircraft (store: position, altitude, flags, source and callsign only); it may answer 503 while a file is being written.',
         tags: ['history'],
         parameters: [
           icaoParam,
@@ -181,8 +181,8 @@ const spec = {
             headers: {
               ...planHeaders,
               'X-History-Source': {
-                description: 'Where the day was read from: `local` (the server) or `r2` (the archive).',
-                schema: { type: 'string', enum: ['local', 'r2'] },
+                description: 'Where the day was read from: `local` (the server), `r2` (the archive), `live` (today, readsb\'s live trace) or `store` (today, the overflights store).',
+                schema: { type: 'string', enum: ['local', 'r2', 'live', 'store'] },
               },
             },
             content: { 'application/json': { schema: { $ref: '#/components/schemas/Trace' } } },
@@ -228,7 +228,7 @@ const spec = {
         description:
           'Every aircraft whose recorded track passed within `dist` km of the point between `from` and `to`, one entry per ' +
           'aircraft, sorted by the time of its closest point. Tracks are interpolated between received positions (gaps over ' +
-          '5 minutes are not). Covers the days since 2026-08-17; the current day is indexed only after midnight UTC (by ~02:00 UTC), and the periods ' +
+          '5 minutes are not). Covers the days since 2026-08-17, the current day up to about 10 minutes ago, and the periods ' +
           'not searched are listed in `coverage.gaps`. One request per call. The maximum `dist` and window depend on the ' +
           `plan (Free 10 km / 6 h, Starter 25 km / 24 h, others 50 km / 24 h): ${PLANS}. ` +
           'Aircraft data only: registration, type, description and dbFlags, never the owner or operator.',

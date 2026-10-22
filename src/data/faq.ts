@@ -332,9 +332,9 @@ export const FAQS: Faq[] = [
   {
     id: 'sorvoli', cat: 'storico', api: true,
     it: { q: 'Quali aerei sono passati sopra un luogo in un certo momento?',
-      a: '/v2/overflights?lat=&lon=&dist=&from=&to= elenca gli aerei passati entro dist km da un punto in quella finestra, con ora e distanza del punto più vicino, quota minima e fonte (ADS-B o MLAT). Il giorno in corso si aggiunge dopo la mezzanotte UTC, entro le 02:00 circa, e la risposta dice sempre quale periodo copre. Riguarda gli aerei, non le persone: non sappiamo chi c’era a bordo.' },
+      a: '/v2/overflights?lat=&lon=&dist=&from=&to= elenca gli aerei passati entro dist km da un punto in quella finestra, con ora e distanza del punto più vicino, quota minima e fonte (ADS-B o MLAT). Il giorno in corso arriva fino a circa 10 minuti fa, e la risposta dice sempre quale periodo copre. Riguarda gli aerei, non le persone: non sappiamo chi c’era a bordo.' },
     en: { q: 'Which aircraft flew over a place at a given time?',
-      a: '/v2/overflights?lat=&lon=&dist=&from=&to= lists the aircraft that passed within dist km of a point in that window, with the time and distance of the closest point, the lowest altitude and the source (ADS-B or MLAT). The current day is added after midnight UTC, by about 02:00, and the response always says which period it covers. It is about aircraft, not people: we don’t know who was on board.' },
+      a: '/v2/overflights?lat=&lon=&dist=&from=&to= lists the aircraft that passed within dist km of a point in that window, with the time and distance of the closest point, the lowest altitude and the source (ADS-B or MLAT). The current day reaches up to about 10 minutes ago, and the response always says which period it covers. It is about aircraft, not people: we don’t know who was on board.' },
   },
   {
     id: 'dati-grezzi', cat: 'storico',
