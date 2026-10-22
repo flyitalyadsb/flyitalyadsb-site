@@ -43,7 +43,9 @@ La salviamo arrotondata a circa 1 km, una sola per account, e la cancelli quando
 
 Su Claude (web, desktop e app) e su ChatGPT, `aircraft_near`, `special_traffic` e `find_aircraft` mostrano il risultato anche su una mappa dentro la conversazione: gli aerei colorati per quota, l'area della ricerca, un elenco da ordinare e i dettagli dell'aereo che tocchi. Gli altri client ricevono gli stessi dati come testo.
 
-La mappa carica solo le tessere di OpenStreetMap, non chiede permessi e non usa la tua posizione. Il pulsante «Aggiorna» ripete la ricerca e conta come una richiesta. Mappa © contributori di OpenStreetMap; dati degli aerei © FlyItalyADSB, CC BY-SA 4.0.
+Tra un aggiornamento e l'altro gli aerei in volo si muovono secondo rotta e velocità: è una stima, e dopo un minuto senza dati nuovi si fermano e diventano sbiaditi. «Aggiorna» ripete la ricerca; «Live» la ripete ogni 30 secondi per al massimo 10 minuti, solo mentre la mappa è sullo schermo, poi si mette in pausa. Ogni aggiornamento conta come una richiesta: Live acceso fa 2 richieste al minuto.
+
+La mappa carica solo le tessere di OpenStreetMap, non chiede permessi e non usa la tua posizione. Mappa © contributori di OpenStreetMap; dati degli aerei © FlyItalyADSB, CC BY-SA 4.0.
 
 ## Claude Code e client senza OAuth
 

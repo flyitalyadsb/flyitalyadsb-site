@@ -43,7 +43,9 @@ We store it rounded to about 1 km, one per account, and you can delete it at any
 
 In Claude (web, desktop and mobile) and ChatGPT, `aircraft_near`, `special_traffic` and `find_aircraft` also show their result on a map in the conversation: aircraft coloured by altitude, the search area, a list you can sort, and the details of the one you tap. Other clients get the same data as text.
 
-The map loads only OpenStreetMap tiles, asks for no permissions and doesn't use your location. Its Refresh button repeats the search, so it counts as one request. Map © OpenStreetMap contributors; aircraft data © FlyItalyADSB, CC BY-SA 4.0.
+Between updates, aircraft in flight move along their track at their speed: that is an estimate, and after a minute without new data they stop and fade. Refresh repeats the search; Live repeats it every 30 seconds for up to 10 minutes, only while the map is on screen, then pauses. Each update counts as one request: Live makes 2 a minute.
+
+The map loads only OpenStreetMap tiles, asks for no permissions and doesn't use your location. Map © OpenStreetMap contributors; aircraft data © FlyItalyADSB, CC BY-SA 4.0.
 
 ## Claude Code and clients without OAuth
 

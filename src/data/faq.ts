@@ -368,9 +368,9 @@ export const FAQS: Faq[] = [
   {
     id: 'mcp-mappa-chat', cat: 'mcp',
     it: { q: 'Perché in chat vedo una mappa?',
-      a: 'Su Claude e ChatGPT gli strumenti che restituiscono aerei li mostrano anche su una mappa interattiva nella conversazione, colorati per quota. Carica solo le tessere di OpenStreetMap, non chiede permessi e non usa la tua posizione. Il pulsante Aggiorna ripete la ricerca e conta come una richiesta.' },
+      a: 'Su Claude e ChatGPT gli strumenti che restituiscono aerei li mostrano anche su una mappa interattiva nella conversazione, colorati per quota. Carica solo le tessere di OpenStreetMap, non chiede permessi e non usa la tua posizione. Tra un aggiornamento e l’altro gli aerei in volo si muovono secondo rotta e velocità: è una stima. Aggiorna ripete la ricerca; Live la ripete ogni 30 secondi per al massimo 10 minuti, mentre la mappa è sullo schermo. Ogni aggiornamento conta come una richiesta.' },
     en: { q: 'Why do I see a map in the chat?',
-      a: 'On Claude and ChatGPT, the tools that return aircraft also show them on an interactive map in the conversation, coloured by altitude. It only loads OpenStreetMap tiles, asks for no permissions and doesn’t use your location. The Refresh button repeats the search and counts as one request.' },
+      a: 'On Claude and ChatGPT, the tools that return aircraft also show them on an interactive map in the conversation, coloured by altitude. It only loads OpenStreetMap tiles, asks for no permissions and doesn’t use your location. Between updates, aircraft in flight move along their track at their speed: that is an estimate. Refresh repeats the search; Live repeats it every 30 seconds for up to 10 minutes, while the map is on screen. Each update counts as one request.' },
   },
   {
     id: 'mcp-scollegare', cat: 'mcp',
