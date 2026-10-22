@@ -1,5 +1,5 @@
 ---
-import CookieBanner from '../components/CookieBanner.astro';
+import Analytics from '../components/Analytics.astro';
 import { otherLanguagePath } from '../lib/routes';
 import '../styles/global.css';
 
@@ -174,7 +174,7 @@ const apiLabel = 'API';
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang={lang} data-page-type={is404 ? 'not_found' : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -435,7 +435,6 @@ const apiLabel = 'API';
             · {isEn ? 'VAT' : 'P.IVA'} IT04754860981
             · <a href={isEn ? '/en/terms/' : '/termini/'} class="hover:text-slate-400">{isEn ? 'Terms' : 'Condizioni'}</a>
             · <a href={isEn ? '/en/privacy/' : '/privacy/'} class="hover:text-slate-400">Privacy</a>
-            · <a href={isEn ? '/en/privacy/#cookies' : '/privacy/#cookie'} data-cookie-prefs class="hover:text-slate-400">{isEn ? 'Cookie preferences' : 'Preferenze cookie'}</a>
           </p>
         </div>
       </div>
@@ -469,7 +468,7 @@ const apiLabel = 'API';
       }, { passive: true });
     </script>
 
-    <CookieBanner />
+    <Analytics />
 
   </body>
 </html>

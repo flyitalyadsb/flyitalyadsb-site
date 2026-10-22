@@ -205,7 +205,7 @@ const t = isEn
 <script>
   import { track } from '../lib/analytics';
 
-  // Which airports send people to the API (PostHog, with consent only).
+  // Which airports send people to the API (PostHog).
   const box = document.querySelector<HTMLElement>('[data-airport-api]');
   box?.querySelectorAll<HTMLAnchorElement>('a[data-cta]').forEach((a) =>
     a.addEventListener('click', () => track('airport_api_cta_clicked', { icao: box.dataset.airportApi, target: a.dataset.cta }, true)));
