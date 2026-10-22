@@ -24,6 +24,7 @@ uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/run_public_api_loca
 npm run mcp:dev                                    # http://localhost:8787
 python3 mcp-worker/e2e/e2e_mcp_oauth.py /tmp/mail.jsonl   # 26 checks, the whole OAuth flow
 python3 mcp-worker/e2e/e2e_auth_md.py /tmp/mail.jsonl     # 36 checks, auth.md agent registration
+uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/e2e_near_me.py /tmp/mail.jsonl  # 10 checks, "aircraft near me"
 # both expect a fresh local public-api: it recreates its e2e schema at start
 npm run mcp:check                                  # wrangler types + tsc
 ```

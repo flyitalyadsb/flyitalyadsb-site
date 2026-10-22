@@ -1,7 +1,8 @@
 import type { McpServer, ToolAnnotations } from '@modelcontextprotocol/server';
 import { aircraftHistory, aircraftHistoryInputSchema } from './tools/aircraft-history';
-import { aircraftNear, aircraftNearInputSchema } from './tools/aircraft-near';
+import { aircraftNear, aircraftNearInputSchema, chatgptLocationHint } from './tools/aircraft-near';
 import { findAircraft, findAircraftInputSchema } from './tools/find-aircraft';
+import { clearMyLocationInputSchema, forgetMyLocation, setMyLocation, setMyLocationInputSchema } from './tools/my-location';
 import { specialTraffic, specialTrafficInputSchema } from './tools/special-traffic';
 import { V2ApiError } from './v2-client';
 
@@ -24,7 +25,7 @@ export const TOOLS = {
   aircraft_near: {
     title: 'Aircraft near a location',
     description:
-      'List every aircraft the FlyItalyADSB network currently sees within a radius of any lat/lon point worldwide — full live records (position, altitude, speed, type), not just a count. Also accepts a shortcut name for one of FlyItalyADSB\'s curated Italian airports.',
+      'List every aircraft the FlyItalyADSB network currently sees within a radius of any lat/lon point worldwide — full live records (position, altitude, speed, type), not just a count. Also accepts a shortcut name for one of FlyItalyADSB\'s curated Italian airports. If the user asks about aircraft near them without saying where, call it with no airport and no lat/lon: it uses the position saved on their FlyItalyADSB account (or, in ChatGPT, the approximate location ChatGPT provides), and `center.source` says which.',
     inputSchema: aircraftNearInputSchema,
     annotations: {
       readOnlyHint: true,
@@ -57,6 +58,30 @@ export const TOOLS = {
       openWorldHint: false,
     } satisfies ToolAnnotations,
   },
+  set_my_location: {
+    title: 'Save my position',
+    description:
+      'Save the user\'s position on their FlyItalyADSB account, so that later questions about aircraft near them work without saying where (aircraft_near with no place). Call it only when the user tells you where they are and wants it remembered, or asks to set or change it; never with a position you guessed. Turn the place they name into approximate lat/lon yourself. Stored rounded to about 1 km; one per account.',
+    inputSchema: setMyLocationInputSchema,
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    } satisfies ToolAnnotations,
+  },
+  clear_my_location: {
+    title: 'Forget my position',
+    description:
+      'Delete the position saved on the user\'s FlyItalyADSB account, when they ask to forget or remove it.',
+    inputSchema: clearMyLocationInputSchema,
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: false,
+    } satisfies ToolAnnotations,
+  },
 } as const;
 
 export function toolRegistry(): Array<{ name: string; title: string; description: string }> {
@@ -69,7 +94,7 @@ function errorResult(err: unknown) {
 }
 
 /**
- * Registers all three tools on a fresh `McpServer` instance. `apiKey` is the
+ * Registers every tool on a fresh `McpServer` instance. `apiKey` is the
  * CALLER's own `X-Api-Key` — the same key issued for `api.flyitalyadsb.com/v2/*`
  * — extracted from the request header by `functions/mcp.ts` before this runs.
  * There's no shared server-side secret: every caller brings their own key, so
@@ -89,9 +114,9 @@ export function initializeMcpServer(server: McpServer, apiKey: string): void {
     }
   });
 
-  server.registerTool('aircraft_near', TOOLS.aircraft_near, async (args) => {
+  server.registerTool('aircraft_near', TOOLS.aircraft_near, async (args, ctx) => {
     try {
-      const result = await aircraftNear(args, apiKey);
+      const result = await aircraftNear(args, apiKey, chatgptLocationHint(ctx.mcpReq._meta));
       return { content: [{ type: 'text', text: JSON.stringify(result) }] };
     } catch (err) {
       return errorResult(err);
@@ -110,6 +135,24 @@ export function initializeMcpServer(server: McpServer, apiKey: string): void {
   server.registerTool('aircraft_history', TOOLS.aircraft_history, async (args) => {
     try {
       const result = await aircraftHistory(args, apiKey);
+      return { content: [{ type: 'text', text: JSON.stringify(result) }] };
+    } catch (err) {
+      return errorResult(err);
+    }
+  });
+
+  server.registerTool('set_my_location', TOOLS.set_my_location, async (args) => {
+    try {
+      const result = await setMyLocation(args, apiKey);
+      return { content: [{ type: 'text', text: JSON.stringify(result) }] };
+    } catch (err) {
+      return errorResult(err);
+    }
+  });
+
+  server.registerTool('clear_my_location', TOOLS.clear_my_location, async () => {
+    try {
+      const result = await forgetMyLocation(apiKey);
       return { content: [{ type: 'text', text: JSON.stringify(result) }] };
     } catch (err) {
       return errorResult(err);

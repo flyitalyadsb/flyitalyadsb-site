@@ -63,6 +63,16 @@ const t = it
       connGuideHref: '/dati/api/#come-collegarlo',
       connUnknown: 'Assistente',
       connSince: 'collegato il',
+      locTitle: 'La mia posizione',
+      locNote: 'Serve per chiedere all’assistente «che aerei ci sono vicino a me?» senza dire dove sei. La salviamo arrotondata a circa 1 km.',
+      locNone: 'Nessuna posizione salvata. Puoi anche dirla all’assistente: «la mia posizione è Brescia».',
+      locSaved: 'Salvata: {where}, il {d}.',
+      locLabel: 'Nome (facoltativo), es. Casa',
+      locUse: 'Usa la mia posizione',
+      locClear: 'Cancella',
+      locAsking: 'Chiedo la posizione al browser…',
+      locDenied: 'Il browser non ha dato la posizione. Puoi dirla all’assistente: «la mia posizione è Brescia».',
+      locFail: 'Non sono riuscito a salvarla, riprova tra poco.',
       disconnect: 'Scollega',
       disconnectConfirm: 'L\u2019assistente non potr\u00e0 pi\u00f9 usare i dati FlyItalyADSB con il tuo account finch\u00e9 non lo ricolleghi. La chiave resta com\u2019\u00e8. Continuo?',
       disconnectFail: 'Non sono riuscito a scollegarlo, riprova tra poco.',
@@ -151,6 +161,16 @@ const t = it
       connGuideHref: '/en/data/api/#connect-claude',
       connUnknown: 'Assistant',
       connSince: 'connected on',
+      locTitle: 'My position',
+      locNote: 'It lets you ask the assistant “which aircraft are near me?” without saying where you are. We store it rounded to about 1 km.',
+      locNone: 'No position saved. You can also tell the assistant: “my position is Brescia”.',
+      locSaved: 'Saved: {where}, on {d}.',
+      locLabel: 'Name (optional), e.g. Home',
+      locUse: 'Use my position',
+      locClear: 'Delete',
+      locAsking: 'Asking the browser for your position…',
+      locDenied: 'The browser didn’t give a position. You can tell the assistant instead: “my position is Brescia”.',
+      locFail: 'Couldn’t save it, try again shortly.',
       disconnect: 'Disconnect',
       disconnectConfirm: 'The assistant will no longer be able to use FlyItalyADSB data with your account until you connect it again. Your key stays as it is. Continue?',
       disconnectFail: 'Could not disconnect it, try again shortly.',
@@ -300,6 +320,20 @@ const msg = {
     <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-500 mt-10 mb-3">{t.connTitle}</h2>
     <div id="acc-conns" class="space-y-3"></div>
     <p id="acc-noconns" class="hidden text-sm text-slate-400">{t.connNone} <a href={t.connGuideHref} class="text-sky-400 no-underline">{t.connGuide}</a></p>
+
+    <!-- the saved position, for "aircraft near me" on the MCP server: public-api locations.py -->
+    <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-500 mt-10 mb-3">{t.locTitle}</h2>
+    <div class="rounded-xl px-5 py-4 border" style="background:#0a1320;border-color:#1e3048">
+      <p id="acc-loc-text" class="text-sm text-slate-200"></p>
+      <p class="text-xs text-slate-500 mt-1">{t.locNote}</p>
+      <div class="flex flex-wrap items-center gap-3 mt-4">
+        <input id="acc-loc-label" type="text" maxlength="80" placeholder={t.locLabel} aria-label={t.locLabel}
+               class="px-3 py-1.5 rounded-lg text-sm min-w-0 flex-1" style="background:#070d1a;border:1px solid #1e3048;color:#e2e8f0" />
+        <button id="acc-loc-use" type="button" class="text-sm px-3 py-1.5 rounded-lg" style="background:#38bdf826;color:#e0f2fe;border:1px solid #38bdf866">{t.locUse}</button>
+        <button id="acc-loc-clear" type="button" class="hidden text-sm px-3 py-1.5 rounded-lg" style="background:#111e30;color:#cbd5e1;border:1px solid #1e3048">{t.locClear}</button>
+      </div>
+      <p id="acc-loc-status" class="text-sm mt-2" role="status"></p>
+    </div>
   </div>
 
   <div id="acc-tip" class="hidden fixed pointer-events-none text-xs px-2 py-1 rounded"
@@ -327,6 +361,7 @@ const msg = {
   };
 
   type Connection = { id: number; client_name: string | null; created_at: string };
+  type SavedLocation = { lat: number; lon: number; label: string | null; updated_at: string };
 
   function el(tag: string, attrs: Record<string, string> = {}, ...kids: (Node | string)[]) {
     const n = document.createElement(tag);
@@ -381,6 +416,45 @@ const msg = {
         el('p', { class: 'text-xs text-slate-500 font-mono mt-1' }, `${M.connSince} ${df.format(new Date(c.created_at))}`)),
       el('div', { class: 'flex flex-wrap items-center gap-3' }, status, btn));
   }
+
+  // The position is rounded by the API (~1 km) before it is stored; the
+  // label is the user's own text: text nodes only.
+  function locationSection(loc: SavedLocation | null) {
+    const where = loc ? (loc.label ? `${loc.label} (${loc.lat}, ${loc.lon})` : `${loc.lat}, ${loc.lon}`) : '';
+    $('acc-loc-text').textContent = loc
+      ? M.locSaved.replace('{where}', where).replace('{d}', df.format(new Date(loc.updated_at)))
+      : M.locNone;
+    $('acc-loc-clear').classList.toggle('hidden', !loc);
+  }
+
+  async function saveLocation(body: Record<string, unknown>, path = '/account/location') {
+    const status = $('acc-loc-status');
+    try {
+      const r = await api('POST', path, body);
+      if (r.status === 401) return showLogin(M.expired, '#fbbf24');
+      if (r.status !== 200) return say(status, M.locFail, '#f87171');
+      say(status, '');
+      track(path.endsWith('/clear') ? 'account_location_cleared' : 'account_location_saved');
+      locationSection(r.data.location);
+    } catch { say(status, M.locFail, '#f87171'); }
+  }
+
+  $('acc-loc-use').addEventListener('click', () => {
+    const status = $('acc-loc-status');
+    if (!navigator.geolocation) return say(status, M.locDenied, '#fbbf24');
+    say(status, M.locAsking);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => saveLocation({
+        lat: pos.coords.latitude,
+        lon: pos.coords.longitude,
+        label: ($('acc-loc-label') as HTMLInputElement).value.trim() || undefined,
+      }),
+      () => say(status, M.locDenied, '#fbbf24'),
+      // A town-level fix is enough (the API rounds to ~1 km): no GPS warm-up.
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 10 * 60 * 1000 },
+    );
+  });
+  $('acc-loc-clear').addEventListener('click', () => saveLocation({}, '/account/location/clear'));
 
   function showLogin(note?: string, color?: string) {
     $('acc-dash').classList.add('hidden');
@@ -582,6 +656,7 @@ const msg = {
     const conns: Connection[] = me.connections || [];
     $('acc-conns').replaceChildren(...conns.map(connectionCard));
     $('acc-noconns').classList.toggle('hidden', conns.length > 0);
+    locationSection(me.location || null);
     $('acc-dash').classList.remove('hidden');
   }
 

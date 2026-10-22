@@ -1,12 +1,12 @@
 ---
 title: MCP server
-description: "FlyItalyADSB's MCP server at flyitalyadsb.com/mcp: the four tools, how to connect it to Claude, Claude Code and other clients, and how requests are counted."
+description: "FlyItalyADSB's MCP server at flyitalyadsb.com/mcp: the tools, “near me”, how to connect it to Claude, Claude Code and other clients, and how requests are counted."
 key: mcp
 order: 7
 updated: 2026-10-22
 ---
 
-The [Model Context Protocol](https://modelcontextprotocol.io) is the standard that assistants such as Claude or ChatGPT use to call external tools. Our server answers at `https://flyitalyadsb.com/mcp` (Streamable HTTP) with four read-only tools:
+The [Model Context Protocol](https://modelcontextprotocol.io) is the standard that assistants such as Claude or ChatGPT use to call external tools. Our server answers at `https://flyitalyadsb.com/mcp` (Streamable HTTP) with these tools:
 
 | Tool | What it does |
 |---|---|
@@ -14,6 +14,8 @@ The [Model Context Protocol](https://modelcontextprotocol.io) is the standard th
 | `aircraft_near` | every aircraft within a radius of a point, or of an Italian airport by name |
 | `special_traffic` | military, PIA or LADD traffic |
 | `aircraft_history` | an aircraft's dates with history, or its track on one day |
+| `set_my_location` | saves your position on the account, for "near me" |
+| `clear_my_location` | deletes it |
 
 ## Connect it to Claude
 
@@ -23,6 +25,14 @@ The [Model Context Protocol](https://modelcontextprotocol.io) is the standard th
 4. Ask, for example: *"which aircraft are near Rome Fiumicino right now?"*
 
 Disconnect it from [My API](/en/data/api/account/).
+
+## Near me
+
+No assistant passes your phone's or computer's position to the server. To ask "which aircraft are near me?" without saying where you are, save a position once:
+- from [My API](/en/data/api/account/), with **Use my position**;
+- or by telling the assistant: "my position is Brescia".
+
+We store it rounded to about 1 km, one per account, and you can delete it at any time ("forget my position", or from My API). On ChatGPT, if you haven't saved one, we use the city ChatGPT attaches to the request.
 
 ## Claude Code and clients without OAuth
 

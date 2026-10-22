@@ -67,6 +67,9 @@ function aircraftNearSkillMd(): string {
     '  shortcut for one of FlyItalyADSB\'s own curated Italian airports only, by slug, IATA, or',
     '  ICAO code (e.g. "roma-fiumicino", "FCO", "LIRF").',
     '- Optional `radiusKm` (default 80) and `limit` (default 50, max 200).',
+    '- "Near me" without a place: call it with no `airport` and no `lat`/`lon`. It uses the position',
+    '  saved on the account (see the `my-location` skill), or in ChatGPT the approximate location',
+    '  ChatGPT sends; `center.source` says which. With neither, it asks you to get a place from the user.',
     '',
     '## Validate',
     '',
@@ -165,6 +168,39 @@ function aircraftHistorySkillMd(): string {
   ].join('\n');
 }
 
+function myLocationSkillMd(): string {
+  return [
+    '# Save or forget my position',
+    '',
+    'Keep the user\'s position on their FlyItalyADSB account, so that "which aircraft are near me?"',
+    'works without saying where: `aircraft_near` with no place uses it. No MCP client passes the',
+    'device\'s location to a server, so the user states it once.',
+    '',
+    '## Requirements',
+    '',
+    `- Connect to the MCP server at \`${MCP_URL}\` (Streamable HTTP, stateless).`,
+    '- Every request needs an `X-Api-Key` header (or the OAuth connection): the position belongs to that account.',
+    '- `set_my_location` with `lat`, `lon` and an optional `label` (e.g. "Brescia"). Call it only when the',
+    '  user says where they are and wants it remembered; never with a guessed position. Stored rounded to',
+    '  about 1 km, one per account: a new one replaces the old.',
+    '- `clear_my_location` (no arguments) deletes it.',
+    '',
+    '## Validate',
+    '',
+    '```',
+    `POST ${MCP_URL}`,
+    'Content-Type: application/json',
+    'X-Api-Key: <your-key>',
+    '',
+    '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"set_my_location","arguments":{"lat":45.54,"lon":10.22,"label":"Brescia"}}}',
+    '```',
+    '',
+    'Check that `result.content[0].text` parses as JSON with `saved` (`{label, lat, lon}`, rounded).',
+    'Then `aircraft_near` with no arguments should answer with `center.source: "saved"`.',
+    '',
+  ].join('\n');
+}
+
 export const SKILLS: Record<string, SkillDefinition> = {
   'find-aircraft': {
     name: 'find-aircraft',
@@ -173,7 +209,7 @@ export const SKILLS: Record<string, SkillDefinition> = {
   },
   'aircraft-near': {
     name: 'aircraft-near',
-    description: 'List live aircraft near an Italian airport or a lat/lon point, full records.',
+    description: 'List live aircraft near a lat/lon point, an Italian airport, or the user (saved position), full records.',
     markdown: aircraftNearSkillMd(),
   },
   'special-traffic': {
@@ -185,6 +221,11 @@ export const SKILLS: Record<string, SkillDefinition> = {
     name: 'aircraft-history',
     description: 'Get an aircraft\'s historical position track for a day, or list available dates.',
     markdown: aircraftHistorySkillMd(),
+  },
+  'my-location': {
+    name: 'my-location',
+    description: 'Save or forget the user\'s position, so "aircraft near me" works without saying where.',
+    markdown: myLocationSkillMd(),
   },
 };
 
