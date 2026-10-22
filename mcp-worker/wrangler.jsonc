@@ -20,7 +20,14 @@
   "observability": { "enabled": true },
   "vars": {
     "SITE": "https://flyitalyadsb.com",
-    "API_BASE": "https://api.flyitalyadsb.com"
+    "API_BASE": "https://api.flyitalyadsb.com",
+    // MCP Analytics (src/index.ts mcp()): the project's public token, the
+    // same one the site's pages ship. MCP_INTENTS "on" adds the context,
+    // conversation_id and llm_model arguments to every tool ("off" takes them
+    // away without a code change).
+    "POSTHOG_PROJECT_TOKEN": "phc_nDwGB2j2ncFVsWoiM3kgWrqFkjmdWLvaCvMKW93fpCjm",
+    "POSTHOG_HOST": "https://eu.i.posthog.com",
+    "MCP_INTENTS": "on"
   },
   // The in-chat aircraft map (src/lib/mcp/apps/aircraft-map.ts) inlines its
   // view script and Leaflet as text, and the brand mark as bytes. *.html is
