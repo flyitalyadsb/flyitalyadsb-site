@@ -1,0 +1,51 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Before this page Cloudflare Pages answered any unknown URL with the home
+// page and a 200: wrong links looked like duplicates of the home, and
+// /.well-known/* probes from agents got HTML instead of a 404. The old
+// WordPress URLs still in use go to their new pages via public/_redirects.
+// One page in both languages: Astro emits only the root 404.astro as
+// 404.html, and Pages serves the nearest 404.html, so /en/* lands here too.
+const it = [
+  { href: '/', label: 'Home' },
+  { href: 'https://mappa.flyitalyadsb.com', label: 'Mappa in tempo reale' },
+  { href: '/community/feeder/', label: 'Diventa feeder' },
+  { href: '/community/stato-feeder/', label: 'I miei dati arrivano?' },
+  { href: '/dati/api/', label: 'API e agenti AI' },
+];
+const en = [
+  { href: '/en/', label: 'Home' },
+  { href: 'https://mappa.flyitalyadsb.com', label: 'Live map' },
+  { href: '/en/community/feeder/', label: 'Become a feeder' },
+  { href: '/en/community/feeder-status/', label: 'Is my data arriving?' },
+  { href: '/en/data/api/', label: 'API & AI agents' },
+];
+---
+
+<Layout title="Pagina non trovata · Page not found" description="Questa pagina di FlyItalyADSB non esiste. This FlyItalyADSB page does not exist." noindex>
+  <div class="pt-24 pb-20 px-6 sm:px-12 lg:px-20 max-w-3xl mx-auto">
+    <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">404</p>
+    <h1 class="text-4xl font-bold text-slate-100 mb-4">Pagina non trovata</h1>
+    <p class="text-slate-400 leading-relaxed text-lg mb-6">
+      Questa pagina non esiste, o non esiste pi&ugrave;: il sito &egrave; stato rifatto nel 2026.
+      Forse cercavi una di queste.
+    </p>
+    <ul class="space-y-3 mb-14">
+      {it.map((l) => (
+        <li><a href={l.href} class="text-sky-400 no-underline hover:text-sky-300">{l.label} &rarr;</a></li>
+      ))}
+    </ul>
+    <section lang="en" class="border-t pt-8" style="border-color:#1e3048">
+      <h2 class="text-2xl font-bold text-slate-100 mb-3">Page not found</h2>
+      <p class="text-slate-400 leading-relaxed mb-6">
+        This page doesn't exist, or no longer does: the site was rebuilt in 2026. Maybe you were looking for one of these.
+      </p>
+      <ul class="space-y-3">
+        {en.map((l) => (
+          <li><a href={l.href} class="text-sky-400 no-underline hover:text-sky-300">{l.label} &rarr;</a></li>
+        ))}
+      </ul>
+    </section>
+  </div>
+</Layout>

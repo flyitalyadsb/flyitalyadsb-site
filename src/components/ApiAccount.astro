@@ -57,6 +57,15 @@ const t = it
       ended: 'Terminato',
       keysTitle: 'Le tue chiavi',
       noKeys: 'Nessuna chiave attiva per questa email.',
+      connTitle: 'Assistenti collegati',
+      connNone: 'Nessun assistente collegato. Per collegarne uno, aggiungi https://flyitalyadsb.com/mcp come connettore e premi Connetti.',
+      connGuide: 'Come si fa →',
+      connGuideHref: '/dati/api/#come-collegarlo',
+      connUnknown: 'Assistente',
+      connSince: 'collegato il',
+      disconnect: 'Scollega',
+      disconnectConfirm: 'L\u2019assistente non potr\u00e0 pi\u00f9 usare i dati FlyItalyADSB con il tuo account finch\u00e9 non lo ricolleghi. La chiave resta com\u2019\u00e8. Continuo?',
+      disconnectFail: 'Non sono riuscito a scollegarlo, riprova tra poco.',
       getKey: 'Chiedi una chiave gratuita →',
       prefix: 'prefisso',
       created: 'creata il',
@@ -136,6 +145,15 @@ const t = it
       ended: 'Ended',
       keysTitle: 'Your keys',
       noKeys: 'No active key for this email.',
+      connTitle: 'Connected assistants',
+      connNone: 'No assistant connected. To connect one, add https://flyitalyadsb.com/mcp as a connector and press Connect.',
+      connGuide: 'How to →',
+      connGuideHref: '/en/data/api/#connect-claude',
+      connUnknown: 'Assistant',
+      connSince: 'connected on',
+      disconnect: 'Disconnect',
+      disconnectConfirm: 'The assistant will no longer be able to use FlyItalyADSB data with your account until you connect it again. Your key stays as it is. Continue?',
+      disconnectFail: 'Could not disconnect it, try again shortly.',
       getKey: 'Get a free key →',
       prefix: 'prefix',
       created: 'created',
@@ -277,6 +295,11 @@ const msg = {
     <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-3">{t.keysTitle}</h2>
     <div id="acc-keys" class="space-y-6"></div>
     <p id="acc-nokeys" class="hidden text-sm text-slate-400">{t.noKeys} <a href={t.keyHref} class="text-sky-400 no-underline">{t.getKey}</a></p>
+
+    <!-- assistants connected with OAuth (Claude and others): public-api connect.py -->
+    <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-500 mt-10 mb-3">{t.connTitle}</h2>
+    <div id="acc-conns" class="space-y-3"></div>
+    <p id="acc-noconns" class="hidden text-sm text-slate-400">{t.connNone} <a href={t.connGuideHref} class="text-sky-400 no-underline">{t.connGuide}</a></p>
   </div>
 
   <div id="acc-tip" class="hidden fixed pointer-events-none text-xs px-2 py-1 rounded"
@@ -302,6 +325,8 @@ const msg = {
     limits: { per_min: number | null; monthly: number | null; max_radius_km: number | null; enforced: boolean };
     created_at: string | null; last_used_at: string | null; used_month: number; daily: { day: string; count: number }[];
   };
+
+  type Connection = { id: number; client_name: string | null; created_at: string };
 
   function el(tag: string, attrs: Record<string, string> = {}, ...kids: (Node | string)[]) {
     const n = document.createElement(tag);
@@ -333,6 +358,28 @@ const msg = {
     const res = await fetch(API + path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
     const data = await res.json().catch(() => ({}));
     return { status: res.status, data };
+  }
+
+  // The client chose its own name (OAuth registration): text nodes only, never HTML.
+  function connectionCard(c: Connection) {
+    const status = el('p', { class: 'text-sm', role: 'status' });
+    const btn = el('button', { type: 'button', class: 'text-sm px-3 py-1.5 rounded-lg', style: 'background:#111e30;color:#cbd5e1;border:1px solid #1e3048' }, M.disconnect) as HTMLButtonElement;
+    btn.addEventListener('click', async () => {
+      if (!confirm(M.disconnectConfirm)) return;
+      btn.disabled = true;
+      try {
+        const r = await api('POST', '/account/connections/revoke', { id: c.id });
+        if (r.status === 401) return showLogin(M.expired, '#fbbf24');
+        if (r.status !== 200 && r.status !== 404) { say(status, M.disconnectFail, '#f87171'); btn.disabled = false; return; }
+        track('mcp_connection_revoked');
+        load();
+      } catch { say(status, M.disconnectFail, '#f87171'); btn.disabled = false; }
+    });
+    return el('article', { class: 'rounded-xl px-5 py-4 border flex flex-wrap items-center justify-between gap-3', style: 'background:#0a1320;border-color:#1e3048' },
+      el('div', {},
+        el('p', { class: 'text-slate-100 font-semibold' }, c.client_name || M.connUnknown),
+        el('p', { class: 'text-xs text-slate-500 font-mono mt-1' }, `${M.connSince} ${df.format(new Date(c.created_at))}`)),
+      el('div', { class: 'flex flex-wrap items-center gap-3' }, status, btn));
   }
 
   function showLogin(note?: string, color?: string) {
@@ -532,6 +579,9 @@ const msg = {
     const box = $('acc-keys');
     box.replaceChildren(...me.keys.map(keyCard));
     $('acc-nokeys').classList.toggle('hidden', me.keys.length > 0);
+    const conns: Connection[] = me.connections || [];
+    $('acc-conns').replaceChildren(...conns.map(connectionCard));
+    $('acc-noconns').classList.toggle('hidden', conns.length > 0);
     $('acc-dash').classList.remove('hidden');
   }
 
