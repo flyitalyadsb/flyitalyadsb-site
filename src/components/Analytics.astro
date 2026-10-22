@@ -1,0 +1,11 @@
+---
+// Starts PostHog on every page (src/lib/analytics.ts). Since 2026-10-23 there
+// is no consent banner: statistics and session replay run for every visitor,
+// and whoever objects does it from the privacy page (#cookie).
+---
+
+<script>
+  import { startAnalytics } from '../lib/analytics';
+
+  startAnalytics();
+</script>

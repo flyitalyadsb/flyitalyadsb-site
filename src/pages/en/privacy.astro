@@ -1,9 +1,10 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import StatsOptOut from '../../components/StatsOptOut.astro';
 
 // Privacy notice — English version of /privacy (same content; the Italian
 // text prevails). ⚠️ Draft for legal review, see the Italian page's note.
-const VERSION = '22 October 2026';
+const VERSION = '23 October 2026';
 
 const sections = [
   {
@@ -23,19 +24,20 @@ const sections = [
       "Overflight searches (/v2/overflights): the point and time window you give are used only to answer. We don't store them in the database or link them to your account; like every request, they appear in the technical logs.",
       "Webhooks (paid plans, optional): the URL to send alerts to, the area (point and radius) and the event kinds you choose, a description if you write one, the signing secret and the outcome of each delivery (HTTP status, error, duration), never the content of your server's answers.",
       "Aircraft data: we publish what our receivers pick up over the air, unfiltered: military, PIA and LADD aircraft are flagged, not hidden. Aircraft profiles add no photo links for PIA and LADD aircraft. If an aircraft is yours and you object to the publication of its data, write to admin@flyitalyadsb.com.",
-      "Browsing the site and the map (mappa.flyitalyadsb.com): pages visited, clicks, where you came from (referring site and campaign parameters), device and browser type, approximate location derived from the IP address, and the outcome of the API forms (requesting a key, signing in to My API, starting and completing a purchase), never the content of the fields. Without your consent we count these anonymously: no cookies, and to tell visitors apart an irreversible code computed from IP address and browser together with a random value that changes every day. With your consent we also use analytics cookies, record visits (movements, clicks and page content; form fields are always hidden and pages that show your key are never recorded) and link your browsing to the email you type into the API forms.",
+      "Browsing the site and the map (mappa.flyitalyadsb.com): pages visited, clicks, where you came from (referring site and campaign parameters), device and browser type, approximate location derived from the IP address, searches in the FAQ and the outcome of the API forms (requesting a key, signing in to My API, starting and completing a purchase), never the content of the fields. We use an analytics cookie and record visits (movements, clicks and page content; form fields are always hidden and pages that show your key are never recorded). If you type your email into the API forms, we link your browsing to that email. If you opt out (point 7) we only count you anonymously: no cookies, no recording, and to tell visitors apart an irreversible code computed from IP address and browser together with a random value that changes every day.",
+      "Use of the API and the MCP server: we link the service's events to the key's email (key issued and claimed, plan changes, requests per day and those rejected by the limits, connected assistants and the MCP tools used).",
     ],
   },
   {
     h: '3. Why, and on what basis',
     p: [
-      'Providing the service you ask for (key, plan, My API, service emails): performance of a contract, GDPR art. 6(1)(b). Protecting the service from abuse and enforcing limits: legitimate interest, art. 6(1)(f). Legal obligations (accounting and tax): art. 6(1)(c). Anonymous cookieless statistics: legitimate interest in understanding how the site is used and improving it, art. 6(1)(f). Analytics cookies, visit recordings and linking to your email: consent, art. 6(1)(a), which you can withdraw at any time from “Cookie preferences”, with no effect on using the site. We do not use your data for advertising and we do not sell it. The saved position is one you give to get that feature (art. 6(1)(b)), and webhooks only serve to send you the alerts you ask for (art. 6(1)(b)). Publishing aircraft data rests on the legitimate interest in offering open air-traffic data (art. 6(1)(f)).',
+      'Providing the service you ask for (key, plan, My API, service emails): performance of a contract, GDPR art. 6(1)(b). Protecting the service from abuse and enforcing limits: legitimate interest, art. 6(1)(f). Legal obligations (accounting and tax): art. 6(1)(c). Statistics on the site, the map and the use of the service, including the analytics cookie, visit recordings and linking to your email: legitimate interest in understanding how they are used and improving them, art. 6(1)(f); you can object at any time (point 7), with no effect on using the site. We do not use your data for advertising and we do not sell it. The saved position is one you give to get that feature (art. 6(1)(b)), and webhooks only serve to send you the alerts you ask for (art. 6(1)(b)). Publishing aircraft data rests on the legitimate interest in offering open air-traffic data (art. 6(1)(f)).',
     ],
   },
   {
     h: '4. Who we entrust it to',
     p: [
-      'Cloudflare (content delivery, attack protection, cookieless aggregate site statistics); PostHog Inc. (site statistics and visit recordings, with the data hosted in the European Union); Stripe, through its Link service, which sells the paid plans on our behalf as merchant of record and processes payment data as an independent controller under its own privacy notice; the provider of our transactional email service. Some of these providers also process data outside the European Union, with the safeguards the GDPR requires (standard contractual clauses or an adequacy decision).',
+      'Cloudflare (content delivery, attack protection, cookieless aggregate site statistics); PostHog Inc. (statistics on the site, the map and the use of the service, and visit recordings, with the data hosted in the European Union); Stripe, through its Link service, which sells the paid plans on our behalf as merchant of record and processes payment data as an independent controller under its own privacy notice; the provider of our transactional email service. Some of these providers also process data outside the European Union, with the safeguards the GDPR requires (standard contractual clauses or an adequacy decision).',
     ],
   },
   {
@@ -47,16 +49,16 @@ const sections = [
   {
     h: '6. Your rights',
     p: [
-      'You can ask for access, rectification, erasure, restriction and portability, and object to processing based on legitimate interest, by writing to admin@flyitalyadsb.com. You can rotate or revoke your key from My API and withdraw your consent to statistics from “Cookie preferences”. You also have the right to lodge a complaint with the Italian data protection authority (garanteprivacy.it) or the authority of your country. You can delete the saved position at any time from My API or by asking the assistant.',
+      'You can ask for access, rectification, erasure, restriction and portability, and object to processing based on legitimate interest, by writing to admin@flyitalyadsb.com. You can rotate or revoke your key from My API and opt out of statistics in point 7. You also have the right to lodge a complaint with the Italian data protection authority (garanteprivacy.it) or the authority of your country. You can delete the saved position at any time from My API or by asking the assistant.',
     ],
   },
   {
     id: 'cookies',
     h: '7. Cookies',
     p: [
-      "Always on, because they are needed: your cookie choice (fia_consent cookie, 6 months, then we ask again; it applies to both the site and the map, and PostHog repeats it in its own __ph_opt_in_out_… cookie) and the My API session (sessionStorage, which your browser clears when you close the tab).",
-      "Statistics without consent: no cookies and nothing stored in your browser. Statistics with consent: the PostHog cookie ph_…_posthog (1 year, shared by the site and the map) and the data stored in your browser for visit recordings.",
-      "We use no third-party advertising cookies. You can change your choice at any time from “Cookie preferences”, at the bottom of every page.",
+      "Analytics: the PostHog cookie ph_…_posthog (1 year, shared by the site and the map), its __ph_opt_in_out_… cookie and the data stored in your browser for visit recordings.",
+      "Needed: the My API session (sessionStorage, which your browser clears when you close the tab) and, if you opt out of statistics, the fia_consent cookie that remembers it for 13 months, on the site and on the map.",
+      "We use no third-party advertising cookies.",
     ],
   },
 ];
@@ -67,7 +69,7 @@ const linkify = (t: string) =>
     .replace(/admin@flyitalyadsb\.com/g, '<a href="mailto:admin@flyitalyadsb.com" class="text-sky-400 no-underline hover:text-sky-300">admin@flyitalyadsb.com</a>')
     .replace(/garanteprivacy\.it/g, '<a href="https://www.garanteprivacy.it" rel="noopener" class="text-sky-400 no-underline hover:text-sky-300">garanteprivacy.it</a>')
     .replace(/My API/g, '<a href="/en/data/api/account/" class="text-sky-400 no-underline hover:text-sky-300">My API</a>')
-    .replace(/“Cookie preferences”/g, '<a href="#cookies" data-cookie-prefs class="text-sky-400 no-underline hover:text-sky-300">Cookie preferences</a>');
+    .replace(/point 7/g, '<a href="#cookies" class="text-sky-400 no-underline hover:text-sky-300">point 7</a>');
 ---
 
 <Layout title="Privacy" description="FlyItalyADSB privacy notice: what data we process for API keys, subscriptions and feeders, why, for how long and your rights.">
@@ -80,5 +82,6 @@ const linkify = (t: string) =>
         {s.p.map((para) => <p class="text-sm text-slate-400 leading-relaxed mb-3" set:html={linkify(para)} />)}
       </section>
     ))}
+    <StatsOptOut lang="en" />
   </div>
 </Layout>

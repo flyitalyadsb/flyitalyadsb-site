@@ -1,12 +1,13 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import StatsOptOut from '../components/StatsOptOut.astro';
 
 // Informativa privacy (GDPR art. 13). ⚠️ Bozza da far rivedere a un legale:
-// descrive i trattamenti come sono implementati il 2026-10-22 (public-api,
+// descrive i trattamenti come sono implementati il 2026-10-23 (public-api,
 // stats-api, Stripe Managed Payments, Cloudflare, PostHog: src/lib/analytics.ts
 // e nesso-infra terraform/posthog). Se cambia un trattamento, cambia questo
 // testo e la data.
-const VERSION = '22 ottobre 2026';
+const VERSION = '23 ottobre 2026';
 
 const sections = [
   {
@@ -26,19 +27,20 @@ const sections = [
       "Ricerche dei sorvoli (/v2/overflights): il punto e l'intervallo che indichi servono solo a rispondere. Non li salviamo nel database e non li colleghiamo al tuo account; come ogni richiesta, compaiono nei log tecnici.",
       "Webhook (piani a pagamento, facoltativi): l'URL a cui mandare gli avvisi, la zona (punto e raggio) e i tipi di evento che scegli, una descrizione se la scrivi, il segreto di firma e l'esito di ogni consegna (codice HTTP, errore, durata), mai il contenuto delle risposte del tuo server.",
       "Dati degli aerei: pubblichiamo quello che i ricevitori captano via radio, senza filtri: gli aerei militari, PIA e LADD sono segnalati, non nascosti. Per gli aerei PIA e LADD i profili non aggiungono link a foto. Se un aereo è tuo e ti opponi alla pubblicazione dei suoi dati, scrivi a admin@flyitalyadsb.com.",
-      "Navigazione del sito e della mappa (mappa.flyitalyadsb.com): pagine visitate, clic, provenienza (sito di origine e parametri della campagna), tipo di dispositivo e browser, posizione approssimativa ricavata dall'indirizzo IP, e gli esiti dei moduli API (richiesta di una chiave, accesso a La mia API, avvio e conclusione di un acquisto), mai il contenuto dei campi. Senza il tuo consenso li contiamo in forma anonima: nessun cookie, e per distinguere i visitatori un codice irreversibile calcolato da indirizzo IP e browser insieme a un valore casuale che cambia ogni giorno. Con il tuo consenso usiamo anche cookie di statistica, registriamo le visite (movimenti, clic e contenuto delle pagine; i campi dei moduli restano sempre nascosti e le pagine che mostrano la chiave non vengono mai registrate) e colleghiamo la navigazione all'email che inserisci nei moduli API.",
+      "Navigazione del sito e della mappa (mappa.flyitalyadsb.com): pagine visitate, clic, provenienza (sito di origine e parametri della campagna), tipo di dispositivo e browser, posizione approssimativa ricavata dall'indirizzo IP, le ricerche nelle domande frequenti e gli esiti dei moduli API (richiesta di una chiave, accesso a La mia API, avvio e conclusione di un acquisto), mai il contenuto dei campi. Usiamo un cookie di statistica e registriamo le visite (movimenti, clic e contenuto delle pagine; i campi dei moduli restano sempre nascosti e le pagine che mostrano la chiave non vengono mai registrate). Se inserisci la tua email nei moduli API, colleghiamo la navigazione a quell'email. Se ti opponi (punto 7) ti contiamo solo in forma anonima: nessun cookie, nessuna registrazione, e per distinguere i visitatori un codice irreversibile calcolato da indirizzo IP e browser insieme a un valore casuale che cambia ogni giorno.",
+      "Uso dell'API e del server MCP: colleghiamo all'email della chiave gli eventi del servizio (chiave emessa e riscattata, cambi di piano, richieste al giorno e quelle respinte per i limiti, assistenti collegati e strumenti MCP usati).",
     ],
   },
   {
     h: '3. Perché e su quale base',
     p: [
-      "Fornire il servizio che chiedi (chiave, piano, La mia API, email di servizio): esecuzione del contratto, art. 6.1.b GDPR. Proteggere il servizio da abusi e far rispettare i limiti: legittimo interesse, art. 6.1.f. Adempiere a obblighi di legge (contabili e fiscali): art. 6.1.c. Statistiche anonime senza cookie: legittimo interesse a capire come viene usato il sito e a migliorarlo, art. 6.1.f. Cookie di statistica, registrazione delle visite e collegamento all'email: consenso, art. 6.1.a, che puoi revocare in ogni momento da «Preferenze cookie», senza conseguenze sull'uso del sito. Non usiamo i tuoi dati per pubblicità e non li vendiamo. La posizione salvata la indichi tu per avere quella funzione (art. 6.1.b), e i webhook servono solo a mandarti gli avvisi che chiedi (art. 6.1.b). La pubblicazione dei dati degli aerei si basa sul legittimo interesse a offrire dati aperti sul traffico aereo (art. 6.1.f).",
+      "Fornire il servizio che chiedi (chiave, piano, La mia API, email di servizio): esecuzione del contratto, art. 6.1.b GDPR. Proteggere il servizio da abusi e far rispettare i limiti: legittimo interesse, art. 6.1.f. Adempiere a obblighi di legge (contabili e fiscali): art. 6.1.c. Statistiche del sito, della mappa e dell'uso del servizio, compresi il cookie di statistica, la registrazione delle visite e il collegamento all'email: legittimo interesse a capire come vengono usati e a migliorarli, art. 6.1.f; puoi opporti in ogni momento (punto 7), senza conseguenze sull'uso del sito. Non usiamo i tuoi dati per pubblicità e non li vendiamo. La posizione salvata la indichi tu per avere quella funzione (art. 6.1.b), e i webhook servono solo a mandarti gli avvisi che chiedi (art. 6.1.b). La pubblicazione dei dati degli aerei si basa sul legittimo interesse a offrire dati aperti sul traffico aereo (art. 6.1.f).",
     ],
   },
   {
     h: '4. A chi li affidiamo',
     p: [
-      "Cloudflare (rete di distribuzione, protezione da attacchi, statistiche aggregate del sito senza cookie); PostHog Inc. (statistiche del sito e registrazione delle visite, con i dati ospitati nell'Unione europea); Stripe, tramite il servizio Link, che vende i piani a pagamento per nostro conto come merchant of record e tratta i dati di pagamento come titolare autonomo secondo la propria informativa; il fornitore del servizio di invio delle email transazionali. Alcuni di questi fornitori trattano dati anche fuori dall'Unione europea, con le garanzie previste dal GDPR (clausole contrattuali tipo o decisione di adeguatezza).",
+      "Cloudflare (rete di distribuzione, protezione da attacchi, statistiche aggregate del sito senza cookie); PostHog Inc. (statistiche del sito, della mappa e dell'uso del servizio e registrazione delle visite, con i dati ospitati nell'Unione europea); Stripe, tramite il servizio Link, che vende i piani a pagamento per nostro conto come merchant of record e tratta i dati di pagamento come titolare autonomo secondo la propria informativa; il fornitore del servizio di invio delle email transazionali. Alcuni di questi fornitori trattano dati anche fuori dall'Unione europea, con le garanzie previste dal GDPR (clausole contrattuali tipo o decisione di adeguatezza).",
     ],
   },
   {
@@ -50,16 +52,16 @@ const sections = [
   {
     h: '6. I tuoi diritti',
     p: [
-      "Puoi chiedere accesso, rettifica, cancellazione, limitazione, portabilità e opporti al trattamento basato sul legittimo interesse scrivendo a admin@flyitalyadsb.com. Puoi rigenerare o revocare la tua chiave da La mia API e revocare il consenso alle statistiche da «Preferenze cookie». Hai inoltre diritto di proporre reclamo al Garante per la protezione dei dati personali (garanteprivacy.it). La posizione salvata la cancelli quando vuoi da La mia API o chiedendolo all'assistente.",
+      "Puoi chiedere accesso, rettifica, cancellazione, limitazione, portabilità e opporti al trattamento basato sul legittimo interesse scrivendo a admin@flyitalyadsb.com. Puoi rigenerare o revocare la tua chiave da La mia API e opporti alle statistiche dal punto 7. Hai inoltre diritto di proporre reclamo al Garante per la protezione dei dati personali (garanteprivacy.it). La posizione salvata la cancelli quando vuoi da La mia API o chiedendolo all'assistente.",
     ],
   },
   {
     id: 'cookie',
     h: '7. Cookie',
     p: [
-      "Sempre attivi, perché necessari: la tua scelta sui cookie (cookie fia_consent, 6 mesi, poi te la richiediamo; vale per il sito e per la mappa, e PostHog la ripete nel proprio cookie __ph_opt_in_out_…) e la sessione di La mia API (sessionStorage, che il browser cancella alla chiusura della scheda).",
-      "Statistiche senza consenso: nessun cookie e nessun dato salvato nel browser. Statistiche con consenso: il cookie di PostHog ph_…_posthog (1 anno, comune a sito e mappa) e i dati salvati nel browser per la registrazione delle visite.",
-      "Non usiamo cookie di terze parti per pubblicità. Puoi cambiare scelta in ogni momento da «Preferenze cookie», in fondo a ogni pagina.",
+      "Statistica: il cookie di PostHog ph_…_posthog (1 anno, comune a sito e mappa), il suo cookie __ph_opt_in_out_… e i dati salvati nel browser per la registrazione delle visite.",
+      "Necessari: la sessione di La mia API (sessionStorage, che il browser cancella alla chiusura della scheda) e, se ti opponi alle statistiche, il cookie fia_consent che lo ricorda per 13 mesi, sul sito e sulla mappa.",
+      "Non usiamo cookie di terze parti per pubblicità.",
     ],
   },
 ];
@@ -70,7 +72,7 @@ const linkify = (t: string) =>
     .replace(/admin@flyitalyadsb\.com/g, '<a href="mailto:admin@flyitalyadsb.com" class="text-sky-400 no-underline hover:text-sky-300">admin@flyitalyadsb.com</a>')
     .replace(/garanteprivacy\.it/g, '<a href="https://www.garanteprivacy.it" rel="noopener" class="text-sky-400 no-underline hover:text-sky-300">garanteprivacy.it</a>')
     .replace(/La mia API/g, '<a href="/dati/api/account/" class="text-sky-400 no-underline hover:text-sky-300">La mia API</a>')
-    .replace(/«Preferenze cookie»/g, '<a href="#cookie" data-cookie-prefs class="text-sky-400 no-underline hover:text-sky-300">Preferenze cookie</a>');
+    .replace(/punto 7/g, '<a href="#cookie" class="text-sky-400 no-underline hover:text-sky-300">punto 7</a>');
 ---
 
 <Layout title="Privacy" description="Informativa privacy di FlyItalyADSB: quali dati trattiamo per API key, abbonamenti e feeder, perché, per quanto tempo e i tuoi diritti.">
@@ -83,5 +85,6 @@ const linkify = (t: string) =>
         {s.p.map((para) => <p class="text-sm text-slate-400 leading-relaxed mb-3" set:html={linkify(para)} />)}
       </section>
     ))}
+    <StatsOptOut lang="it" />
   </div>
 </Layout>

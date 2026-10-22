@@ -1,0 +1,50 @@
+---
+// Objecting to statistics (privacy notice point 7, src/lib/analytics.ts): one
+// button that sets or withdraws the objection for this browser, on the site
+// and on the map alike.
+interface Props {
+  lang: 'it' | 'en';
+}
+const { lang } = Astro.props;
+
+const t = lang === 'en'
+  ? {
+      on: 'Statistics are on in this browser.',
+      off: 'You opted out: in this browser we only count visits anonymously.',
+      optOut: 'Opt out',
+      optIn: 'Turn back on',
+    }
+  : {
+      on: 'Statistiche attive su questo browser.',
+      off: 'Opposizione registrata: su questo browser contiamo le visite solo in forma anonima.',
+      optOut: 'Mi oppongo',
+      optIn: 'Riattiva',
+    };
+---
+
+<div id="stats-optout" hidden data-on={t.on} data-off={t.off} data-opt-out={t.optOut} data-opt-in={t.optIn}
+     class="mb-8 flex flex-wrap items-center gap-3 rounded-xl border p-4"
+     style="background:#0a1320;border-color:#1e3048">
+  <p data-state class="flex-1 min-w-48 text-sm text-slate-300"></p>
+  <button type="button" class="px-5 py-2 rounded-lg text-sm font-medium whitespace-nowrap"
+          style="background:#111e30;color:#e2e8f0;border:1px solid #38bdf850"></button>
+</div>
+
+<script>
+  import { objected, setConsent } from '../lib/analytics';
+
+  const box = document.getElementById('stats-optout') as HTMLElement;
+  const state = box.querySelector('[data-state]') as HTMLElement;
+  const button = box.querySelector('button') as HTMLButtonElement;
+  function render() {
+    const off = objected();
+    state.textContent = (off ? box.dataset.off : box.dataset.on) ?? '';
+    button.textContent = (off ? box.dataset.optIn : box.dataset.optOut) ?? '';
+  }
+  button.addEventListener('click', () => {
+    setConsent(objected() ? 'granted' : 'denied');
+    render();
+  });
+  render();
+  box.hidden = false;
+</script>

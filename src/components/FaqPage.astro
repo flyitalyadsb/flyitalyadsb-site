@@ -83,6 +83,8 @@ const breadcrumbJsonLd = {
   </div>
 
   <script>
+    import { track } from '../lib/analytics';
+
     // Filter on question and answer text; a link to #question opens it.
     const input = document.getElementById('faq-search') as HTMLInputElement | null;
     const none = document.getElementById('faq-none');
@@ -101,12 +103,28 @@ const breadcrumbJsonLd = {
       }
       for (const g of groups) g.hidden = !g.querySelector('details:not([hidden])');
       none?.classList.toggle('hidden', shown > 0);
+      return shown;
     }
-    input?.addEventListener('input', () => filter(input.value));
+    // What people look for, and whether they find it: one event once the
+    // typing stops, not one per key. `from: 'link'` is a search that came
+    // with ?q= (the contact pages' search box).
+    let timer = 0;
+    let sent = '';
+    function report(q: string, results: number, from: 'typed' | 'link') {
+      const query = q.trim().replace(/\s+/g, ' ').slice(0, 100);
+      if (query.length < 3 || query === sent) return;
+      sent = query;
+      track('faq_searched', { query, results, from });
+    }
+    input?.addEventListener('input', () => {
+      const shown = filter(input.value);
+      clearTimeout(timer);
+      timer = window.setTimeout(() => report(input.value, shown, 'typed'), 1500);
+    });
     const q = new URLSearchParams(location.search).get('q');
     if (q && input) {
       input.value = q;
-      filter(q);
+      report(q, filter(q), 'link');
     }
     const target = location.hash && document.getElementById(location.hash.slice(1));
     if (target instanceof HTMLDetailsElement) target.open = true;
