@@ -244,6 +244,10 @@ import Layout from '../layouts/Layout.astro';
           { label: 'aircraft_near', desc: 'Aerei in un raggio, ovunque nel mondo' },
           { label: 'special_traffic', desc: 'Traffico militare, PIA o LADD' },
           { label: 'aircraft_history', desc: 'Traccia storica per aeromobile in un giorno — self-serve, dal 2022' },
+          { label: 'aircraft_profile', desc: 'Profilo di un aereo: identità, stato live, storico' },
+          { label: 'overflights', desc: 'Gli aerei passati sopra un luogo tra due istanti' },
+          { label: 'notable_traffic', desc: 'Emergenze e militari recenti in una zona' },
+          { label: 'set_my_location', desc: 'La tua posizione salvata, per «vicino a me»' },
         ].map(t => (
           <div class="p-4 rounded-lg" style="background:#0a1320;border:1px solid #1e3048">
             <code class="text-xs font-mono" style="color:#a78bfa">{t.label}</code>

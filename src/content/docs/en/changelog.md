@@ -9,6 +9,10 @@ updated: 2026-10-22
 | Date | What's new |
 |---|---|
 | 27/10/2026 | Coming: the Free plan's per-key limits take effect (until then only the per-IP limit applies). |
+| 22/10/2026 | A map in the chat: on Claude and ChatGPT, the MCP tools that return aircraft also show them on an interactive map. |
+| 22/10/2026 | Notable traffic: `/v2/events` (emergencies 7500/7600/7700, military and other notable aircraft by area, up to 7 days) and the MCP tool `notable_traffic`. On paid plans, signed webhook alerts ([Alerts](/en/data/api/docs/alerts/)). |
+| 22/10/2026 | Overflights: `/v2/overflights` and the MCP tool `overflights`, the aircraft that flew over a place between two times (since 17/08/2026). |
+| 22/10/2026 | Aircraft profile: `/v2/profile/{icao}` and the MCP tool `aircraft_profile`. History no longer contains owner and operator names. |
 | 22/10/2026 | "Near me" on the MCP server: the position saved on the account (`set_my_location`, My API), or ChatGPT's city. Agent registration with [auth.md](/auth.md). Documentation and [FAQ](/en/faq/). |
 | 21/10/2026 | OAuth on the MCP server: Claude and other assistants connect with Connect, without copying keys. |
 | 20/10/2026 | Feeder perk: Pro limits for free on the Free keys of people who feed the network, for non-commercial use. |
