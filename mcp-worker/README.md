@@ -29,6 +29,8 @@ uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/e2e_profile.py /tmp
 # overflights: start the local public-api with GLOBE_HISTORY_DIR and OVERFLIGHTS_INDEX_DIR set to two empty dirs;
 # the test writes synthetic traces there and builds the index with public-api's own overflights.py
 GLOBE_HISTORY_DIR=… OVERFLIGHTS_INDEX_DIR=… uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/e2e_overflights.py /tmp/mail.jsonl <nesso-infra>/k8s/flyitalyadsb/base/public-api  # 14 checks
+# notable_traffic: start the public-api above with FIA_E2E_EVENTS=1 (a 7700 + a military aircraft, the events detector on)
+uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/e2e_notable_traffic.py /tmp/mail.jsonl  # 10 checks
 # both expect a fresh local public-api: it recreates its e2e schema at start
 npm run mcp:check                                  # wrangler types + tsc
 ```

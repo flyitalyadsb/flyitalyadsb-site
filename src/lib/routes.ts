@@ -16,6 +16,7 @@ const PREFIXES: [string, string][] = [
   ['/dati/api/docs/campi', '/data/api/docs/fields'],
   ['/dati/api/docs/limiti-ed-errori', '/data/api/docs/limits-and-errors'],
   ['/dati/api/docs/storico', '/data/api/docs/history'],
+  ['/dati/api/docs/avvisi', '/data/api/docs/alerts'],
   ['/dati/api/docs/mcp', '/data/api/docs/mcp'],
   ['/dati/api/docs/uso-commerciale', '/data/api/docs/commercial-use'],
   ['/dati/api/docs/changelog', '/data/api/docs/changelog'],

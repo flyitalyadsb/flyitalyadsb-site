@@ -69,6 +69,25 @@ const icaoParam = {
   schema: { type: 'string', pattern: '^[0-9a-fA-F]{6}$' },
 };
 
+// Notable-traffic events and webhooks (public-api events.py, webhooks.py).
+const ALERTS_DOC = `${SITE}/en/data/api/docs/alerts/`;
+const webhookIdParam = { name: 'id', in: 'path', required: true, description: 'Webhook id.', schema: { type: 'integer' } };
+const webhookErrors = {
+  '401': { $ref: '#/components/responses/Unauthorized' },
+  '429': { $ref: '#/components/responses/TooManyRequests' },
+  '503': error('Database unavailable, try again shortly.'),
+};
+const webhookIdErrors = { ...webhookErrors, '404': error('No webhook with this id for this account.') };
+const okJson = (description: string) => ({
+  description,
+  content: { 'application/json': { schema: { type: 'object', additionalProperties: true } } },
+});
+const paidOnly = error('Webhooks are for paid plans (code "paid-plan-required").');
+const webhookJson = (schema: string, description: string) => ({
+  description,
+  content: { 'application/json': { schema: { $ref: `#/components/schemas/${schema}` } } },
+});
+
 const spec = {
   openapi: '3.1.0',
   info: {
@@ -92,6 +111,8 @@ const spec = {
     { name: 'history', description: 'Per-aircraft daily tracks since 2022-04-10, with gaps, and the aircraft that flew over a place (since 2026-08-17).' },
     { name: 'keys', description: 'Self-serve API keys.' },
     { name: 'account', description: 'The key\'s account: the position saved for "aircraft near me".' },
+    { name: 'events', description: `Notable traffic recorded by the network: emergencies, military, "interesting". ${ALERTS_DOC}` },
+    { name: 'webhooks', description: `Signed push alerts on the same events, paid plans only. ${ALERTS_DOC}` },
   ],
   paths: {
     '/v2/icao/{hex}': oneAircraft('One aircraft by ICAO address', 'hex', '24-bit ICAO address, hex (case-insensitive).'),
@@ -313,6 +334,123 @@ const spec = {
         },
       },
     },
+    '/v2/events': {
+      get: {
+        summary: 'Notable traffic within a radius since a time',
+        description:
+          'Events recorded by the network: emergencies (squawk 7500/7600/7700 or the ADS-B emergency status, not ' +
+          '"lifeguard"), military aircraft and "interesting" aircraft (dbFlags bits 0 and 1). One event per aircraft, ' +
+          'kind and ~0.5° grid cell it entered, so a long flight appears once per cell; a new event for the same cell ' +
+          `only after 30 (emergency) or 60 minutes away. Newest first. Counted as one request; the plan's radius applies. ${ALERTS_DOC}`,
+        tags: ['events'],
+        parameters: [
+          { name: 'lat', in: 'query', required: true, description: 'Latitude, decimal degrees.', schema: { type: 'number', minimum: -90, maximum: 90 } },
+          { name: 'lon', in: 'query', required: true, description: 'Longitude, decimal degrees.', schema: { type: 'number', minimum: -180, maximum: 180 } },
+          { name: 'dist', in: 'query', required: true, description: 'Radius in km.', schema: { type: 'number', exclusiveMinimum: 0, maximum: 20040 } },
+          { name: 'since', in: 'query', description: 'Unix seconds or ISO 8601 (no zone = UTC). Default 24 hours ago, at most 7 days ago.', schema: { type: 'string' } },
+          { name: 'until', in: 'query', description: 'Unix seconds or ISO 8601. Default now.', schema: { type: 'string' } },
+          { name: 'kinds', in: 'query', description: 'Comma-separated subset of emergency, military, interesting. Default all.', schema: { type: 'string' } },
+          { name: 'limit', in: 'query', description: 'At most this many events (1–500, default 100).', schema: { type: 'integer', minimum: 1, maximum: 500 } },
+        ],
+        responses: {
+          '200': {
+            description: 'Matching events.',
+            headers: planHeaders,
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/EventList' } } },
+          },
+          '400': error('A parameter is missing or out of range (the error says which).'),
+          '401': { $ref: '#/components/responses/Unauthorized' },
+          '403': error("The radius is above the plan's maximum (the body carries max_radius_km and a link to the plans)."),
+          '429': { $ref: '#/components/responses/TooManyRequests' },
+          '503': error('Database unavailable, try again shortly.'),
+        },
+      },
+    },
+    '/v2/webhooks': {
+      get: {
+        summary: "The account's webhooks",
+        description: 'Never includes the signing secret. Not counted as a request (at most 20 webhook calls a minute per key).',
+        tags: ['webhooks'],
+        responses: { '200': webhookJson('WebhookList', 'The webhooks, and the maximum per account.'), ...webhookErrors },
+      },
+      post: {
+        summary: 'Create a webhook',
+        description:
+          'Paid plans only, at most 5 per account. The URL must be https on port 443 or 8443 and resolve only to public ' +
+          "addresses. The answer carries the signing secret, shown this once. dist is capped by the plan's radius.",
+        tags: ['webhooks'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['url', 'lat', 'lon', 'dist'],
+                properties: {
+                  url: { type: 'string', format: 'uri', maxLength: 500 },
+                  lat: { type: 'number', minimum: -90, maximum: 90 },
+                  lon: { type: 'number', minimum: -180, maximum: 180 },
+                  dist: { type: 'number', exclusiveMinimum: 0, maximum: 20040, description: 'Radius in km.' },
+                  kinds: {
+                    type: 'array',
+                    items: { enum: ['emergency', 'military', 'interesting'] },
+                    description: 'Default ["emergency", "military"].',
+                  },
+                  description: { type: 'string', maxLength: 200 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': webhookJson('WebhookCreated', 'Created; store the secret now.'),
+          '400': error('Invalid JSON, url not allowed (code "url-not-allowed"), or an area or kind out of range.'),
+          '403': paidOnly,
+          '409': error('The account already has the maximum number of webhooks (code "webhook-limit").'),
+          ...webhookErrors,
+        },
+      },
+    },
+    '/v2/webhooks/{id}/deliveries': {
+      get: {
+        summary: "A webhook's last 20 deliveries",
+        tags: ['webhooks'],
+        parameters: [webhookIdParam],
+        responses: { '200': webhookJson('DeliveryList', 'Newest first.'), ...webhookIdErrors },
+      },
+    },
+    '/v2/webhooks/{id}/delete': {
+      post: {
+        summary: 'Delete a webhook',
+        description: 'Allowed on any plan. Pending deliveries are cancelled.',
+        tags: ['webhooks'],
+        parameters: [webhookIdParam],
+        responses: { '200': okJson('Deleted ({"status": "ok"}).'), ...webhookIdErrors },
+      },
+    },
+    '/v2/webhooks/{id}/enable': {
+      post: {
+        summary: 'Enable a webhook again after it was disabled',
+        description: 'A webhook is disabled after 15 failed attempts in a row over at least an hour. This resets the count.',
+        tags: ['webhooks'],
+        parameters: [webhookIdParam],
+        responses: { '200': webhookJson('WebhookResult', 'Enabled.'), '403': paidOnly, ...webhookIdErrors },
+      },
+    },
+    '/v2/webhooks/{id}/test': {
+      post: {
+        summary: 'Send a test delivery',
+        description: 'Queues one `webhook.test` delivery, signed like the others, attempted once. See its outcome in /deliveries.',
+        tags: ['webhooks'],
+        parameters: [webhookIdParam],
+        responses: {
+          '202': okJson('Queued ({"delivery_id", "message"}).'),
+          '403': paidOnly,
+          '409': error('The webhook is disabled (code "disabled"): enable it first.'),
+          ...webhookIdErrors,
+        },
+      },
+    },
     '/v2/keys': {
       post: {
         summary: 'Request an API key by email',
@@ -359,6 +497,30 @@ const spec = {
       },
     },
   },
+  webhooks: {
+    trafficEvent: {
+      post: {
+        summary: 'A notable-traffic event, sent to your webhook URL',
+        description:
+          'Signed with Standard Webhooks (https://www.standardwebhooks.com/): HMAC-SHA256 with the base64-decoded part of ' +
+          'the secret after "whsec_", over "{webhook-id}.{webhook-timestamp}.{raw body}". Reject a timestamp more than 5 ' +
+          'minutes away and dedupe on webhook-id, which is the same on every retry. Answer 2xx within 10 seconds; ' +
+          `anything else (redirects included) is retried 6 times over about 5 hours. ${ALERTS_DOC}`,
+        tags: ['webhooks'],
+        security: [],
+        parameters: [
+          { name: 'webhook-id', in: 'header', required: true, description: 'msg_<delivery id>, the same on every retry.', schema: { type: 'string' } },
+          { name: 'webhook-timestamp', in: 'header', required: true, description: 'Unix seconds of this attempt.', schema: { type: 'string' } },
+          { name: 'webhook-signature', in: 'header', required: true, description: '"v1,<base64 signature>".', schema: { type: 'string' } },
+        ],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/WebhookPayload' } } },
+        },
+        responses: { '200': { description: 'Any 2xx: delivered.' } },
+      },
+    },
+  },
   components: {
     securitySchemes: {
       ApiKey: { type: 'apiKey', in: 'header', name: 'X-Api-Key', description: `Self-serve: ${SITE}/en/data/api/#api-key` },
@@ -386,6 +548,111 @@ const spec = {
           help: { type: 'string', format: 'uri', description: 'On 401, 403 and 429: the FAQ answer for this error.' },
         },
         additionalProperties: true,
+      },
+      TrafficEvent: {
+        type: 'object',
+        description:
+          'An event, plus the aircraft fields known at that moment with readsb\'s names (flight, r, t, desc, year, ' +
+          'alt_baro, gs, track, squawk, emergency, category, dbFlags); `source` is readsb\'s position type. Never the ' +
+          'owner or operator.',
+        required: ['id', 'kind', 'hex', 'time', 'lat', 'lon'],
+        properties: {
+          id: { type: 'integer' },
+          kind: { enum: ['emergency', 'military', 'interesting'] },
+          reason: { enum: ['general', 'hijack', 'radio_failure', 'minimum_fuel', 'downed'], description: 'Emergencies only.' },
+          hex: { type: 'string' },
+          time: { type: 'string', format: 'date-time', description: 'When the aircraft was seen entering the cell.' },
+          lat: { type: 'number' },
+          lon: { type: 'number' },
+          distance_km: { type: 'number', description: 'From the query point (or the webhook centre).' },
+          source: { type: 'string', description: 'adsb_icao, mlat, …' },
+          map: { type: 'string', format: 'uri', description: 'The aircraft on the live map.' },
+        },
+        additionalProperties: true,
+      },
+      EventList: {
+        type: 'object',
+        required: ['now', 'since', 'until', 'count', 'truncated', 'events'],
+        properties: {
+          now: { type: 'number' },
+          since: { type: 'string', format: 'date-time' },
+          until: { type: 'string', format: 'date-time' },
+          center: { type: 'object', properties: { lat: { type: 'number' }, lon: { type: 'number' } } },
+          dist: { type: 'number' },
+          kinds: { type: 'array', items: { type: 'string' } },
+          count: { type: 'integer' },
+          truncated: { type: 'boolean', description: 'More events matched than limit.' },
+          events: { type: 'array', items: { $ref: '#/components/schemas/TrafficEvent' } },
+        },
+      },
+      Webhook: {
+        type: 'object',
+        properties: {
+          id: { type: 'integer' },
+          url: { type: 'string' },
+          lat: { type: 'number' },
+          lon: { type: 'number' },
+          dist: { type: 'number' },
+          kinds: { type: 'array', items: { type: 'string' } },
+          description: { type: ['string', 'null'] },
+          status: { enum: ['active', 'disabled', 'paused-plan'], description: 'paused-plan: the account has no paid key now.' },
+          created_at: { type: 'string', format: 'date-time' },
+          disabled_at: { type: ['string', 'null'], format: 'date-time' },
+          disabled_reason: { type: ['string', 'null'] },
+          consecutive_failures: { type: 'integer' },
+          last_success_at: { type: ['string', 'null'], format: 'date-time' },
+          last_failure_at: { type: ['string', 'null'], format: 'date-time' },
+          pending_deliveries: { type: 'integer' },
+        },
+      },
+      WebhookList: {
+        type: 'object',
+        properties: { webhooks: { type: 'array', items: { $ref: '#/components/schemas/Webhook' } }, max: { type: 'integer' } },
+      },
+      WebhookResult: { type: 'object', properties: { webhook: { $ref: '#/components/schemas/Webhook' } } },
+      WebhookCreated: {
+        type: 'object',
+        properties: {
+          webhook: { $ref: '#/components/schemas/Webhook' },
+          secret: { type: 'string', description: 'whsec_…, shown only in this answer.' },
+          message: { type: 'string' },
+        },
+      },
+      DeliveryList: {
+        type: 'object',
+        properties: {
+          deliveries: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'integer' },
+                type: { type: 'string', description: 'event.emergency, event.military, event.interesting, webhook.test' },
+                event_id: { type: ['integer', 'null'] },
+                status: { enum: ['pending', 'sending', 'delivered', 'failed', 'expired', 'dropped', 'cancelled'] },
+                attempts: { type: 'integer' },
+                created_at: { type: 'string', format: 'date-time' },
+                next_attempt_at: { type: 'string', format: 'date-time' },
+                delivered_at: { type: ['string', 'null'], format: 'date-time' },
+                last_status: { type: ['integer', 'null'], description: 'HTTP status of the last attempt.' },
+                last_error: { type: ['string', 'null'] },
+                last_duration_ms: { type: ['integer', 'null'] },
+              },
+            },
+          },
+        },
+      },
+      WebhookPayload: {
+        type: 'object',
+        required: ['type', 'timestamp', 'data'],
+        properties: {
+          type: { enum: ['event.emergency', 'event.military', 'event.interesting', 'webhook.test'] },
+          timestamp: { type: 'string', format: 'date-time' },
+          data: {
+            description: 'The event (TrafficEvent, with webhook_id and distance_km from the webhook centre), or {webhook_id, message} for a test.',
+            $ref: '#/components/schemas/TrafficEvent',
+          },
+        },
       },
       LocationResult: {
         type: 'object',

@@ -21,6 +21,7 @@ const staticPaths = [
   '/dati/api/docs/campi',
   '/dati/api/docs/limiti-ed-errori',
   '/dati/api/docs/storico',
+  '/dati/api/docs/avvisi',
   '/dati/api/docs/mcp',
   '/dati/api/docs/uso-commerciale',
   '/dati/api/docs/changelog',
