@@ -5,6 +5,7 @@ client with an API key, and as ChatGPT (its `openai/userLocation` hint).
 Usage: e2e_near_me.py <mail log>"""
 import hashlib
 import json
+import os
 import time
 import uuid
 
@@ -12,7 +13,7 @@ import psycopg
 
 from client import mcp_call, ok, summary
 
-DSN = "postgresql://postgres@127.0.0.1:54341/postgres?options=-csearch_path%3De2e"
+DSN = os.environ.get("FIA_E2E_PG", "postgresql://postgres@127.0.0.1:54341/postgres") + "?options=-csearch_path%3De2e"
 KEY = "fia_near-me-" + uuid.uuid4().hex
 EMAIL = f"near-{int(time.time())}@example.test"
 # The aircraft in run_public_api_local.py's aircraft.json is at 43.7, 10.6 (Pisa).

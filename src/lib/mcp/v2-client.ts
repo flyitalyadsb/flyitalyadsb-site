@@ -200,3 +200,54 @@ export function getAircraftHistoryDates(icao: string, apiKey: string): Promise<H
 export function getAircraftHistoryTrace(icao: string, dateIso: string, apiKey: string): Promise<HistoryTrace> {
   return v2FetchHistory(`/history/${encodeURIComponent(icao.trim().toLowerCase())}/${encodeURIComponent(dateIso.trim())}`, apiKey);
 }
+
+/** `/v2/profile/{icao}` (public-api aircraft_profile.py): one aircraft's
+ * identity, live status and history summary in one counted request. Never
+ * carries owner/operator names. No photo: Planespotters.net's API terms
+ * forbid re-serving their data through another API, so `photos.page` is only
+ * a link to their public page (null when withheld for PIA/LADD aircraft). */
+export interface AircraftProfile {
+  icao: string;
+  identity: {
+    registration: string | null;
+    icao_type: string | null;
+    type_description: string | null;
+    year: number | null;
+    db_flags: number;
+    military: boolean;
+    interesting: boolean;
+    pia: boolean;
+    ladd: boolean;
+    /** The day whose recorded track supplied type_description/year, if any. */
+    trace_day: string | null;
+  };
+  live: {
+    seen_now: boolean;
+    now?: number;
+    callsign?: string | null;
+    /** Where the current position comes from: adsb_icao, mlat, tisb_icao, adsr_icao… */
+    source?: string | null;
+    lat?: number;
+    lon?: number;
+    alt_baro?: number | 'ground';
+    seen?: number;
+    seen_pos?: number;
+    [key: string]: unknown;
+  };
+  history: {
+    first_day: string | null;
+    last_day: string | null;
+    days_last_30: number;
+    total_days: number;
+    archive_unavailable?: boolean;
+  };
+  links: { map: string | null; history: string };
+  photos: { page: string | null; provider: string; withheld: 'pia' | 'ladd' | null };
+}
+
+/** Through `v2FetchHistory` for its error detail: a profile's 503 says the
+ * archive is briefly down, and its 404 that there's neither live data nor
+ * history for the address. */
+export function getAircraftProfile(icao: string, apiKey: string): Promise<AircraftProfile> {
+  return v2FetchHistory(`/profile/${encodeURIComponent(icao.trim().toLowerCase())}`, apiKey);
+}

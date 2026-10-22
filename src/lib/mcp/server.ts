@@ -1,6 +1,7 @@
 import type { McpServer, ToolAnnotations } from '@modelcontextprotocol/server';
 import { aircraftHistory, aircraftHistoryInputSchema } from './tools/aircraft-history';
 import { aircraftNear, aircraftNearInputSchema, chatgptLocationHint } from './tools/aircraft-near';
+import { aircraftProfile, aircraftProfileInputSchema } from './tools/aircraft-profile';
 import { findAircraft, findAircraftInputSchema } from './tools/find-aircraft';
 import { clearMyLocationInputSchema, forgetMyLocation, setMyLocation, setMyLocationInputSchema } from './tools/my-location';
 import { specialTraffic, specialTrafficInputSchema } from './tools/special-traffic';
@@ -51,6 +52,18 @@ export const TOOLS = {
     description:
       'Get one aircraft\'s historical position track for a specific day (position, altitude, speed, heading over time), or list which dates have history available for it. Self-serve historical data, distinct from the live-only tools above: 2022-04 → 2023-10 (first/last point per flight only), 2023-07 → 2024-06 (full tracks, with gaps), and every day since 2026-08-17.',
     inputSchema: aircraftHistoryInputSchema,
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    } satisfies ToolAnnotations,
+  },
+  aircraft_profile: {
+    title: 'Aircraft profile',
+    description:
+      'Everything FlyItalyADSB knows about one aircraft in a single call: identity (registration, ICAO type, type description, year, military/interesting/PIA/LADD flags), whether it is being received now (position, altitude, callsign, and the position source: ADS-B, MLAT, TIS-B…), and a summary of its recorded history (first and last day with a track, days seen in the last 30, total days), plus links to the public map and to photos. By ICAO hex, or by registration or callsign while the aircraft is live. About the aircraft, never its owner: no owner or operator names, and not a way to follow a person. No photo is embedded: pass on `photoNote` to the user.',
+    inputSchema: aircraftProfileInputSchema,
     annotations: {
       readOnlyHint: true,
       destructiveHint: false,
@@ -135,6 +148,15 @@ export function initializeMcpServer(server: McpServer, apiKey: string): void {
   server.registerTool('aircraft_history', TOOLS.aircraft_history, async (args) => {
     try {
       const result = await aircraftHistory(args, apiKey);
+      return { content: [{ type: 'text', text: JSON.stringify(result) }] };
+    } catch (err) {
+      return errorResult(err);
+    }
+  });
+
+  server.registerTool('aircraft_profile', TOOLS.aircraft_profile, async (args) => {
+    try {
+      const result = await aircraftProfile(args, apiKey);
       return { content: [{ type: 'text', text: JSON.stringify(result) }] };
     } catch (err) {
       return errorResult(err);

@@ -168,6 +168,45 @@ function aircraftHistorySkillMd(): string {
   ].join('\n');
 }
 
+function aircraftProfileSkillMd(): string {
+  return [
+    '# Aircraft profile',
+    '',
+    'Everything FlyItalyADSB knows about one aircraft in a single call, via the `aircraft_profile` MCP tool:',
+    'identity (registration, ICAO type, type description, year, military/interesting/PIA/LADD flags), whether',
+    'it is being received now (position, altitude, callsign and the position source: ADS-B, MLAT, TIS-B…), and',
+    'a summary of its recorded history (first and last day with a track, days seen in the last 30, total days).',
+    'It is about the aircraft, never its owner: no owner or operator names are returned.',
+    '',
+    '## Requirements',
+    '',
+    `- Connect to the MCP server at \`${MCP_URL}\` (Streamable HTTP, stateless).`,
+    '- Every request needs an `X-Api-Key` header — the same key issued for `api.flyitalyadsb.com/v2/*`.',
+    '  A missing header is rejected before the MCP session even starts.',
+    '- Call `aircraft_profile` with `by` (`icao24`, the default, | `registration` | `callsign`) and `value`.',
+    '  Registrations and callsigns are resolved through the live feed, so they only work while the aircraft',
+    '  is tracked and cost one extra request; the ICAO hex also works for aircraft seen only in the past.',
+    '- No photo is embedded (Planespotters.net\'s API terms forbid re-serving their photos through another',
+    '  service). Pass the result\'s `photoNote` on to the user: it gives the public photo page, credited to the',
+    '  photographers, and the map link. For PIA and LADD aircraft there is no photo link (`photos.withheld`).',
+    '',
+    '## Validate',
+    '',
+    '```',
+    `POST ${MCP_URL}`,
+    'Content-Type: application/json',
+    'X-Api-Key: <your-key>',
+    '',
+    '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"aircraft_profile","arguments":{"value":"3c66a3"}}}',
+    '```',
+    '',
+    'Check that `result.content[0].text` parses as JSON with either `found: true` and `identity`, `live`',
+    '(`seen_now`, and the position when live), `history` (`first_day`, `last_day`, `days_last_30`, `total_days`),',
+    '`links` (`map`, `history`), `photos` and `photoNote` — or `found: false` with a `reason`.',
+    '',
+  ].join('\n');
+}
+
 function myLocationSkillMd(): string {
   return [
     '# Save or forget my position',
@@ -221,6 +260,11 @@ export const SKILLS: Record<string, SkillDefinition> = {
     name: 'aircraft-history',
     description: 'Get an aircraft\'s historical position track for a day, or list available dates.',
     markdown: aircraftHistorySkillMd(),
+  },
+  'aircraft-profile': {
+    name: 'aircraft-profile',
+    description: 'Profile one aircraft: identity and flags, live status, history summary, map and photo links.',
+    markdown: aircraftProfileSkillMd(),
   },
   'my-location': {
     name: 'my-location',

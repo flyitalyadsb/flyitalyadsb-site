@@ -77,8 +77,8 @@ s, _, res = mcp_call(token=tok["access_token"], method="initialize",
 ok("MCP initialize with the OAuth token", s == 200 and "result" in res, f"{s} {res}")
 s, _, res = mcp_call(token=tok["access_token"], method="tools/list", req_id=2)
 names = sorted(t["name"] for t in res.get("result", {}).get("tools", []))
-ok("tools/list", names == ["aircraft_history", "aircraft_near", "clear_my_location", "find_aircraft", "set_my_location",
-                         "special_traffic"], f"{s} {names}")
+ok("tools/list", names == ["aircraft_history", "aircraft_near", "aircraft_profile", "clear_my_location", "find_aircraft",
+                         "set_my_location", "special_traffic"], f"{s} {names}")
 s, _, res = mcp_call(token=tok["access_token"], method="tools/call", req_id=3,
                      params={"name": "special_traffic", "arguments": {"category": "military"}})
 text = json.dumps(res)
