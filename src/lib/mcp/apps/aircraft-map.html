@@ -124,10 +124,28 @@ button:disabled { cursor: default; }
 /* ---------- Title: a header bar above the map (inline), the panel's head (wide) ---------- */
 .title { min-width: 0; }
 .app[data-layout="strip"] > .title {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 16px;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "brand legend" "top top" "where where";
+  align-items: center; column-gap: 16px;
   padding: 10px 12px 10px 14px; background: var(--hull); border-bottom: 1px solid var(--rule);
 }
+/* Inline: the legend shares the brand's row, the title gets the full width. */
+.app[data-layout="strip"] > .title .title-text { display: contents; }
+.app[data-layout="strip"] > .title .brand { grid-area: brand; justify-self: start; }
+.app[data-layout="strip"] > .title .legend { grid-area: legend; margin-bottom: 7px; }
+.app[data-layout="strip"] > .title .title-top { grid-area: top; }
+.app[data-layout="strip"] > .title .title-where { grid-area: where; }
+.app[data-layout="strip"] > .title.brand-only .legend { display: none; }
 .title-top { display: flex; align-items: baseline; gap: 10px; }
+/* The brand, as in the site's navbar: the round mark and the wordmark. */
+.brand {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0 0 7px; max-width: 100%;
+  color: var(--ink-strong); text-decoration: none; border-radius: 6px;
+  font-size: 12.5px; font-weight: 600; line-height: 22px; letter-spacing: 0.025em; white-space: nowrap;
+}
+a.brand:hover .brand-name { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rule-strong); }
+.brand-mark, .brand-fallback { flex: none; width: 22px; height: 22px; border-radius: 50%; box-shadow: 0 0 0 1px var(--rule); }
+.title.brand-only .brand { margin: 0; }
+.title.brand-only .title-top, .title.brand-only .title-where { display: none; }
 .title-count { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.25; color: var(--ink-strong); letter-spacing: -0.005em; min-width: 0; }
 .title-time { flex: none; font-size: 11.5px; color: var(--slate); font-variant-numeric: tabular-nums; }
 .title-where { margin: 1px 0 0; font-size: 12.5px; line-height: 1.35; color: var(--slate-2); overflow-wrap: anywhere; }
@@ -292,7 +310,8 @@ button:disabled { cursor: default; }
 /* side panel */
 .app[data-layout="panel"] .tray { border-top: 0; border-left: 1px solid var(--rule); }
 .app[data-layout="panel"] .tray-head { flex-direction: column; align-items: stretch; gap: 10px; padding: 0 0 10px; border-bottom: 1px solid var(--rule); }
-.app[data-layout="panel"] .tray-head .title { padding: 14px 14px 0; }
+.app[data-layout="panel"] .tray-head .title { padding: 13px 14px 0; }
+.app[data-layout="panel"] .tray-head .brand { margin-bottom: 10px; }
 .app[data-layout="panel"] .tray-head .title-count { font-size: 16px; }
 .app[data-layout="panel"] .tray-head .legend { margin-top: 10px; }
 .app[data-layout="panel"] .tray-head .ramp { flex: 1; width: auto; }
@@ -396,6 +415,7 @@ button:disabled { cursor: default; }
 <div class="app" id="app" data-layout="strip" data-mode="inline" data-fixed="false">
   <header class="title" id="title">
     <div class="title-text">
+      <a class="brand" id="brand" href="https://flyitalyadsb.com/"><img class="brand-mark" id="brand-mark" src="__BRAND_MARK__" alt="" width="22" height="22"><span class="brand-name">FlyItalyADSB</span></a>
       <div class="title-top"><p class="title-count" id="title-count">&nbsp;</p><span class="title-time" id="title-time"></span></div>
       <p class="title-where" id="title-where"></p>
     </div>

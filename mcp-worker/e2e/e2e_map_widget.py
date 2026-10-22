@@ -61,10 +61,12 @@ rui = (page.get("_meta") or {}).get("ui", {})
 ok("read _meta.ui: same CSP as listed, prefersBorder set", rui.get("csp") == ui.get("csp") and rui.get("prefersBorder") is True, json.dumps(rui))
 ok("no permissions requested (no geolocation, camera, microphone, clipboard)", "permissions" not in rui, json.dumps(rui))
 ok("self-contained: Leaflet and the view inlined, no placeholder left",
-   "Leaflet 1.9.4" in html and "ui/initialize" in html and not re.search(r"__(LEAFLET_CSS|LEAFLET_JS|WIDGET_JS|CONFIG)__", html),
+   "Leaflet 1.9.4" in html and "ui/initialize" in html and not re.search(r"__(LEAFLET_CSS|LEAFLET_JS|WIDGET_JS|CONFIG|BRAND_MARK)__", html),
    f"{len(html)} chars")
 ok("nothing loaded from elsewhere: no <script src>, <link>, @import or url(http…)",
    not re.search(r"<script[^>]+src=|<link\b|@import|url\(\s*['\"]?https?:", html, re.I))
+ok("the FlyItalyADSB mark is inline (a data: image, no new origin) next to the wordmark",
+   re.search(r'<img class="brand-mark"[^>]* src="data:image/webp;base64,[A-Za-z0-9+/=]{500,}"', html) and ">FlyItalyADSB</span>" in html)
 tile_hosts = set(re.findall(r"https://([a-z0-9.-]+)/\{z\}", html))
 ok("the only tile template is the declared tile origin", tile_hosts == {TILES.split("//")[1]}, str(tile_hosts))
 view = html.rsplit("<script>", 1)[-1]

@@ -619,7 +619,8 @@
     }
     const data = status === 'ready' || status === 'empty' || status === 'loading';
     $('legend').hidden = status !== 'ready';
-    $('title').hidden = !data;
+    // Notices keep the header, with the brand only.
+    $('title').classList.toggle('brand-only', !data);
     $('ctrls').hidden = !data || status === 'loading';
     relayout();
     renderTitle();
@@ -1186,6 +1187,26 @@
     if (el && item && S.data) el.textContent = seenText(item.ac, S.data.now);
   }, 1000);
   setInterval(() => { if (S.data) renderTitle(); }, 30000);
+
+  // ------------------------------------------------------------------ brand
+  // The mark is a data: image, which the spec's CSP allows; if a host blocks
+  // it anyway, a drawn mark (navy disc, the map's jet) takes its place.
+  function brandFallback() {
+    const img = $('brand-mark');
+    if (!img) return;
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 64 64');
+    svg.setAttribute('class', 'brand-fallback');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.innerHTML = '<circle cx="32" cy="32" r="32" fill="#0d2a44"/><g transform="rotate(62 32 32) translate(11 11) scale(0.66)" fill="#e8f4fb"><use href="#s-jet"/></g>';
+    img.replaceWith(svg);
+  }
+  {
+    const img = $('brand-mark');
+    if (img.complete && !img.naturalWidth) brandFallback();
+    else img.addEventListener('error', brandFallback);
+  }
+  $('brand').setAttribute('aria-label', 'FlyItalyADSB, flyitalyadsb.com');
 
   // ------------------------------------------------------------------ start
   renderStatic();

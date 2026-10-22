@@ -54,7 +54,8 @@ function cspFor(meta) {
     `script-src 'self' 'unsafe-inline' ${rd}`,
     `style-src 'self' 'unsafe-inline' ${rd}`,
     `connect-src 'self' ${cd}`,
-    `img-src 'self' data: ${rd}`,
+    // ?csp=nodata: a host stricter than the spec, to see the view's fallbacks.
+    `img-src 'self' ${params.get('csp') === 'nodata' ? '' : 'data: '}${rd}`,
     `font-src 'self' ${rd}`,
     `media-src 'self' data: ${rd}`,
     `frame-src ${(csp.frameDomains || []).join(' ') || "'none'"}`,

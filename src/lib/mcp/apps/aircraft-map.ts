@@ -5,6 +5,9 @@ import type { McpServer } from '@modelcontextprotocol/server';
 // bare `leaflet/...` specifier would be bundled as code.
 import template from './aircraft-map.html';
 import view from './aircraft-map.view.js';
+// The site's logo (public/img/logo-64.png) at 48 px, crisp at 2x for the 22 px
+// mark: cwebp -q 90 -resize 48 48 public/img/logo-64.png -o <this file>.
+import brandMark from './flyitalyadsb-mark.webp';
 import leafletCss from '../../../../node_modules/leaflet/dist/leaflet.css';
 import leafletJs from '../../../../node_modules/leaflet/dist/leaflet.js';
 
@@ -71,13 +74,17 @@ export function aircraftMapToolMeta(): Record<string, unknown> {
 const css = leafletCss.replace(/url\(images\/[^)]*\)/g, 'none');
 const js = leafletJs.replace(/\n\/\/# sourceMappingURL=\S+\s*$/, '\n');
 const config = JSON.stringify({ tiles: TILES }).replace(/</g, '\\u003c');
+// A data: image: the spec's CSP for MCP Apps has `img-src 'self' data:` whatever
+// the resource declares, so the mark adds no origin. The view falls back to a
+// drawn mark if a host blocks it anyway.
+const mark = `data:image/webp;base64,${btoa(String.fromCharCode(...new Uint8Array(brandMark)))}`;
 
 // One pass over the template only: what goes in is never scanned again, and a
 // replacer function keeps `$&` and friends in Leaflet's source literal.
-const PARTS: Record<string, string> = { LEAFLET_CSS: css, LEAFLET_JS: js, WIDGET_JS: view, CONFIG: config };
+const PARTS: Record<string, string> = { LEAFLET_CSS: css, LEAFLET_JS: js, WIDGET_JS: view, CONFIG: config, BRAND_MARK: mark };
 export const AIRCRAFT_MAP_HTML = template.replace(
-  /\/\*__(LEAFLET_CSS|LEAFLET_JS|WIDGET_JS)__\*\/|"__(CONFIG)__"/g,
-  (_m, a?: string, b?: string) => PARTS[(a ?? b) as string],
+  /\/\*__(LEAFLET_CSS|LEAFLET_JS|WIDGET_JS)__\*\/|"__(CONFIG)__"|__(BRAND_MARK)__/g,
+  (_m, a?: string, b?: string, c?: string) => PARTS[(a ?? b ?? c) as string],
 );
 
 export function registerAircraftMap(server: McpServer): void {
