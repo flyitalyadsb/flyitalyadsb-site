@@ -1,0 +1,73 @@
+# The flyitalyadsb-mcp Worker (mcp-worker/): checked on every pull request that
+# touches it, deployed on every push to main that does. The rest of the site is
+# built by Cloudflare Pages, not here.
+#
+# CLOUDFLARE_API_TOKEN is a secret of the `mcp-worker` environment, which only
+# main can deploy to, so pull requests never see it. The token is Terraform's
+# (nesso-infra terraform/cloudflare/workers-flyitalyadsb-mcp-deploy-token.tf):
+# Workers Scripts Write on the whole nesso account, because Cloudflare has no
+# per-script scope, so it can replace any Worker there. Hence the deploy job
+# installs without lifecycle scripts and runs nothing but wrangler.
+name: mcp-worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - mcp-worker/**
+      - src/lib/mcp/**
+      - package.json
+      - package-lock.json
+      - .github/workflows/mcp-worker.yml
+  pull_request:
+    paths:
+      - mcp-worker/**
+      - src/lib/mcp/**
+      - package.json
+      - package-lock.json
+      - .github/workflows/mcp-worker.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  WRANGLER_SEND_METRICS: "false"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run mcp:check
+      - run: npx wrangler deploy -c mcp-worker/wrangler.jsonc --dry-run --outdir "$RUNNER_TEMP/mcp-worker"
+
+  deploy:
+    needs: check
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: mcp-worker
+    # One deploy at a time, in push order: a newer push waits, it doesn't cancel.
+    concurrency:
+      group: mcp-worker-deploy
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # No npm cache here: the cache is shared with the check job.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx wrangler deploy -c mcp-worker/wrangler.jsonc --message "$GITHUB_SHA"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: d40a1afea08131ae3ad6088e1df838c5
