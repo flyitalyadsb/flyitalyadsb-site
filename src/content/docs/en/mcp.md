@@ -14,6 +14,9 @@ The [Model Context Protocol](https://modelcontextprotocol.io) is the standard th
 | `aircraft_near` | every aircraft within a radius of a point, or of an Italian airport by name |
 | `special_traffic` | military, PIA or LADD traffic |
 | `aircraft_history` | an aircraft's dates with history, or its track on one day |
+| `aircraft_profile` | what we know about one aircraft: identity, live status, history summary, map and photo links |
+| `overflights` | the aircraft that flew over a place (coordinates, an airport or your saved position) between two times |
+| `notable_traffic` | notable traffic (emergencies, military) in an area over the last hours |
 | `set_my_location` | saves your position on the account, for "near me" |
 | `clear_my_location` | deletes it |
 
@@ -33,6 +36,12 @@ No assistant passes your phone's or computer's position to the server. To ask "w
 - or by telling the assistant: "my position is Brescia".
 
 We store it rounded to about 1 km, one per account, and you can delete it at any time ("forget my position", or from My API). On ChatGPT, if you haven't saved one, we use the city ChatGPT attaches to the request.
+
+## The map in the chat
+
+In Claude (web, desktop and mobile) and ChatGPT, `aircraft_near`, `special_traffic` and `find_aircraft` also show their result on a map in the conversation: aircraft coloured by altitude, the search area, a list you can sort, and the details of the one you tap. Other clients get the same data as text.
+
+The map loads only OpenStreetMap tiles, asks for no permissions and doesn't use your location. Its Refresh button repeats the search, so it counts as one request. Map © OpenStreetMap contributors; aircraft data © FlyItalyADSB, CC BY-SA 4.0.
 
 ## Claude Code and clients without OAuth
 

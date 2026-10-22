@@ -116,9 +116,9 @@ export const FAQS: Faq[] = [
   {
     id: 'mcp-vs-mappa', cat: 'mcp', api: true,
     it: { q: "Cosa può fare il server MCP che la mappa non fa?",
-      a: "Restituisce dati strutturati (JSON) invece di una pagina web: lookup di un aeromobile per hex ICAO/callsign/registrazione, ricerca di tutti gli aeromobili in un raggio da un punto qualsiasi al mondo con record completi, e liste filtrate di traffico militare, PIA (privacy) o LADD." },
+      a: "Risponde in chat con dati strutturati: un aereo per hex ICAO, nominativo o immatricolazione, tutti gli aerei in un raggio da un punto qualsiasi, il traffico militare, PIA o LADD, il profilo di un aereo, cosa è passato sopra un luogo in una finestra di tempo, le emergenze recenti in una zona e lo storico di un aereo. Su Claude e ChatGPT mostra anche gli aerei su una mappa dentro la conversazione." },
     en: { q: "What can the MCP server do that the map can't?",
-      a: "It returns structured data (JSON) instead of a web page: look up one aircraft by ICAO hex/callsign/registration, list every aircraft within a radius of any point on the planet with full records, and pull filtered lists of military, PIA (privacy), or LADD traffic." },
+      a: "It answers in the chat with structured data: one aircraft by ICAO hex, callsign or registration, every aircraft within a radius of any point, military, PIA or LADD traffic, one aircraft's profile, what flew over a place in a time window, recent emergencies in an area and one aircraft's history. On Claude and ChatGPT it also shows the aircraft on a map inside the conversation." },
   },
   {
     id: 'solo-italia', cat: 'dati', api: true,
@@ -192,6 +192,13 @@ export const FAQS: Faq[] = [
     en: { q: 'If I move to a paid plan, do I have to change my key?',
       a: 'No: the key you already have moves to the new plan, with no change in your code. The same on cancellation, when it goes back to Free.' },
   },
+  {
+    id: 'webhook', cat: 'piani',
+    it: { q: 'Come funzionano gli avvisi via webhook?',
+      a: 'Con un piano a pagamento registri fino a 5 URL HTTPS, ognuno con una zona e i tipi di evento. Per ogni nuovo evento mandiamo una POST JSON firmata (Standard Webhooks, HMAC-SHA256): verifica la firma con il segreto che vedi una sola volta, alla creazione. Se l’URL non risponde con un 2xx ritentiamo per circa 5 ore; dopo 15 fallimenti di fila il webhook si disattiva e lo riattivi dall’API.' },
+    en: { q: 'How do webhook alerts work?',
+      a: 'On a paid plan you register up to 5 HTTPS URLs, each with an area and the event kinds. For every new event we send a signed JSON POST (Standard Webhooks, HMAC-SHA256): check it with the secret you see once, when you create it. If the URL doesn’t answer with a 2xx we retry for about 5 hours; after 15 failures in a row the webhook is disabled and you enable it again from the API.' },
+  },
   // --- Uso commerciale ---
   {
     id: 'attribuzione', cat: 'commerciale',
@@ -242,6 +249,13 @@ export const FAQS: Faq[] = [
       a: `Il raggio supera il massimo del tuo piano: ${free.maxRadiusKm} km con Free, ${starter.maxRadiusKm} km con Starter, nessun limite con Pro e Business. Puoi dividere l’area in più richieste più piccole, oppure passare a un piano superiore.` },
     en: { q: 'I get 403 with max_radius_km.',
       a: `The radius is above your plan’s maximum: ${free.maxRadiusKm} km on Free, ${starter.maxRadiusKm} km on Starter, no limit on Pro and Business. Split the area into several smaller requests, or upgrade.` },
+  },
+  {
+    id: 'errore-403-sorvoli', cat: 'limiti',
+    it: { q: 'Ricevo 403 su /v2/overflights.',
+      a: 'Raggio o finestra superano il massimo del tuo piano per i sorvoli: 10 km e 6 ore con Free, 25 km e 24 ore con Starter, 50 km e 24 ore con Pro e Business. Riduci il raggio o dividi la ricerca in finestre più corte.' },
+    en: { q: 'I get 403 on /v2/overflights.',
+      a: 'The radius or the window is above your plan’s maximum for overflights: 10 km and 6 hours on Free, 25 km and 24 hours on Starter, 50 km and 24 hours on Pro and Business. Shrink the radius or split the search into shorter windows.' },
   },
   {
     id: 'bloccato-cloudflare', cat: 'limiti',
@@ -296,9 +310,9 @@ export const FAQS: Faq[] = [
   {
     id: 'squawk', cat: 'dati',
     it: { q: 'Posso monitorare gli squawk di emergenza (7700)?',
-      a: `Non c’è un endpoint per squawk: chiedi un raggio e filtra tu sul campo squawk (7700, 7600, 7500). Il mondo intero in una richiesta (/lat/0/lon/0/dist/20040) chiede Pro o Business; con Free e Starter puoi coprire un’area con più richieste da ${free.maxRadiusKm} o ${starter.maxRadiusKm} km.` },
+      a: 'Sì: /v2/events elenca le emergenze (7500, 7600, 7700), i militari e gli altri aerei notevoli visti in una zona, fino a 7 giorni indietro; con i piani a pagamento li ricevi appena succedono con un webhook. Uno squawk di emergenza è quello che ha trasmesso il transponder, non un’emergenza confermata. Dettagli nella pagina Avvisi della documentazione.' },
     en: { q: 'Can I monitor emergency squawks (7700)?',
-      a: `There is no squawk endpoint: ask for a radius and filter on the squawk field yourself (7700, 7600, 7500). The whole world in one request (/lat/0/lon/0/dist/20040) needs Pro or Business; on Free and Starter you can cover an area with several ${free.maxRadiusKm} or ${starter.maxRadiusKm} km requests.` },
+      a: 'Yes: /v2/events lists the emergencies (7500, 7600, 7700), military and other notable aircraft seen in an area, up to 7 days back; on paid plans you get them as they happen with a webhook. An emergency squawk is what the transponder sent, not a confirmed emergency. Details on the Alerts page of the docs.' },
   },
   // --- Storico ---
   {
@@ -311,9 +325,16 @@ export const FAQS: Faq[] = [
   {
     id: 'storico-zona', cat: 'storico',
     it: { q: 'Posso avere tutti gli aerei di una zona o di un aeroporto in un giorno passato?',
-      a: 'Non in self-service: lo storico si chiede aereo per aereo (/v2/history/{icao}/{data}). Per estrazioni più ampie o progetti di ricerca scrivi a admin@flyitalyadsb.com.' },
+      a: 'Sì, per finestre brevi: /v2/overflights (o lo strumento MCP overflights) restituisce gli aerei passati entro un raggio fino a 50 km, in una finestra fino a 24 ore, dal 17/08/2026. Per estrazioni più ampie o progetti di ricerca scrivi a admin@flyitalyadsb.com.' },
     en: { q: 'Can I get every aircraft in an area or at an airport on a past day?',
-      a: 'Not self-serve: history is asked aircraft by aircraft (/v2/history/{icao}/{date}). For larger extracts or research projects, write to admin@flyitalyadsb.com.' },
+      a: 'Yes, for short windows: /v2/overflights (or the overflights MCP tool) returns the aircraft that passed within a radius of up to 50 km, in a window of up to 24 hours, since 17/08/2026. For larger extracts or research projects, write to admin@flyitalyadsb.com.' },
+  },
+  {
+    id: 'sorvoli', cat: 'storico', api: true,
+    it: { q: 'Quali aerei sono passati sopra un luogo in un certo momento?',
+      a: '/v2/overflights?lat=&lon=&dist=&from=&to= elenca gli aerei passati entro dist km da un punto in quella finestra, con ora e distanza del punto più vicino, quota minima e fonte (ADS-B o MLAT). Il giorno in corso arriva fino a circa 40 minuti fa, e la risposta dice sempre quale periodo copre. Riguarda gli aerei, non le persone: non sappiamo chi c’era a bordo.' },
+    en: { q: 'Which aircraft flew over a place at a given time?',
+      a: '/v2/overflights?lat=&lon=&dist=&from=&to= lists the aircraft that passed within dist km of a point in that window, with the time and distance of the closest point, the lowest altitude and the source (ADS-B or MLAT). The current day reaches up to about 40 minutes ago, and the response always says which period it covers. It is about aircraft, not people: we don’t know who was on board.' },
   },
   {
     id: 'dati-grezzi', cat: 'storico',
@@ -336,6 +357,20 @@ export const FAQS: Faq[] = [
       a: 'Sì, dopo aver salvato una posizione: da La mia API con «Usa la mia posizione», oppure dicendo all’assistente «la mia posizione è Brescia». Nessun assistente passa la posizione del tuo dispositivo al server. La salviamo arrotondata a circa 1 km e la cancelli quando vuoi. Su ChatGPT, senza una posizione salvata, usiamo la città che ChatGPT allega alla richiesta.' },
     en: { q: 'Can I ask “which aircraft are near me?”',
       a: 'Yes, once you have saved a position: from My API with “Use my position”, or by telling the assistant “my position is Brescia”. No assistant passes your device’s position to the server. We store it rounded to about 1 km and you can delete it at any time. On ChatGPT, with no saved position, we use the city ChatGPT attaches to the request.' },
+  },
+  {
+    id: 'mcp-profilo-aereo', cat: 'mcp', api: true,
+    it: { q: 'Posso avere il profilo di un aereo, con la foto?',
+      a: 'Sì: chiedi all’assistente di un aereo e userà aircraft_profile, o chiama /v2/profile/{icao}: identità, se lo vediamo adesso e dove, primo e ultimo giorno nello storico. La foto non è nella risposta, perché le condizioni di Planespotters.net non lo permettono: ricevi il link alla loro pagina, con il nome del fotografo, e quello della mappa. Per gli aerei PIA e LADD niente link alle foto. Mai nomi di proprietari.' },
+    en: { q: 'Can I get a profile of one aircraft, with a photo?',
+      a: 'Yes: ask your assistant about an aircraft and it will use aircraft_profile, or call /v2/profile/{icao}: identity, whether we see it now and where, first and last day in the history. The photo isn’t in the answer, because Planespotters.net’s terms don’t allow it: you get the link to their page, with the photographer’s name, and the map link. No photo link for PIA and LADD aircraft. Never owner names.' },
+  },
+  {
+    id: 'mcp-mappa-chat', cat: 'mcp',
+    it: { q: 'Perché in chat vedo una mappa?',
+      a: 'Su Claude e ChatGPT gli strumenti che restituiscono aerei li mostrano anche su una mappa interattiva nella conversazione, colorati per quota. Carica solo le tessere di OpenStreetMap, non chiede permessi e non usa la tua posizione. Il pulsante Aggiorna ripete la ricerca e conta come una richiesta.' },
+    en: { q: 'Why do I see a map in the chat?',
+      a: 'On Claude and ChatGPT, the tools that return aircraft also show them on an interactive map in the conversation, coloured by altitude. It only loads OpenStreetMap tiles, asks for no permissions and doesn’t use your location. The Refresh button repeats the search and counts as one request.' },
   },
   {
     id: 'mcp-scollegare', cat: 'mcp',

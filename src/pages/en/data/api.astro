@@ -195,7 +195,7 @@ X-Api-Key: <your-key>
       <p class="text-slate-400 text-sm leading-relaxed mb-6">
         The <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener" class="text-sky-400 no-underline">Model Context Protocol</a>
         is the standard assistants like Claude or ChatGPT use to call external tools. Our server exposes
-        four read-only tools at
+        these tools at
         <code class="text-xs px-1.5 py-0.5 rounded" style="background:#111e30;color:#7dd3fc">https://flyitalyadsb.com/mcp</code>:
       </p>
       <table class="spec-table" style="margin-bottom:1.5rem">
@@ -204,6 +204,10 @@ X-Api-Key: <your-key>
           { name: 'aircraft_near', desc: 'Every aircraft within a radius of a point (or an Italian airport by name), full records — the most useful one.' },
           { name: 'special_traffic', desc: 'Currently tracked military, PIA (privacy), or LADD traffic.' },
           { name: 'aircraft_history', desc: "One aircraft's historical track for a day, or the dates available — self-serve, since 2022 (see the archive for coverage)." },
+          { name: 'aircraft_profile', desc: 'What we know about one aircraft: identity, live status, history summary, map and photo links.' },
+          { name: 'overflights', desc: 'The aircraft that flew over a place (coordinates, an airport or your saved position) between two times, since 17/08/2026.' },
+          { name: 'notable_traffic', desc: 'Emergencies (7500/7600/7700), military and other notable aircraft seen in an area, up to 7 days.' },
+          { name: 'set_my_location / clear_my_location', desc: 'Save or delete your position, for “near me”.' },
         ].map((t) => (
           <tr>
             <td class="k" style="color:#a78bfa">{t.name}</td>
