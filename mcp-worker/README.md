@@ -26,6 +26,9 @@ python3 mcp-worker/e2e/e2e_mcp_oauth.py /tmp/mail.jsonl   # 26 checks, the whole
 python3 mcp-worker/e2e/e2e_auth_md.py /tmp/mail.jsonl     # 36 checks, auth.md agent registration
 uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/e2e_near_me.py /tmp/mail.jsonl  # 10 checks, "aircraft near me"
 uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/e2e_profile.py /tmp/mail.jsonl  # 13 checks, aircraft_profile
+# overflights: start the local public-api with GLOBE_HISTORY_DIR and OVERFLIGHTS_INDEX_DIR set to two empty dirs;
+# the test writes synthetic traces there and builds the index with public-api's own overflights.py
+GLOBE_HISTORY_DIR=… OVERFLIGHTS_INDEX_DIR=… uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/e2e_overflights.py /tmp/mail.jsonl <nesso-infra>/k8s/flyitalyadsb/base/public-api  # 14 checks
 # both expect a fresh local public-api: it recreates its e2e schema at start
 npm run mcp:check                                  # wrangler types + tsc
 ```

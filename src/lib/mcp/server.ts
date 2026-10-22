@@ -4,6 +4,7 @@ import { aircraftNear, aircraftNearInputSchema, chatgptLocationHint } from './to
 import { aircraftProfile, aircraftProfileInputSchema } from './tools/aircraft-profile';
 import { findAircraft, findAircraftInputSchema } from './tools/find-aircraft';
 import { clearMyLocationInputSchema, forgetMyLocation, setMyLocation, setMyLocationInputSchema } from './tools/my-location';
+import { overflights, overflightsInputSchema } from './tools/overflights';
 import { specialTraffic, specialTrafficInputSchema } from './tools/special-traffic';
 import { V2ApiError } from './v2-client';
 
@@ -64,6 +65,18 @@ export const TOOLS = {
     description:
       'Everything FlyItalyADSB knows about one aircraft in a single call: identity (registration, ICAO type, type description, year, military/interesting/PIA/LADD flags), whether it is being received now (position, altitude, callsign, and the position source: ADS-B, MLAT, TIS-B…), and a summary of its recorded history (first and last day with a track, days seen in the last 30, total days), plus links to the public map and to photos. By ICAO hex, or by registration or callsign while the aircraft is live. About the aircraft, never its owner: no owner or operator names, and not a way to follow a person. No photo is embedded: pass on `photoNote` to the user.',
     inputSchema: aircraftProfileInputSchema,
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    } satisfies ToolAnnotations,
+  },
+  overflights: {
+    title: 'Aircraft that flew over a place',
+    description:
+      'List the aircraft whose recorded track passed within a radius of a place during a past time window ("what flew over my house this morning?", "which helicopters passed over this town yesterday?"): for each aircraft its registration, type, callsigns, the time and distance of its closest point, its lowest altitude in the circle and the position source (ADS-B or MLAT). It is about aircraft, never people: it does not say who was on board. The place works like aircraft_near (lat/lon, an Italian airport shortcut, or with no place the position saved on the account). Times are UTC. Covers every day since 2026-08-17; the last ~40 minutes are not indexed yet, so use aircraft_near for right now. Read `coverage` and `notes`: a period listed there was not searched, so never conclude that nothing flew over it.',
+    inputSchema: overflightsInputSchema,
     annotations: {
       readOnlyHint: true,
       destructiveHint: false,
@@ -157,6 +170,15 @@ export function initializeMcpServer(server: McpServer, apiKey: string): void {
   server.registerTool('aircraft_profile', TOOLS.aircraft_profile, async (args) => {
     try {
       const result = await aircraftProfile(args, apiKey);
+      return { content: [{ type: 'text', text: JSON.stringify(result) }] };
+    } catch (err) {
+      return errorResult(err);
+    }
+  });
+
+  server.registerTool('overflights', TOOLS.overflights, async (args, ctx) => {
+    try {
+      const result = await overflights(args, apiKey, chatgptLocationHint(ctx.mcpReq._meta));
       return { content: [{ type: 'text', text: JSON.stringify(result) }] };
     } catch (err) {
       return errorResult(err);

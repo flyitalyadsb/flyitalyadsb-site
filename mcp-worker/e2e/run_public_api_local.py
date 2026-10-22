@@ -2,7 +2,9 @@
 Postgres schema `e2e`, aircraft.json and a few days of globe history from temp
 files, emails written to a JSONL file instead of being sent.
 Usage: run_public_api_local.py <public-api dir> <mail log> <port>
-FIA_E2E_PG overrides the Postgres URL (default 127.0.0.1:54341)."""
+FIA_E2E_PG overrides the Postgres URL (default 127.0.0.1:54341). GLOBE_HISTORY_DIR, if set, is used
+instead of a temp dir (e2e_overflights.py writes its traces there), and OVERFLIGHTS_INDEX_DIR is read by
+public-api's overflights.py as is."""
 import datetime
 import gzip
 import json
@@ -32,7 +34,7 @@ with os.fdopen(fd, "w") as f:
 # Globe history as readsb writes it (gzip, header then "trace"), for aircraft_profile: the live
 # 33ffd1 on two recent days, and 4baa72, not live, seen five days ago. The owner name in
 # 4baa72's header is there to prove it never comes out.
-history = tempfile.mkdtemp()
+history = os.environ.get("GLOBE_HISTORY_DIR") or tempfile.mkdtemp()
 today = datetime.date.today()
 for icao, ago, meta in (("33ffd1", 0, {"r": "MM62179", "t": "C130", "dbFlags": 1, "desc": "LOCKHEED C-130J Hercules",
                                        "year": "2000"}),

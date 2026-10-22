@@ -1,6 +1,6 @@
 ---
 title: Endpoint
-description: "Tutti gli endpoint della REST API v2 di FlyItalyADSB: un aereo per hex ICAO, nominativo o immatricolazione, gli aerei in un raggio, militari, PIA, LADD, storico e il profilo di un aereo."
+description: "Tutti gli endpoint della REST API v2 di FlyItalyADSB: un aereo per hex ICAO, nominativo o immatricolazione, gli aerei in un raggio, militari, PIA, LADD, storico, il profilo di un aereo e i sorvoli."
 key: endpoints
 order: 3
 updated: 2026-10-22
@@ -20,6 +20,7 @@ updated: 2026-10-22
 | `/history/{icao}` | le date con una traccia per un aereo |
 | `/history/{icao}/{data}` | la traccia di un aereo in un giorno |
 | `/profile/{icao}` | quello che sappiamo di un aereo: identità, stato live, riepilogo dello storico |
+| `/overflights?lat=&lon=&dist=&from=&to=` | gli aerei passati entro `dist` km da un punto tra due istanti |
 
 ## Un aereo
 
@@ -49,6 +50,8 @@ La risposta è `{"now", "count", "ac": [...]}`, gli stessi campi per ogni aereo.
 ## Storico
 
 `/history/{icao}` elenca le date disponibili per un aereo, `/history/{icao}/{YYYY-MM-DD}` restituisce la traccia di quel giorno. Periodi coperti e formato sono in [Storico](/dati/api/docs/storico/).
+
+`/overflights` risponde a "cosa è passato sopra questo luogo tra questi due istanti": una voce per aereo, con istante e distanza del punto più vicino. Parametri, copertura e limiti sono in [Storico](/dati/api/docs/storico/#cosa-è-passato-sopra-un-luogo).
 
 ## Profilo di un aereo
 

@@ -251,3 +251,83 @@ export interface AircraftProfile {
 export function getAircraftProfile(icao: string, apiKey: string): Promise<AircraftProfile> {
   return v2FetchHistory(`/profile/${encodeURIComponent(icao.trim().toLowerCase())}`, apiKey);
 }
+
+/** One aircraft whose recorded track passed through the circle — public-api
+ * overflights.py. Aircraft metadata is whitelisted there (r, t, desc,
+ * dbFlags): never the owner/operator. */
+export interface Overflight {
+  icao: string;
+  r: string | null;
+  t: string | null;
+  desc: string | null;
+  dbFlags: number;
+  callsigns: string[];
+  closest_time: string;
+  closest_ts: number;
+  closest_km: number;
+  closest_alt_ft: number | 'ground' | null;
+  min_alt_ft: number | 'ground' | null;
+  entered: string;
+  left: string;
+  passes: number;
+  /** Received positions inside the circle; 0 = the pass is a straight line between positions outside it. */
+  positions: number;
+  source: 'adsb' | 'mlat' | 'tisb' | 'other';
+  sources: string[];
+  history: string[];
+}
+
+export interface OverflightsResult {
+  lat: number;
+  lon: number;
+  dist_km: number;
+  from: string;
+  to: string;
+  max_alt_ft: number | null;
+  count: number;
+  truncated: boolean;
+  complete_until: string | null;
+  coverage: { complete: boolean; gaps: Array<{ from: string; to: string; reason: string }> };
+  candidates: number;
+  overflights: Overflight[];
+}
+
+export interface OverflightsQuery {
+  lat: number;
+  lon: number;
+  distKm: number;
+  from: string;
+  to: string;
+  maxAltFt?: number;
+  limit?: number;
+}
+
+/** `/v2/overflights`. Its own fetch, not `v2Fetch`: a 400/403 here says what
+ * to change (radius or window above the plan, a bad time), so the API's own
+ * `error` and `help` go back to the assistant; a search can also take a few
+ * seconds (up to ~4.5 s of work plus a short queue on the API side). */
+export async function getOverflights(q: OverflightsQuery, apiKey: string): Promise<OverflightsResult> {
+  const params = new URLSearchParams({
+    lat: String(q.lat),
+    lon: String(q.lon),
+    dist: String(q.distKm),
+    from: q.from,
+    to: q.to,
+  });
+  if (q.maxAltFt !== undefined) params.set('max_alt_ft', String(q.maxAltFt));
+  if (q.limit !== undefined) params.set('limit', String(q.limit));
+  let res: Response;
+  try {
+    res = await fetch(`${V2_BASE}/overflights?${params}`, {
+      // Lowercase name required — see the comment in v2Fetch above.
+      headers: { 'x-api-key': apiKey },
+      signal: AbortSignal.timeout(12000),
+    });
+  } catch (err) {
+    throw new V2ApiError(0, `Network error reaching the flyitalyadsb API: ${(err as Error).message}`);
+  }
+  if (res.status === 401) throw await errorWithHelp(res, KEY_REJECTED);
+  if (res.status === 429) throw await errorWithHelp(res, RATE_LIMITED);
+  if (!res.ok) throw await errorWithHelp(res, `flyitalyadsb API returned ${res.status}.`, true);
+  return res.json() as Promise<OverflightsResult>;
+}

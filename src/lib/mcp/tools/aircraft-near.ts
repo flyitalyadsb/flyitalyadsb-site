@@ -8,7 +8,7 @@ import { getAircraftNear, getMyLocation, type AircraftRecord } from '../v2-clien
  * The FlyItalyADSB network itself is global (3,200+ feeders worldwide, not
  * an Italy-only project), so anywhere else is reached via `lat`/`lon`
  * directly, not through this resolver. */
-function resolveAirport(identifier: string) {
+export function resolveAirport(identifier: string) {
   const needle = identifier.trim().toLowerCase();
   return airports.find(
     (a) => a.slug === needle || a.iata.toLowerCase() === needle || a.icao.toLowerCase() === needle,
