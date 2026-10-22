@@ -3,7 +3,7 @@
 // in a sandboxed iframe (scripts only, opaque origin) under the CSP the spec
 // tells hosts to build from the resource's _meta.ui.csp, so a domain the
 // resource forgot to declare fails here too.
-import { SCENARIOS, toolResult } from './scenarios.js';
+import { HOST_QUIRKS, SCENARIOS, toolResult } from './scenarios.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -15,6 +15,10 @@ const DEVICES = {
 };
 
 for (const [key, sc] of Object.entries(SCENARIOS)) $('scenario').add(new Option(`${key}: ${sc.title}`, key));
+for (const [key, q] of Object.entries(HOST_QUIRKS)) $('quirk').add(new Option(q.title, key));
+// ?frame=700x500: an iframe of that size whatever the view asks (a host that
+// doesn't honour size-changed).
+const FRAME = /^(\d+)x(\d+)$/.exec(params.get('frame') || '');
 for (const [k, v] of params) {
   const el = form.elements[k];
   if (!el) continue;
@@ -25,6 +29,7 @@ if (params.has('caps')) {
   const on = params.get('caps').split(',');
   for (const c of form.querySelectorAll('[name=cap]')) c.checked = on.includes('all') || on.includes(c.value);
 }
+if (params.get('oldserver') === '1') form.elements.oldserver.checked = true;
 if (params.get('shot') === '1') document.body.classList.add('shot');
 
 const state = () => ({
@@ -34,6 +39,8 @@ const state = () => ({
   device: form.elements.device.value,
   mode: form.elements.mode.value,
   caps: new Set([...form.querySelectorAll('[name=cap]:checked')].map((c) => c.value)),
+  quirk: form.elements.quirk.value,
+  structured: !form.elements.oldserver.checked,
 });
 let S = state();
 const status = { initialized: false, toolInput: false, toolResult: false, sizes: [], logs: [], requests: [], errors: [] };
@@ -77,7 +84,10 @@ function hostContext() {
     containerDimensions: S.mode === 'fullscreen' ? { width: dev.width, height: dev.height } : { width: dev.width, maxHeight: 640 },
     platform: mobile ? 'mobile' : 'web',
     deviceCapabilities: { touch: mobile, hover: !mobile },
-    safeAreaInsets: dev.insets || { top: 0, right: 0, bottom: 0, left: 0 },
+    // ?sa=12,0,0,0: insets in any mode (top, right, bottom, left).
+    safeAreaInsets: params.get('sa')
+      ? Object.fromEntries(['top', 'right', 'bottom', 'left'].map((k, i) => [k, Number(params.get('sa').split(',')[i]) || 0]))
+      : dev.insets || { top: 0, right: 0, bottom: 0, left: 0 },
     userAgent: 'fia-preview-host',
     toolInfo: { id: 1, tool: { name: sc.tool, inputSchema: { type: 'object' } } },
   };
@@ -106,7 +116,8 @@ async function onRequest(m) {
     case 'tools/call':
       if (!S.caps.has('serverTools')) throw Object.assign(new Error('Tool calls are not supported'), { code: -32601 });
       await new Promise((r) => setTimeout(r, 600));
-      return toolResult(S.scenario, ++refreshes);
+      // The host's proxy hands the view the server's whole result (ext-apps#696).
+      return toolResult(S.scenario, ++refreshes, { structured: S.structured });
     case 'ui/open-link':
     case 'ui/message':
     case 'ui/update-model-context':
@@ -140,14 +151,15 @@ window.addEventListener('message', async (e) => {
     status.toolInput = true;
     if (!sc.pending) {
       setTimeout(() => {
-        send({ jsonrpc: '2.0', method: 'ui/notifications/tool-result', params: toolResult(S.scenario) });
+        const result = HOST_QUIRKS[S.quirk].apply(toolResult(S.scenario, 0, { structured: S.structured }));
+        send({ jsonrpc: '2.0', method: 'ui/notifications/tool-result', params: result });
         status.toolResult = true;
         report();
       }, Number(params.get('latency') || 350));
     }
   } else if (m.method === 'ui/notifications/size-changed') {
     status.sizes.push(m.params);
-    if (S.mode === 'inline' && m.params && m.params.height) frame.style.height = `${Math.min(m.params.height, 640)}px`;
+    if (S.mode === 'inline' && !FRAME && m.params && m.params.height) frame.style.height = `${Math.min(m.params.height, 640)}px`;
   } else if (m.method === 'notifications/message') {
     status.logs.push(m.params);
     if (m.params && (m.params.level === 'error' || m.params.level === 'warning')) status.errors.push(m.params.data);
@@ -160,8 +172,9 @@ function layout() {
   document.body.dataset.theme = S.theme;
   document.body.dataset.mode = S.mode;
   document.body.dataset.device = S.device;
-  $('chat').style.width = `${dev.width}px`;
-  if (S.mode === 'fullscreen') frame.style.height = `${dev.height}px`;
+  $('chat').style.width = `${FRAME ? FRAME[1] : dev.width}px`;
+  if (FRAME) frame.style.height = `${FRAME[2]}px`;
+  else if (S.mode === 'fullscreen') frame.style.height = `${dev.height}px`;
   $('bubble').textContent = S.locale === 'it' ? 'Ecco gli aerei che la rete FlyItalyADSB vede adesso:' : 'Here are the aircraft the FlyItalyADSB network sees right now:';
 }
 
