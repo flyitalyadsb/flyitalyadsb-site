@@ -46,7 +46,8 @@ export interface Props {
   email: string;
 }
 
-const SERVER_INFO = { name: 'flyitalyadsb', version: '1.1.0' };
+// 1.2.0: the in-chat aircraft map (MCP Apps resource ui://flyitalyadsb/aircraft-map.html).
+const SERVER_INFO = { name: 'flyitalyadsb', version: '1.2.0' };
 // Tokens: an hour each; the grant lives while it is used (90 days idle).
 const ACCESS_TOKEN_TTL_S = 3600;
 const REFRESH_TOKEN_IDLE_TTL_S = 90 * 24 * 3600;

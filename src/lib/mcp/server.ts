@@ -1,4 +1,5 @@
 import type { McpServer, ToolAnnotations } from '@modelcontextprotocol/server';
+import { aircraftMapToolMeta, registerAircraftMap } from './apps/aircraft-map';
 import { aircraftHistory, aircraftHistoryInputSchema } from './tools/aircraft-history';
 import { aircraftNear, aircraftNearInputSchema, chatgptLocationHint } from './tools/aircraft-near';
 import { aircraftProfile, aircraftProfileInputSchema } from './tools/aircraft-profile';
@@ -11,13 +12,15 @@ import { V2ApiError } from './v2-client';
 
 /** Single source of truth for name/title/description/schema, shared by the
  * MCP server registration and the `.well-known` discoverability routes so
- * they can never drift from what's actually registered. */
+ * they can never drift from what's actually registered. `_meta` links the
+ * tools that return aircraft to the in-chat map (apps/aircraft-map.ts). */
 export const TOOLS = {
   find_aircraft: {
     title: 'Find a specific aircraft',
     description:
       'Look up one specific aircraft currently tracked by the FlyItalyADSB network, by its 24-bit ICAO hex address, callsign/flight number, or tail registration.',
     inputSchema: findAircraftInputSchema,
+    _meta: aircraftMapToolMeta(),
     annotations: {
       readOnlyHint: true,
       destructiveHint: false,
@@ -30,6 +33,7 @@ export const TOOLS = {
     description:
       'List every aircraft the FlyItalyADSB network currently sees within a radius of any lat/lon point worldwide — full live records (position, altitude, speed, type), not just a count. Also accepts a shortcut name for one of FlyItalyADSB\'s curated Italian airports. If the user asks about aircraft near them without saying where, call it with no airport and no lat/lon: it uses the position saved on their FlyItalyADSB account (or, in ChatGPT, the approximate location ChatGPT provides), and `center.source` says which.',
     inputSchema: aircraftNearInputSchema,
+    _meta: aircraftMapToolMeta(),
     annotations: {
       readOnlyHint: true,
       destructiveHint: false,
@@ -42,6 +46,7 @@ export const TOOLS = {
     description:
       'List aircraft currently tracked network-wide that are flagged military, PIA (Privacy ICAO Address), or LADD (FAA Limiting Aircraft Data Displayed) — thanks to FlyItalyADSB\'s own MLAT, this includes aircraft without full ADS-B.',
     inputSchema: specialTrafficInputSchema,
+    _meta: aircraftMapToolMeta(),
     annotations: {
       readOnlyHint: true,
       destructiveHint: false,
@@ -144,6 +149,8 @@ function errorResult(err: unknown) {
  * whether it's a *valid* key is the v2 API's call (401 if not), not ours.
  */
 export function initializeMcpServer(server: McpServer, apiKey: string): void {
+  registerAircraftMap(server);
+
   server.registerTool('find_aircraft', TOOLS.find_aircraft, async (args) => {
     try {
       const result = await findAircraft(args, apiKey);

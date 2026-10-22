@@ -16,7 +16,7 @@ export const GET: APIRoute = () => {
       'MCP server for flyitalyadsb.com: read-only aircraft-tracking queries over the FlyItalyADSB open ADS-B/MLAT network — live (by identifier, by location, or by military/privacy/LADD category) and historical (a day\'s position track for one aircraft, self-serve since 2022, with gaps). Sign in with OAuth 2.1 (assistants with OAuth connectors, such as claude.ai: email and a 6-digit code, discovery from the 401) or send an X-Api-Key header — the same key as api.flyitalyadsb.com/v2/*. See /auth.md.',
     url: `${SITE}/mcp`,
     transport: { type: 'streamable-http' },
-    capabilities: { tools: true },
+    capabilities: { tools: true, resources: true },
     authentication: { type: 'api-key', in: 'header', name: 'X-Api-Key' },
   });
 };
