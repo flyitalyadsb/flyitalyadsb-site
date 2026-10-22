@@ -17,7 +17,7 @@ curl -H "X-Api-Key: YOUR_KEY" https://api.flyitalyadsb.com/v2/history/4ca7b5/202
 
 - `/history/{icao}` answers `{"icao", "count", "dates": ["2026-08-17", …]}`.
 - `/history/{icao}/{date}` returns that day's track in readsb's `trace_full` format: `icao`, `timestamp` and `trace`, a list of points. Each point has the seconds after `timestamp`, latitude, longitude, altitude (feet or `"ground"`), speed and track, plus further fields described in [readsb's documentation](https://github.com/wiedehopf/readsb/blob/dev/README-json.md).
-- The `X-History-Source` header is `local` (recent days) or `r2` (archive). The first request for an archived day can take a little longer.
+- The `X-History-Source` header is `local` (recent days) or `r2` (archive); for today, `live` (the track readsb is writing, updated as the aircraft flies) or `store` (an aircraft readsb no longer receives: position, altitude and callsign only, the other fields are `null`). The first request for an archived day can take a little longer.
 
 ## Coverage
 
@@ -44,7 +44,7 @@ curl -H "X-Api-Key: YOUR_KEY" "https://api.flyitalyadsb.com/v2/overflights?lat=4
   - `source`: `adsb`, `mlat`, `tisb` or `other`;
   - `positions`: the positions received inside the circle. `0` means the pass is a straight line between two positions just outside it.
 - `from` and `to` take ISO 8601 (UTC when there is no offset) or Unix seconds. `max_alt_ft` keeps only the low part of each track, `limit` caps the list (default 100, max 500).
-- **Coverage:** every day since 17/08/2026. The current day isn't searchable yet: it is added after midnight UTC, by about 02:00 UTC. For what is flying now, use `/v2/lat/…`. The periods that were not searched are in `coverage.gaps`: there, "no aircraft" doesn't mean nothing flew over.
+- **Coverage:** every day since 17/08/2026, today included up to about 10 minutes ago. For the last few minutes and what is flying now, use `/v2/lat/…`. The periods that were not searched are in `coverage.gaps`: there, "no aircraft" doesn't mean nothing flew over.
 - **Limits:** radius and window depend on the plan: Free 10 km and 6 hours, Starter 25 km and 24 hours, the other plans 50 km and 24 hours. Above them the answer is `403`. Every search counts as one request, with at most 10 searches a minute per key.
 - **Truncated answers:** when there are more passes than fit, `truncated` is `true`. `complete_until` says up to when the list is complete; ask again with `from` set to it for the rest.
 - It is about aircraft, not people: no field says who was on board.

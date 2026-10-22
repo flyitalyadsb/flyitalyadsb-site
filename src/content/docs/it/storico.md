@@ -17,7 +17,7 @@ curl -H "X-Api-Key: LA_TUA_CHIAVE" https://api.flyitalyadsb.com/v2/history/4ca7b
 
 - `/history/{icao}` risponde `{"icao", "count", "dates": ["2026-08-17", …]}`.
 - `/history/{icao}/{data}` restituisce la traccia di quel giorno nel formato `trace_full` di readsb: `icao`, `timestamp` e `trace`, un elenco di punti. Ogni punto ha i secondi dopo `timestamp`, latitudine, longitudine, quota (piedi o `"ground"`), velocità e rotta, più altri campi descritti nella [documentazione di readsb](https://github.com/wiedehopf/readsb/blob/dev/README-json.md).
-- L'header `X-History-Source` vale `local` (giorni recenti) o `r2` (archivio). Il primo accesso a un giorno d'archivio può essere un po' più lento.
+- L'header `X-History-Source` vale `local` (giorni recenti) o `r2` (archivio); per oggi `live` (la traccia che readsb sta scrivendo, aggiornata mentre l'aereo vola) o `store` (un aereo che readsb non riceve più: solo posizione, quota e nominativo, gli altri campi sono `null`). Il primo accesso a un giorno d'archivio può essere un po' più lento.
 
 ## Periodi coperti
 
@@ -44,7 +44,7 @@ curl -H "X-Api-Key: LA_TUA_CHIAVE" "https://api.flyitalyadsb.com/v2/overflights?
   - `source`: `adsb`, `mlat`, `tisb` o `other`;
   - `positions`: le posizioni ricevute dentro il cerchio. `0` vuol dire che il passaggio è la retta tra due posizioni appena fuori.
 - `from` e `to` accettano ISO 8601 (UTC se manca il fuso) o secondi Unix. `max_alt_ft` tiene solo la parte bassa di ogni traccia, `limit` limita l'elenco (predefinito 100, massimo 500).
-- **Copertura:** ogni giorno dal 17/08/2026. Il giorno in corso non è ancora cercabile: si aggiunge dopo la mezzanotte UTC, entro le 02:00 UTC circa. Per quello che vola adesso usa `/v2/lat/…`. I periodi non cercati sono in `coverage.gaps`: lì "nessun aereo" non vuol dire che non è passato niente.
+- **Copertura:** ogni giorno dal 17/08/2026, oggi compreso fino a circa 10 minuti fa. Per gli ultimi minuti e per quello che vola adesso usa `/v2/lat/…`. I periodi non cercati sono in `coverage.gaps`: lì "nessun aereo" non vuol dire che non è passato niente.
 - **Limiti:** raggio e finestra dipendono dal piano: Free 10 km e 6 ore, Starter 25 km e 24 ore, gli altri piani 50 km e 24 ore. Oltre, la risposta è `403`. Ogni ricerca conta come una richiesta, e ogni chiave ne può fare al massimo 10 al minuto.
 - **Risposte troncate:** se i passaggi sono più di quelli che stanno nella risposta, `truncated` vale `true`. `complete_until` dice fino a quando l'elenco è completo; per il resto, richiedi con `from` uguale a quell'istante.
 - Riguarda gli aerei, non le persone: nessun campo dice chi c'era a bordo.
