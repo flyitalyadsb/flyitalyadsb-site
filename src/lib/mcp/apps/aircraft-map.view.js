@@ -160,7 +160,8 @@
     ctx: {}, caps: {}, connected: false,
     lang: 'en', locale: 'en-GB', timeZone: undefined, theme: 'dark',
     mode: 'inline', fixed: false, layout: 'strip',
-    toolName: null, args: null,
+    toolName: null, args: null, hostInfo: null,
+    recalled: false, diag: '', desiredH: 0, desiredMapH: 0, userMoved: false,
     status: 'loading', data: null, sort: null,
     sel: null, hot: null, items: new Map(),
     touchHinted: false,
@@ -237,7 +238,7 @@
         if (S.status === 'loading') previewArgs(S.args);
         break;
       case 'ui/notifications/tool-result':
-        show(params);
+        onToolResult(params);
         break;
       case 'ui/notifications/tool-cancelled':
         if (S.status === 'loading') setStatus('cancelled');
@@ -264,6 +265,7 @@
         protocolVersion: PROTOCOL_VERSION,
       }, 20000);
       S.caps = (res && res.hostCapabilities) || {};
+      S.hostInfo = (res && res.hostInfo) || null;
       applyContext((res && res.hostContext) || {});
       notify('ui/notifications/initialized');
       S.connected = true;
@@ -274,8 +276,10 @@
     }
   }
 
-  // Same measurement as the SDK's App (autoResize): the document's
-  // max-content height, the viewport's width, only when either changes.
+  // Inline: the height the view asks for (fitInline), not the one it was given,
+  // so a host that caps or fixes the iframe can still grow it later. Fullscreen
+  // and fixed: the SDK App's measurement, the document's max-content height.
+  // The viewport's width; only when either changes.
   function startSizeReporting() {
     let queued = false, lastW = 0, lastH = 0;
     const send = () => {
@@ -283,11 +287,17 @@
       queued = true;
       requestAnimationFrame(() => {
         queued = false;
-        const el = document.documentElement;
-        const prev = el.style.height;
-        el.style.height = 'max-content';
-        const h = Math.ceil(el.getBoundingClientRect().height);
-        el.style.height = prev;
+        let h;
+        if (!S.fixed) {
+          fitInline();
+          h = S.desiredH;
+        } else {
+          const el = document.documentElement;
+          const prev = el.style.height;
+          el.style.height = 'max-content';
+          h = Math.ceil(el.getBoundingClientRect().height);
+          el.style.height = prev;
+        }
         const w = Math.ceil(window.innerWidth);
         if (w !== lastW || h !== lastH) {
           lastW = w; lastH = h;
@@ -352,24 +362,49 @@
     const title = $('title');
     if (layout === 'panel' && title.parentElement !== $('tray-head')) $('tray-head').prepend(title);
     if (layout === 'strip' && title.parentElement !== app) app.insertBefore(title, stage);
-    if (!fixed) {
-      // Inline: a fixed height, so the chat never scrolls inside the map; the
-      // host's maxHeight, when it gives one, wins.
-      const notice = S.status !== 'ready' && S.status !== 'empty' && S.status !== 'loading';
-      let mapH = notice ? 190 : w < 480 ? 290 : 340;
-      const maxH = num(cd.maxHeight);
-      if (maxH) mapH = Math.max(200, Math.min(mapH, maxH - tray.offsetHeight - title.offsetHeight));
-      stage.style.height = `${mapH}px`;
-    } else {
-      stage.style.height = '';
-    }
     syncTray();
+    if (!fixed) fitInline();
+    else { stage.style.height = ''; S.desiredH = 0; }
     if (map) {
       attribution.setPrefix(w >= 560 ? '<a href="https://leafletjs.com">Leaflet</a>' : false);
       map.invalidateSize({ pan: false });
       if (changed && S.data) fitView(false);
     }
   }
+  // Inline: the map has a height of its own, so the chat never scrolls inside
+  // it, and size-changed asks the host for that (S.desiredH). The iframe the
+  // host really gives can differ: capped, fixed, not resized yet. The view
+  // fills that one exactly, so nothing is cut at the top or left empty below.
+  function fitInline() {
+    const cd = S.ctx.containerDimensions || {};
+    const sa = S.ctx.safeAreaInsets || {};
+    const chrome = $('title').offsetHeight + (tray.hidden ? 0 : tray.offsetHeight) + (num(sa.top) || 0) + (num(sa.bottom) || 0);
+    const notice = S.status !== 'ready' && S.status !== 'empty' && S.status !== 'loading';
+    let mapH = S.status === 'unreadable' ? 240 : notice ? 190 : window.innerWidth < 480 ? 290 : 340;
+    const maxH = num(cd.maxHeight);
+    if (maxH) mapH = Math.max(160, Math.min(mapH, maxH - chrome));
+    S.desiredMapH = mapH;
+    S.desiredH = Math.ceil(mapH + chrome);
+    const vh = window.innerHeight;
+    if (vh > 0 && Math.abs(vh - S.desiredH) > 1) mapH = Math.max(140, vh - chrome);
+    const px = `${Math.round(mapH)}px`;
+    if (stage.style.height !== px) {
+      stage.style.height = px;
+      map.invalidateSize({ pan: false });
+      // The view was fitted for the other height: fit it again, unless the
+      // user has moved the map since.
+      if (S.data && !S.userMoved) fitView(false);
+    }
+  }
+
+  // The document itself never scrolls (html and body clip): an iframe shorter
+  // than the view, or a focus, would leave it scrolled and its top cut off,
+  // as in a claude.ai screenshot of 22/10.
+  window.addEventListener('scroll', () => {
+    const el = document.scrollingElement || document.documentElement;
+    if (el.scrollTop || el.scrollLeft) { el.scrollTop = 0; el.scrollLeft = 0; }
+  }, { passive: true });
+
   // The list shows when there is something to list; a single found aircraft
   // is its card alone (docked under the map on a phone).
   function syncTray() {
@@ -450,6 +485,7 @@
   }
 
   map.on('click', () => select(null));
+  for (const ev of ['pointerdown', 'wheel', 'keydown']) $('map').addEventListener(ev, () => { S.userMoved = true; }, { passive: true });
   map.on('zoomend', scaleMarkers);
 
   // Links in the map (attribution) open through the host when it can.
@@ -559,21 +595,68 @@
 
   // ------------------------------------------------------------------ data
   const textOf = (res) => ((res && res.content) || []).filter((c) => c && c.type === 'text').map((c) => c.text).join('\n');
-  function parse(res) {
+  // Where the payload may be. Hosts differ: claude.ai's view got a
+  // structuredContent of the host's while ours was only in the text, Claude
+  // Desktop strips structuredContent, the desktop Code tab replaces the text
+  // with the JSON of structuredContent, replays lose either
+  // (ext-apps#696, claude-ai-mcp#1158, claude-code#103809). So no field is
+  // trusted for where it is: a candidate counts only if it has the shape.
+  const isPayload = (d) => !!d && typeof d === 'object' && !Array.isArray(d) && (Array.isArray(d.aircraft) || d.found === true || d.found === false);
+  function jsonIn(text) {
+    if (typeof text !== 'string' || !text.trim()) return null;
+    const tries = [text.trim()];
+    const a = text.indexOf('{'), b = text.lastIndexOf('}');
+    if (a >= 0 && b > a) tries.push(text.slice(a, b + 1)); // text around the JSON
+    for (const chunk of tries) {
+      try {
+        let v = JSON.parse(chunk);
+        if (typeof v === 'string') v = JSON.parse(v); // encoded twice
+        if (v && typeof v === 'object') return v;
+      } catch { /* the next try */ }
+    }
+    return null;
+  }
+  // { result: CallToolResult } and similar wrappers.
+  function unwrap(res) {
+    for (let i = 0; i < 2 && res && typeof res === 'object' && !Array.isArray(res.content) && !('structuredContent' in res) && !isPayload(res); i++) {
+      const inner = res.result || res.toolResult || res.callToolResult;
+      if (!inner || typeof inner !== 'object') break;
+      res = inner;
+    }
+    return res;
+  }
+  function payloadOf(res) {
+    const found = [];
+    const add = (v) => {
+      if (!v || typeof v !== 'object') return;
+      if (isPayload(v)) found.push(v);
+      else for (const k of ['structuredContent', 'result', 'data']) if (isPayload(v[k])) found.push(v[k]);
+    };
+    if (isPayload(res)) found.push(res);
+    add(res.structuredContent);
+    for (const c of Array.isArray(res.content) ? res.content : []) {
+      if (!c || typeof c !== 'object') continue;
+      add(jsonIn(c.text));
+      if (c.resource && typeof c.resource === 'object') add(jsonIn(c.resource.text));
+    }
+    // The fullest wins: an empty list loses to the list another field has.
+    const weight = (d) => (Array.isArray(d.aircraft) ? d.aircraft.length : d.found === true ? 1 : 0);
+    return found.sort((x, y) => weight(y) - weight(x))[0] || null;
+  }
+
+  function parse(raw) {
+    const res = unwrap(raw);
     if (!res || typeof res !== 'object') return { kind: 'unreadable' };
     if (res.isError) return { kind: 'error', message: textOf(res) };
-    let d = res.structuredContent;
-    if (!d || typeof d !== 'object') {
-      try { d = JSON.parse(textOf(res)); } catch { return { kind: 'unreadable' }; }
-    }
-    if (!d || typeof d !== 'object') return { kind: 'unreadable' };
+    const d = payloadOf(res);
+    if (!d) return { kind: 'unreadable' };
     const now = num(d.now) || Date.now() / 1000;
     if (d.found === false) return { kind: 'notfound', value: str(d.value) || '', now };
-    if (d.found === true && d.aircraft) {
+    if (d.found === true) {
+      if (!d.aircraft || typeof d.aircraft !== 'object') return { kind: 'unreadable' };
       const ac = normAircraft(d.aircraft);
       return { kind: 'find', now, aircraft: [ac], count: 1, total: 1 };
     }
-    if (!Array.isArray(d.aircraft)) return { kind: 'unreadable' };
     const c = d.center && num(d.center.lat) !== undefined && num(d.center.lon) !== undefined ? d.center : null;
     const center = c ? { lat: c.lat, lon: c.lon, label: str(c.label) || '', source: str(c.source) || 'coordinates' } : null;
     const aircraft = d.aircraft.filter((a) => a && typeof a === 'object' && a.hex).map((a) => normAircraft(a, center));
@@ -582,6 +665,28 @@
       now, center, radiusKm: num(d.radiusKm), category: str(d.category),
       aircraft, count: aircraft.length, total: Math.max(num(d.totalMatched) ?? aircraft.length, aircraft.length),
     };
+  }
+
+  // What arrived, without the data: field names, types, text lengths, the
+  // first 40 characters of the text with digits masked. Shown under the
+  // "can't be drawn" notice and logged, so a screenshot says what the host sent.
+  function shapeOf(raw) {
+    try {
+      if (raw === null || typeof raw !== 'object') return String(raw === null ? 'null' : typeof raw);
+      const kind = (v) => (v === null ? 'null' : Array.isArray(v) ? `array[${v.length}]` : typeof v === 'object' ? `{${Object.keys(v).slice(0, 6).join(',')}}` : typeof v);
+      const parts = [`keys={${Object.keys(raw).join(',')}}`];
+      if ('structuredContent' in raw) parts.push(`sc=${kind(raw.structuredContent)}`);
+      if (Array.isArray(raw.content)) {
+        parts.push(`content=[${raw.content.map((c) => (c && typeof c === 'object' ? `${c.type || '?'}${typeof c.text === 'string' ? `:${c.text.length}` : ''}` : kind(c))).join(',')}]`);
+        const first = raw.content.find((c) => c && typeof c.text === 'string');
+        if (first) parts.push(`text="${first.text.slice(0, 40).replace(/\d/g, '#').replace(/\s+/g, ' ')}"`);
+      } else if ('content' in raw) parts.push(`content=${kind(raw.content)}`);
+      if ('isError' in raw) parts.push(`isError=${raw.isError}`);
+      if (raw._meta && typeof raw._meta === 'object') parts.push(`_meta={${Object.keys(raw._meta).slice(0, 5).join(',')}}`);
+      return parts.join(' ');
+    } catch {
+      return 'shape?';
+    }
   }
 
   // The tool's labels are written for the model; the map writes its own.
@@ -609,6 +714,10 @@
     n.hidden = true;
     if (status === 'error') show(t('errorTitle'), userMessage(extra), true);
     else if (status === 'unreadable') show(t('unreadableTitle'), t('unreadableBody'));
+    const diag = $('notice-diag');
+    diag.hidden = status !== 'unreadable' || !S.diag;
+    n.classList.toggle('has-diag', !diag.hidden);
+    if (!diag.hidden) diag.textContent = `${S.diag}\n${contextLine()}`;
     else if (status === 'cancelled') show(t('cancelledTitle'), t('cancelledBody'));
     else if (status === 'standalone') show(t('standaloneTitle'), t('standaloneBody'));
     else if (status === 'notfound') show(t('notFoundTitle', extra), t('notFoundBody'));
@@ -650,6 +759,57 @@
     if (d.kind === 'find' && d.aircraft[0] && d.aircraft[0].has) select(d.aircraft[0].hex, { from: 'auto' });
     else if (S.sel) select(S.sel, { from: 'auto', keepView: true });
     $('live').textContent = $('title-count').textContent;
+  }
+
+  // A pushed result the view can't read is asked for again, once, through the
+  // host's tools/call, which returns the server's whole result (ext-apps#696).
+  // Read-only and idempotent, but it is one more request on the user's key.
+  function onToolResult(params) {
+    if (parse(params).kind !== 'unreadable') { show(params); return; }
+    const shape = shapeOf(params);
+    if (S.status === 'ready' || S.status === 'empty') { log('warning', { event: 'unreadable-tool-result-ignored', shape }); return; }
+    S.diag = `push: ${shape}`;
+    const call = recallCall();
+    if (!call || S.recalled) {
+      S.diag += ` | no re-call: ${S.recalled ? 'done already' : !S.caps.serverTools ? 'host has no tools/call' : 'no tool input'}`;
+      unreadable();
+      return;
+    }
+    S.recalled = true;
+    log('warning', { event: 'unreadable-tool-result', shape, recall: call.name });
+    setStatus('loading');
+    request('tools/call', { name: call.name, arguments: call.args }, 30000).then(
+      (res) => {
+        if (parse(res).kind !== 'unreadable') { show(res); return; }
+        S.diag += ` | re-call: ${shapeOf(res)}`;
+        unreadable();
+      },
+      (err) => {
+        S.diag += ` | re-call failed: ${String((err && err.message) || err).slice(0, 80)}`;
+        unreadable();
+      },
+    );
+  }
+  function unreadable() {
+    S.data = null;
+    clearMap();
+    setStatus('unreadable');
+    log('warning', { event: 'unreadable', shape: S.diag, context: contextLine() });
+  }
+  // The same call as the model's: its arguments from tool-input, its name from
+  // hostContext.toolInfo or, failing that, from the arguments' shape.
+  function recallCall() {
+    if (!S.connected || !S.caps.serverTools || !S.args) return null;
+    const a = S.args;
+    const name = S.toolName || (a.by !== undefined && a.value !== undefined ? 'find_aircraft' : a.category !== undefined ? 'special_traffic' : 'aircraft_near');
+    return { name, args: a };
+  }
+  function contextLine() {
+    const sa = S.ctx.safeAreaInsets || {};
+    const host = S.hostInfo ? `${S.hostInfo.name || '?'} ${S.hostInfo.version || ''}`.trim() : '?';
+    return `host=${host} tool=${S.toolName || '?'} input=${S.args ? Object.keys(S.args).join('+') || 'empty' : 'none'} ` +
+      `vp=${window.innerWidth}x${window.innerHeight} dm=${S.ctx.displayMode || '?'} cd=${JSON.stringify(S.ctx.containerDimensions || {})} ` +
+      `sa=${['top', 'right', 'bottom', 'left'].map((k) => num(sa[k]) || 0).join(',')}`;
   }
 
   function previewArgs(args) {

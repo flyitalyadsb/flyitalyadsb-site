@@ -60,6 +60,10 @@
         <label><input type="radio" name="mode" value="fullscreen"> fullscreen</label>
       </div>
     </fieldset>
+    <fieldset><legend>What the host makes of the result</legend>
+      <select name="quirk" id="quirk"></select>
+      <label><input type="checkbox" name="oldserver"> server without structuredContent (before 23/10, ChatGPT)</label>
+    </fieldset>
     <fieldset><legend>Host capabilities</legend>
       <label><input type="checkbox" name="cap" value="serverTools" checked> tool calls (refresh)</label>
       <label><input type="checkbox" name="cap" value="message" checked> ui/message (ask)</label>

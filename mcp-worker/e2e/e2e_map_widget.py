@@ -70,6 +70,8 @@ ok("the FlyItalyADSB mark is inline (a data: image, no new origin) next to the w
 tile_hosts = set(re.findall(r"https://([a-z0-9.-]+)/\{z\}", html))
 ok("the only tile template is the declared tile origin", tile_hosts == {TILES.split("//")[1]}, str(tile_hosts))
 view = html.rsplit("<script>", 1)[-1]
+ok("the view reads any field the host puts the data in, and can ask the host to run the call again",
+   "function payloadOf(" in view and "'tools/call'" in view and "function shapeOf(" in view)
 ok("the view makes no network call of its own and asks for no location",
    not re.search(r"\bfetch\(|XMLHttpRequest|WebSocket|sendBeacon|geolocation", view))
 ok("page fits comfortably in one resource read (< 400 kB)", len(html.encode()) < 400_000, f"{len(html.encode())} bytes")
@@ -84,8 +86,11 @@ for name in UNLINKED:
     ok(f"{name} has no UI", name in tools and not (tools[name].get("_meta") or {}).get("ui"), json.dumps(tools.get(name, {}).get("_meta")))
 
 
-def call(name, arguments):
-    s, r, raw = result("tools/call", {"name": name, "arguments": arguments})
+def call(name, arguments, meta=None):
+    params = {"name": name, "arguments": arguments}
+    if meta:
+        params["_meta"] = meta
+    s, r, raw = result("tools/call", params)
     content = r.get("content") or [{}]
     try:
         data = json.loads(content[0].get("text", ""))
@@ -94,17 +99,30 @@ def call(name, arguments):
     return s, r, content, data
 
 
+def same_text_and_structured(r, content, data):
+    """The JSON text plain clients always got, plus the same object as structuredContent."""
+    return (set(r) == {"content", "structuredContent"} and len(content) == 1 and content[0].get("type") == "text"
+            and isinstance(data, dict) and r["structuredContent"] == data)
+
+
 # The aircraft in run_public_api_local.py's aircraft.json: 33ffd1, a C-130 at 43.7, 10.6.
 s, r, content, data = call("aircraft_near", {"lat": 43.7, "lon": 10.6, "radiusKm": 30})
-ok("aircraft_near result unchanged for plain clients: one JSON text block, no structuredContent",
-   set(r) == {"content"} and len(content) == 1 and content[0].get("type") == "text" and isinstance(data, dict)
+ok("aircraft_near: the same JSON text as before, and the same object as structuredContent",
+   same_text_and_structured(r, content, data)
    and set(data) == {"center", "radiusKm", "now", "count", "totalMatched", "aircraft"}
    and any(a.get("hex") == "33ffd1" for a in data["aircraft"]), f"{s} {json.dumps(r)[:240]}")
+s, r, content, data = call("aircraft_near", {"lat": 43.7, "lon": 10.6, "radiusKm": 30}, {"openai/locale": "it-IT"})
+ok("aircraft_near from ChatGPT (openai/* _meta): text only, no structuredContent (its model would read the list twice)",
+   set(r) == {"content"} and isinstance(data, dict) and any(a.get("hex") == "33ffd1" for a in data.get("aircraft", [])),
+   f"{s} {json.dumps(r)[:240]}")
 s, r, content, data = call("find_aircraft", {"by": "icao24", "value": "33ffd1"})
-ok("find_aircraft result unchanged", set(r) == {"content"} and isinstance(data, dict) and data.get("found") is True
+ok("find_aircraft: text + the same structuredContent", same_text_and_structured(r, content, data) and data.get("found") is True
    and data["aircraft"].get("hex") == "33ffd1", f"{s} {json.dumps(r)[:240]}")
 s, r, content, data = call("special_traffic", {"category": "military"})
-ok("special_traffic result unchanged", set(r) == {"content"} and isinstance(data, dict) and data.get("category") == "military"
-   and any(a.get("hex") == "33ffd1" for a in data.get("aircraft", [])), f"{s} {json.dumps(r)[:240]}")
+ok("special_traffic: text + the same structuredContent", same_text_and_structured(r, content, data)
+   and data.get("category") == "military" and any(a.get("hex") == "33ffd1" for a in data.get("aircraft", [])),
+   f"{s} {json.dumps(r)[:240]}")
+s, r, content, data = call("aircraft_history", {"icao24": "33ffd1"})
+ok("tools without the map are untouched: no structuredContent", "structuredContent" not in r, f"{s} {json.dumps(r)[:200]}")
 
 summary()

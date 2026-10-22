@@ -1,5 +1,5 @@
 import type { McpServer, ToolAnnotations } from '@modelcontextprotocol/server';
-import { aircraftMapToolMeta, registerAircraftMap } from './apps/aircraft-map';
+import { aircraftMapResult, aircraftMapToolMeta, registerAircraftMap } from './apps/aircraft-map';
 import { aircraftHistory, aircraftHistoryInputSchema } from './tools/aircraft-history';
 import { aircraftNear, aircraftNearInputSchema, chatgptLocationHint } from './tools/aircraft-near';
 import { aircraftProfile, aircraftProfileInputSchema } from './tools/aircraft-profile';
@@ -151,10 +151,10 @@ function errorResult(err: unknown) {
 export function initializeMcpServer(server: McpServer, apiKey: string): void {
   registerAircraftMap(server);
 
-  server.registerTool('find_aircraft', TOOLS.find_aircraft, async (args) => {
+  server.registerTool('find_aircraft', TOOLS.find_aircraft, async (args, ctx) => {
     try {
       const result = await findAircraft(args, apiKey);
-      return { content: [{ type: 'text', text: JSON.stringify(result) }] };
+      return aircraftMapResult(result, ctx.mcpReq._meta);
     } catch (err) {
       return errorResult(err);
     }
@@ -163,16 +163,16 @@ export function initializeMcpServer(server: McpServer, apiKey: string): void {
   server.registerTool('aircraft_near', TOOLS.aircraft_near, async (args, ctx) => {
     try {
       const result = await aircraftNear(args, apiKey, chatgptLocationHint(ctx.mcpReq._meta));
-      return { content: [{ type: 'text', text: JSON.stringify(result) }] };
+      return aircraftMapResult(result, ctx.mcpReq._meta);
     } catch (err) {
       return errorResult(err);
     }
   });
 
-  server.registerTool('special_traffic', TOOLS.special_traffic, async (args) => {
+  server.registerTool('special_traffic', TOOLS.special_traffic, async (args, ctx) => {
     try {
       const result = await specialTraffic(args, apiKey);
-      return { content: [{ type: 'text', text: JSON.stringify(result) }] };
+      return aircraftMapResult(result, ctx.mcpReq._meta);
     } catch (err) {
       return errorResult(err);
     }

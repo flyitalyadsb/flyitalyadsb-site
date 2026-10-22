@@ -255,8 +255,11 @@ export const SCENARIOS = {
   },
 };
 
-/** The CallToolResult the server would send: JSON text, like server.ts. */
-export function toolResult(name, refreshIndex = 0) {
+/** The CallToolResult the server would send, like aircraftMapResult() in
+ * aircraft-map.ts: the JSON text, plus the same object as structuredContent
+ * when it is under 60k characters. `structured: false`: the server before it
+ * sent structuredContent (and ChatGPT's results today). */
+export function toolResult(name, refreshIndex = 0, { structured = true } = {}) {
   const sc = SCENARIOS[name];
   if (sc.error) return { content: [{ type: 'text', text: sc.error }], isError: true };
   const data = sc.result();
@@ -270,5 +273,24 @@ export function toolResult(name, refreshIndex = 0) {
       return { ...a, lat, lon, alt_baro: alt };
     });
   }
-  return { content: [{ type: 'text', text: JSON.stringify(data) }] };
+  const text = JSON.stringify(data);
+  return { content: [{ type: 'text', text }], ...(structured && text.length <= 60000 ? { structuredContent: data } : {}) };
 }
+
+/** What hosts have been seen to make of a result on its way to the view. */
+export const HOST_QUIRKS = {
+  none: { title: 'as sent', apply: (r) => r },
+  'empty-sc': { title: 'structuredContent replaced by {} (claude.ai, 22/10)', apply: (r) => ({ ...r, structuredContent: {} }) },
+  'strip-sc': { title: 'structuredContent stripped (Claude Desktop, ext-apps#696)', apply: ({ structuredContent, ...rest }) => rest },
+  'text-from-sc': {
+    title: 'text replaced by the JSON of structuredContent (Code tab, claude-code#103809)',
+    apply: (r) => ({ content: [{ type: 'text', text: String(JSON.stringify(r.structuredContent)) }], isError: !!r.isError }),
+  },
+  'replay-no-content': { title: 'replay without content (claude-ai-mcp#1158)', apply: ({ content, ...rest }) => rest },
+  'replay-bare': { title: 'replay with neither content nor structuredContent', apply: () => ({}) },
+  wrapped: { title: 'wrapped as { result }', apply: (r) => ({ result: r }) },
+  'noisy-text': {
+    title: 'text around the JSON, no structuredContent',
+    apply: (r) => ({ content: [{ type: 'text', text: `Result:\n${r.content[0].text}\n(end)` }] }),
+  },
+};

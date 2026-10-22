@@ -87,6 +87,33 @@ export const AIRCRAFT_MAP_HTML = template.replace(
   (_m, a?: string, b?: string, c?: string) => PARTS[(a ?? b ?? c) as string],
 );
 
+/** Results above this size carry no structuredContent: Claude moves tool results
+ * over ~150k characters out of the conversation, and it would count twice. */
+const STRUCTURED_MAX_CHARS = 60_000;
+
+/**
+ * The CallToolResult of a tool linked to the map: the JSON text every client
+ * already gets, unchanged, plus the same object as `structuredContent`, the
+ * field MCP Apps hosts hand to the view. claude.ai's view got no usable result
+ * from the text alone (its tool-result carried a structuredContent of the
+ * host's, not ours), and Claude's own MCP Apps examples put the UI's data there.
+ *
+ * Left out for ChatGPT (an `openai/*` key in the request's `_meta`), which
+ * shows structuredContent to the model next to the text: the aircraft list
+ * would be in its context twice. Left out above STRUCTURED_MAX_CHARS too. The
+ * view copes either way: it reads whichever field holds the data and, failing
+ * that, asks the host to run the call again (aircraft-map.view.js).
+ */
+export function aircraftMapResult(
+  result: object,
+  requestMeta?: Record<string, unknown>,
+): { content: { type: 'text'; text: string }[]; structuredContent?: Record<string, unknown> } {
+  const text = JSON.stringify(result);
+  const chatgpt = !!requestMeta && Object.keys(requestMeta).some((k) => k.startsWith('openai/'));
+  const structured = !chatgpt && text.length <= STRUCTURED_MAX_CHARS;
+  return { content: [{ type: 'text', text }], ...(structured ? { structuredContent: result as Record<string, unknown> } : {}) };
+}
+
 export function registerAircraftMap(server: McpServer): void {
   server.registerResource(
     'aircraft_map',
