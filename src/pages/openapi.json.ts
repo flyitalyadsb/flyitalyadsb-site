@@ -91,6 +91,7 @@ const spec = {
     { name: 'live', description: 'What the network is receiving now.' },
     { name: 'history', description: 'Per-aircraft daily tracks since 2022-04-10, with gaps.' },
     { name: 'keys', description: 'Self-serve API keys.' },
+    { name: 'account', description: 'The key\'s account: the position saved for "aircraft near me".' },
   ],
   paths: {
     '/v2/icao/{hex}': oneAircraft('One aircraft by ICAO address', 'hex', '24-bit ICAO address, hex (case-insensitive).'),
@@ -174,6 +175,66 @@ const spec = {
         },
       },
     },
+    '/v2/me/location': {
+      get: {
+        summary: "The position saved on the key's account",
+        description:
+          'For "aircraft near me": the position the user saved (My API, or the MCP tool set_my_location), rounded to about 1 km. Not counted as a request. `location` is null when none is saved.',
+        tags: ['account'],
+        responses: {
+          '200': {
+            description: 'The saved position, or null.',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/LocationResult' } } },
+          },
+          '401': { $ref: '#/components/responses/Unauthorized' },
+          '429': { $ref: '#/components/responses/TooManyRequests' },
+        },
+      },
+      post: {
+        summary: "Save the position on the key's account",
+        description: 'Replaces any saved position. Stored rounded to 2 decimals (about 1 km). At most 10 changes a minute per key.',
+        tags: ['account'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['lat', 'lon'],
+                properties: {
+                  lat: { type: 'number', minimum: -90, maximum: 90 },
+                  lon: { type: 'number', minimum: -180, maximum: 180 },
+                  label: { type: 'string', maxLength: 80, description: 'A short name, e.g. "Brescia".' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'The saved position.',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/LocationResult' } } },
+          },
+          '400': error('lat or lon is missing or out of range.'),
+          '401': { $ref: '#/components/responses/Unauthorized' },
+          '429': { $ref: '#/components/responses/TooManyRequests' },
+        },
+      },
+    },
+    '/v2/me/location/clear': {
+      post: {
+        summary: "Delete the position saved on the key's account",
+        tags: ['account'],
+        responses: {
+          '200': {
+            description: 'Deleted (location is null).',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/LocationResult' } } },
+          },
+          '401': { $ref: '#/components/responses/Unauthorized' },
+          '429': { $ref: '#/components/responses/TooManyRequests' },
+        },
+      },
+    },
     '/v2/keys': {
       post: {
         summary: 'Request an API key by email',
@@ -247,6 +308,21 @@ const spec = {
           help: { type: 'string', format: 'uri', description: 'On 401, 403 and 429: the FAQ answer for this error.' },
         },
         additionalProperties: true,
+      },
+      LocationResult: {
+        type: 'object',
+        required: ['location'],
+        properties: {
+          location: {
+            type: ['object', 'null'],
+            properties: {
+              lat: { type: 'number' },
+              lon: { type: 'number' },
+              label: { type: ['string', 'null'] },
+              updated_at: { type: 'string', format: 'date-time' },
+            },
+          },
+        },
       },
       Aircraft: {
         type: 'object',

@@ -331,6 +331,13 @@ export const FAQS: Faq[] = [
       a: 'Yes: each MCP tool call is an API request and counts on your key’s plan, like a direct call.' },
   },
   {
+    id: 'vicino-a-me', cat: 'mcp',
+    it: { q: 'Posso chiedere «che aerei ci sono vicino a me?»',
+      a: 'Sì, dopo aver salvato una posizione: da La mia API con «Usa la mia posizione», oppure dicendo all’assistente «la mia posizione è Brescia». Nessun assistente passa la posizione del tuo dispositivo al server. La salviamo arrotondata a circa 1 km e la cancelli quando vuoi. Su ChatGPT, senza una posizione salvata, usiamo la città che ChatGPT allega alla richiesta.' },
+    en: { q: 'Can I ask “which aircraft are near me?”',
+      a: 'Yes, once you have saved a position: from My API with “Use my position”, or by telling the assistant “my position is Brescia”. No assistant passes your device’s position to the server. We store it rounded to about 1 km and you can delete it at any time. On ChatGPT, with no saved position, we use the city ChatGPT attaches to the request.' },
+  },
+  {
     id: 'mcp-scollegare', cat: 'mcp',
     it: { q: 'Come scollego un assistente?',
       a: 'In La mia API, sotto «Assistenti collegati», premi Scollega. La chiave non cambia.' },

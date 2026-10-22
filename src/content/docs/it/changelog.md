@@ -9,7 +9,7 @@ updated: 2026-10-22
 | Data | Novità |
 |---|---|
 | 27/10/2026 | In arrivo: entrano in vigore i limiti del piano Free per chiave (fino ad allora valeva solo il limite per IP). |
-| 22/10/2026 | Registrazione degli agenti con [auth.md](/auth.md). Documentazione e [domande frequenti](/faq/). |
+| 22/10/2026 | «Vicino a me» sul server MCP: la posizione salvata sull'account (`set_my_location`, La mia API), o la città di ChatGPT. Registrazione degli agenti con [auth.md](/auth.md). Documentazione e [domande frequenti](/faq/). |
 | 21/10/2026 | OAuth sul server MCP: Claude e gli altri assistenti si collegano con Connetti, senza copiare chiavi. |
 | 20/10/2026 | Vantaggio feeder: i limiti del piano Pro gratis sulle chiavi Free di chi alimenta la rete, per uso non commerciale. |
 | 19/10/2026 | Piani a pagamento self-service: Starter, Pro, Business. |

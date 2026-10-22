@@ -70,10 +70,12 @@ async function errorWithHelp(res: Response, message: string, own = false): Promi
 const KEY_REJECTED = 'The flyitalyadsb API rejected this API key — check that your X-Api-Key is correct.';
 const RATE_LIMITED = 'Rate limit exceeded on the flyitalyadsb API — try again shortly.';
 
-async function v2Fetch<T>(path: string, apiKey: string): Promise<T> {
+/** GET `path`, or POST `body` as JSON when one is given. */
+async function v2Fetch<T>(path: string, apiKey: string, body?: unknown): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`${V2_BASE}${path}`, {
+      ...(body === undefined ? {} : { method: 'POST', body: JSON.stringify(body) }),
       // Lowercase name required: this call runs inside a Cloudflare Pages
       // Function, and a Worker's fetch() to another zone on the SAME
       // Cloudflare account apparently doesn't get re-lowercased the way a
@@ -85,7 +87,7 @@ async function v2Fetch<T>(path: string, apiKey: string): Promise<T> {
       // any HTTP library) is unaffected: their own stack lowercases the
       // name before it ever reaches Cloudflare, so this only bit our own
       // MCP server calling our own REST API. Verified live 2026-09-02.
-      headers: { 'x-api-key': apiKey },
+      headers: { 'x-api-key': apiKey, ...(body === undefined ? {} : { 'content-type': 'application/json' }) },
       signal: AbortSignal.timeout(8000),
     });
   } catch (err) {
@@ -113,6 +115,28 @@ export function getAircraftByRegistration(reg: string, apiKey: string): Promise<
 
 export function getAircraftNear(lat: number, lon: number, distKm: number, apiKey: string): Promise<RadiusResult> {
   return v2Fetch(`/lat/${lat}/lon/${lon}/dist/${distKm}`, apiKey);
+}
+
+/** The position saved on the key's account (public-api locations.py), for
+ * "aircraft near me": rounded to ~1 km, at most one per account. Reading it
+ * isn't counted as a request. */
+export interface SavedLocation {
+  lat: number;
+  lon: number;
+  label: string | null;
+  updated_at: string;
+}
+
+export async function getMyLocation(apiKey: string): Promise<SavedLocation | null> {
+  return (await v2Fetch<{ location: SavedLocation | null }>('/me/location', apiKey)).location;
+}
+
+export async function saveMyLocation(lat: number, lon: number, label: string | undefined, apiKey: string): Promise<SavedLocation> {
+  return (await v2Fetch<{ location: SavedLocation }>('/me/location', apiKey, { lat, lon, label })).location;
+}
+
+export async function clearMyLocation(apiKey: string): Promise<void> {
+  await v2Fetch('/me/location/clear', apiKey, {});
 }
 
 export type SpecialCategory = 'mil' | 'pia' | 'ladd';
