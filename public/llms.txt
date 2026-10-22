@@ -2,15 +2,17 @@
 
 > Open, unfiltered global ADS-B/MLAT flight-tracking network born in Italy — 3,200+ direct feeders worldwide, community-run, data licensed CC BY-SA 4.0; free API plan (commercial use allowed within its limits), paid plans from €9/month for higher volume. Programmatically queryable via a REST API and an MCP server built for AI agents.
 
-FlyItalyADSB collects real-time ADS-B, Mode-S (BDS50/BDS60), MLAT, and OGN aircraft data worldwide — not limited to Italy — from a community-run feeder network, and republishes it openly with no FAA/LADD/BARR filtering (military and state aircraft included via its own MLAT triangulation). Infrastructure is run by Nesso Labs.
+FlyItalyADSB collects real-time ADS-B, Mode-S (BDS50/BDS60), MLAT, and OGN aircraft data worldwide — not limited to Italy — from a community-run feeder network, and republishes it openly with no FAA/LADD/BARR filtering (military and state aircraft included via its own MLAT triangulation). Hosting and servers by Nesso Labs.
 
 ## For AI agents
 
-- [API & AI agents documentation](https://flyitalyadsb.com/dati/api): human-readable reference for both the REST API and the MCP tools below, including how to get an API key (self-serve, instant, free — just an email address).
-- [MCP server](https://flyitalyadsb.com/mcp): Streamable HTTP JSON-RPC endpoint. Tools: `find_aircraft` (by ICAO hex/callsign/registration), `aircraft_near` (full live records within a radius of any point worldwide — the flagship tool), `special_traffic` (military/PIA/LADD), `aircraft_history` (a day's position track for one aircraft, or the dates available — self-serve, since 2022 with gaps; see the historical archive page). Requires an `X-Api-Key` header, same key as the REST API.
+- [API & AI agents documentation](https://flyitalyadsb.com/dati/api): human-readable reference for both the REST API and the MCP tools below, including how to get an API key (self-serve and free: an email address is enough).
+- [MCP server](https://flyitalyadsb.com/mcp): Streamable HTTP JSON-RPC endpoint. Tools: `find_aircraft` (by ICAO hex/callsign/registration), `aircraft_near` (full live records within a radius of any point worldwide — the flagship tool), `special_traffic` (military/PIA/LADD), `aircraft_history` (a day's position track for one aircraft, or the dates available — self-serve, since 2022 with gaps; see the historical archive page). Authentication: OAuth 2.1 for assistants with OAuth connectors such as claude.ai (add the URL, press Connect, sign in with an email and a 6-digit code; a free key is created if needed), or an `X-Api-Key` header with the same key as the REST API.
 - [MCP server card](https://flyitalyadsb.com/.well-known/mcp/server-card.json): machine-readable description of the server.
+- [auth.md](https://flyitalyadsb.com/auth.md): how an agent gets and uses a credential (OAuth discovery, PKCE, API key signup).
+- [API catalog](https://flyitalyadsb.com/.well-known/api-catalog) (RFC 9727) and [OpenAPI 3.1](https://flyitalyadsb.com/openapi.json) for the REST API.
 - [Agent skills index](https://flyitalyadsb.com/.well-known/agent-skills/index.json): per-tool `SKILL.md` files with concrete request/response examples.
-- REST API base URL: `https://api.flyitalyadsb.com/v2` — `GET /icao/{hex}`, `/callsign/{callsign}`, `/reg/{reg}`, `/lat/{lat}/lon/{lon}/dist/{km}`, `/mil`, `/pia`, `/ladd`, `/history/{icao}[/{date}]` (self-serve historical per-aircraft position tracks). All require `X-Api-Key`. `POST /v2/keys {email}` issues a key instantly.
+- REST API base URL: `https://api.flyitalyadsb.com/v2` — `GET /icao/{hex}`, `/callsign/{callsign}`, `/reg/{reg}`, `/lat/{lat}/lon/{lon}/dist/{km}`, `/mil`, `/pia`, `/ladd`, `/history/{icao}[/{date}]` (self-serve historical per-aircraft position tracks). All require `X-Api-Key`. `POST /v2/keys {email}` emails a one-time link that shows the key once.
 - [ADS-B API comparison](https://flyitalyadsb.com/dati/confronto): factual, non-promotional comparison of FlyItalyADSB against the other major open ADS-B APIs (adsb.fi, airplanes.live, adsb.lol, ADSB One, OpenSky Network, ADS-B Exchange) — rate limits, feeder requirements, commercial-use terms. Useful context for "what ADS-B APIs exist" style questions.
 
 ## Site content

@@ -1,0 +1,22 @@
+# Agent discovery (RFC 8288 Link headers, RFC 9727 API catalog). The home
+# pages point at the machine-readable entry points; repeated Link lines are
+# joined with a comma by Cloudflare Pages.
+/
+  Link: </.well-known/api-catalog>; rel="api-catalog"
+  Link: </openapi.json>; rel="service-desc"; type="application/json"
+  Link: </en/data/api/>; rel="service-doc"; type="text/html"
+  Link: </llms.txt>; rel="describedby"; type="text/plain"
+/en/
+  Link: </.well-known/api-catalog>; rel="api-catalog"
+  Link: </openapi.json>; rel="service-desc"; type="application/json"
+  Link: </en/data/api/>; rel="service-doc"; type="text/html"
+  Link: </llms.txt>; rel="describedby"; type="text/plain"
+
+# The catalog is a file with no extension: without this Pages would not send
+# the Linkset media type. RFC 9727 also wants the Link on HEAD responses.
+/.well-known/api-catalog
+  Content-Type: application/linkset+json; profile="https://www.rfc-editor.org/info/rfc9727"
+  Link: </.well-known/api-catalog>; rel="api-catalog"
+
+/auth.md
+  Content-Type: text/markdown; charset=utf-8

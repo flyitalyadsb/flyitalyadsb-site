@@ -48,7 +48,7 @@ const faqs = [
   },
   {
     q: 'Come uso il server MCP con Claude o ChatGPT?',
-    a: 'Aggiungi https://flyitalyadsb.com/mcp come connector/MCP server nelle impostazioni del tuo client (es. Claude.ai → Settings → Connectors), fornendo la tua X-Api-Key quando richiesta. Poi puoi chiedere in chat cose come "che aerei ci sono ora su Fiumicino?" o "c\'è traffico militare sopra Roma?" e l\'agente chiamerà i tool automaticamente.',
+    a: 'Aggiungi https://flyitalyadsb.com/mcp come connettore personalizzato (su claude.ai: Connettori → Aggiungi connettore personalizzato) e premi Connetti: accedi con la tua email e un codice di 6 cifre, senza copiare chiavi. Nei client senza OAuth passa la tua chiave nell\'header X-Api-Key. Poi puoi chiedere in chat cose come "che aerei ci sono ora su Fiumicino?" o "c\'è traffico militare sopra Roma?" e l\'agente chiamerà i tool automaticamente.',
   },
   {
     q: 'Cosa può fare il server MCP che la mappa non fa?',
@@ -267,12 +267,17 @@ X-Api-Key: <la-tua-chiave>
       </table>
       <h3 id="come-collegarlo" class="text-lg font-semibold text-slate-100 mb-3 mt-8 scroll-mt-24">Come collegarlo a Claude</h3>
       <ol class="space-y-2 mb-6 text-sm text-slate-400 list-decimal list-inside marker:text-slate-600">
-        <li>Su <a href="https://claude.ai" target="_blank" rel="noopener" class="text-sky-400 no-underline">claude.ai</a>, apri <strong class="text-slate-300">Impostazioni → Connettori</strong> (dal menu del tuo profilo).</li>
-        <li>Clicca <strong class="text-slate-300">"Aggiungi connettore personalizzato"</strong>.</li>
-        <li>Incolla l'URL <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">https://flyitalyadsb.com/mcp</code> e dagli un nome, es. "FlyItalyADSB".</li>
-        <li>Nelle impostazioni avanzate del connettore, aggiungi un'intestazione personalizzata: <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">X-Api-Key</code> con la tua chiave.</li>
-        <li>Salva e prova chiedendo a Claude qualcosa come <em>"che aerei ci sono ora vicino a Roma Fiumicino?"</em></li>
+        <li>Su <a href="https://claude.ai/customize/connectors" target="_blank" rel="noopener" class="text-sky-400 no-underline">claude.ai</a>, apri la pagina <strong class="text-slate-300">Connettori</strong> e clicca <strong class="text-slate-300">"Aggiungi connettore personalizzato"</strong>.</li>
+        <li>Dagli un nome, es. "FlyItalyADSB", e incolla l'URL <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">https://flyitalyadsb.com/mcp</code>.</li>
+        <li>Come autenticazione lascia <strong class="text-slate-300">"Accedi ora"</strong> (Claude la rileva da solo) e come client OAuth <strong class="text-slate-300">"Usa l'identità pubblicata di Claude"</strong>, poi aggiungi il connettore.</li>
+        <li>Premi <strong class="text-slate-300">Connetti</strong>: si apre una pagina di FlyItalyADSB. Scrivi la tua email, poi il codice di 6 cifre che ti arriva, e premi <strong class="text-slate-300">Consenti</strong>. Se non hai ancora una chiave API, la creiamo gratis in quel momento.</li>
+        <li>Prova chiedendo a Claude qualcosa come <em>"che aerei ci sono ora vicino a Roma Fiumicino?"</em></li>
       </ol>
+      <p class="text-xs text-slate-500 leading-relaxed mb-6">
+        Puoi scollegarlo quando vuoi da <a href="/dati/api/account/" class="text-sky-400 no-underline">La mia API</a>.
+        Da <a href="https://code.claude.com/docs/en/mcp-quickstart" target="_blank" rel="noopener" class="text-sky-400 no-underline">Claude Code</a> o da un client senza OAuth funziona anche con la chiave:
+        <code class="text-xs px-1 rounded" style="background:#111e30;color:#7dd3fc">claude mcp add --transport http flyitalyadsb https://flyitalyadsb.com/mcp --header "X-Api-Key: ‹la-tua-chiave›"</code>
+      </p>
 
       <!-- Illustrative mockup, not a literal screenshot: Claude's actual UI can
            differ slightly and would go stale fast if copied pixel-for-pixel. -->
@@ -281,7 +286,7 @@ X-Api-Key: <la-tua-chiave>
           <span class="w-2 h-2 rounded-full" style="background:#f87171"></span>
           <span class="w-2 h-2 rounded-full" style="background:#fbbf24"></span>
           <span class="w-2 h-2 rounded-full" style="background:#34d399"></span>
-          <span class="ml-2 text-xs font-semibold text-slate-500">claude.ai — Impostazioni → Connettori</span>
+          <span class="ml-2 text-xs font-semibold text-slate-500">claude.ai — Connettori</span>
         </div>
         <div class="p-5 space-y-3" style="background:#0a1320">
           <div>
@@ -293,10 +298,8 @@ X-Api-Key: <la-tua-chiave>
             <div class="px-3 py-2 rounded text-sm font-mono" style="background:#111e30;border:1px solid #1e3048;color:#7dd3fc">https://flyitalyadsb.com/mcp</div>
           </div>
           <div>
-            <div class="text-xs text-slate-500 mb-1">Intestazioni personalizzate (avanzate)</div>
-            <div class="px-3 py-2 rounded text-sm font-mono flex gap-2 items-baseline" style="background:#111e30;border:1px solid #1e3048">
-              <span style="color:#a78bfa">X-Api-Key</span><span class="text-slate-600">:</span><span class="text-slate-500">‹la-tua-chiave›</span>
-            </div>
+            <div class="text-xs text-slate-500 mb-1">Autenticazione</div>
+            <div class="px-3 py-2 rounded text-sm text-slate-300" style="background:#111e30;border:1px solid #1e3048">Accedi ora &middot; Usa l'identità pubblicata di Claude</div>
           </div>
         </div>
       </div>
@@ -304,8 +307,8 @@ X-Api-Key: <la-tua-chiave>
 
       <h3 class="text-lg font-semibold text-slate-100 mb-3">Per altri client MCP</h3>
       <p class="text-slate-400 text-sm leading-relaxed mb-3">
-        Qualunque client MCP che supporti Streamable HTTP con intestazioni personalizzate (ChatGPT, altri assistenti,
-        codice tuo) funziona allo stesso modo — anche via chiamata raw:
+        Gli altri client MCP con OAuth si collegano allo stesso modo, con Connetti. Dal tuo codice, o da un client
+        senza OAuth, usa la chiave nell'header X-Api-Key, anche con una chiamata raw:
       </p>
       <pre class="p-4 rounded-lg text-xs overflow-auto leading-relaxed" style="background:#0a1320;color:#94a3b8;border:1px solid #1e3048"><code>{mcpCallExample}</code></pre>
     </section>
