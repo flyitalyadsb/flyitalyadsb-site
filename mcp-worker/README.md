@@ -27,5 +27,9 @@ npm run mcp:check                                  # wrangler types + tsc
 
 ## Deploy
 
-`npm run mcp:deploy`. Routes, the KV namespace and the secrets are in nesso-infra `terraform/cloudflare`. The secrets
+Automatic: every push to `main` that touches the Worker runs `.github/workflows/mcp-worker.yml`, which deploys it
+with the `mcp-worker` environment's token. Pull requests get the type check and a `--dry-run`. By hand, with your
+own wrangler login, it is still `npm run mcp:deploy`.
+
+Routes, the KV namespace and the deploy token are in nesso-infra `terraform/cloudflare`. The secrets
 `CONSENT_SECRET` and `DEVICE_SECRET` are random, 32+ characters each, and their values live in Infisical.
