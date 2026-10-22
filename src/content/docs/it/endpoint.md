@@ -1,6 +1,6 @@
 ---
 title: Endpoint
-description: "Tutti gli endpoint della REST API v2 di FlyItalyADSB: un aereo per hex ICAO, nominativo o immatricolazione, gli aerei in un raggio, militari, PIA, LADD e storico."
+description: "Tutti gli endpoint della REST API v2 di FlyItalyADSB: un aereo per hex ICAO, nominativo o immatricolazione, gli aerei in un raggio, militari, PIA, LADD, storico e il profilo di un aereo."
 key: endpoints
 order: 3
 updated: 2026-10-22
@@ -19,6 +19,7 @@ updated: 2026-10-22
 | `/ladd` | gli aerei del programma FAA LADD |
 | `/history/{icao}` | le date con una traccia per un aereo |
 | `/history/{icao}/{data}` | la traccia di un aereo in un giorno |
+| `/profile/{icao}` | quello che sappiamo di un aereo: identità, stato live, riepilogo dello storico |
 
 ## Un aereo
 
@@ -48,6 +49,23 @@ La risposta è `{"now", "count", "ac": [...]}`, gli stessi campi per ogni aereo.
 ## Storico
 
 `/history/{icao}` elenca le date disponibili per un aereo, `/history/{icao}/{YYYY-MM-DD}` restituisce la traccia di quel giorno. Periodi coperti e formato sono in [Storico](/dati/api/docs/storico/).
+
+## Profilo di un aereo
+
+`/profile/{icao}` mette insieme, in una richiesta, quello che gli altri endpoint dicono di un aereo:
+- `identity`: immatricolazione, tipo ICAO (`icao_type`), `type_description`, `year` se il database degli aerei lo ha, e i bit di `dbFlags` già decodificati (`military`, `interesting`, `pia`, `ladd`);
+- `live`: `seen_now`, e se lo riceviamo adesso nominativo, posizione, quota, velocità e `source`, la fonte della posizione (`adsb_icao`, `mlat`, `tisb_icao`…), con `seen_pos` in secondi;
+- `history`: `first_day` e `last_day` con una traccia, `days_last_30` (oggi e i 29 giorni prima, UTC) e `total_days`, dalle stesse date di `/history/{icao}`;
+- `links`: `map`, la mappa pubblica su questo aereo (live, o la sua ultima traccia che la mappa può mostrare), e `history`;
+- `photos`: `page`, un link alle foto dell'aereo su Planespotters.net.
+
+Risponde `404` se l'aereo non è ricevuto adesso e non ha storico.
+
+```sh
+curl -H "X-Api-Key: LA_TUA_CHIAVE" https://api.flyitalyadsb.com/v2/profile/3c66a3
+```
+
+Il profilo riguarda l'aereo: non restituisce mai i nomi di proprietari o operatori. Non contiene foto, perché le condizioni di Planespotters.net non permettono di servire le loro foto attraverso un'altra API: `photos.page` è un link alla loro pagina pubblica, dove ogni foto riporta il nome del fotografo, e il pannello dell'aereo sulla mappa ne mostra una allo stesso modo. Per gli aerei PIA e LADD `photos.page` è `null` e `withheld` dice perché. I loro dati restano nel profilo, segnalati, come in tutta l'API.
 
 ## Errori
 

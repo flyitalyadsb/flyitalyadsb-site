@@ -1,19 +1,25 @@
 """Shared by the mcp-worker end-to-end tests (e2e_mcp_oauth.py, e2e_auth_md.py):
 a cookie-keeping browser against wrangler dev, the mail log written by
-run_public_api_local.py, the local public-api, MCP calls, the check tally."""
+run_public_api_local.py, the local public-api, MCP calls, the check tally.
+Ports: FIA_E2E_SITE (wrangler dev, default http://localhost:8787) and
+FIA_E2E_API_PORT (the local public-api, default 8081), so several checkouts
+can run their own stack side by side."""
 import base64
 import hashlib
 import http.client
 import json
+import os
 import re
 import secrets
 import sys
 import time
 import urllib.parse
 
-SITE = "http://localhost:8787"
+SITE = os.environ.get("FIA_E2E_SITE", "http://localhost:8787").rstrip("/")
+SITE_NETLOC = urllib.parse.urlparse(SITE).netloc
+SITE_ADDR = ("127.0.0.1", urllib.parse.urlparse(SITE).port or 80)
 MAIL_LOG = sys.argv[1]
-API = ("127.0.0.1", 8081)
+API = ("127.0.0.1", int(os.environ.get("FIA_E2E_API_PORT", "8081")))
 REDIRECT = "http://127.0.0.1:9999/cb"
 EMAIL = "pilot@example.test"
 checks = []
@@ -29,8 +35,8 @@ class Browser:
     def __init__(self):
         self.cookies = {}
 
-    def req(self, method, path, body=None, headers=None, host=("127.0.0.1", 8787)):
-        h = {"Host": "localhost:8787", "Accept-Language": "it-IT,it;q=0.9"}
+    def req(self, method, path, body=None, headers=None, host=SITE_ADDR):
+        h = {"Host": SITE_NETLOC, "Accept-Language": "it-IT,it;q=0.9"}
         h.update(headers or {})
         if self.cookies:
             h["Cookie"] = "; ".join(f"{k}={v}" for k, v in self.cookies.items())

@@ -175,6 +175,32 @@ const spec = {
         },
       },
     },
+    '/v2/profile/{icao}': {
+      get: {
+        summary: 'Profile of one aircraft',
+        description:
+          'Identity (registration, ICAO type, type description, year, decoded dbFlags), live status (position, callsign ' +
+          'and position source when received now) and a history summary (first and last day with a track, days in the ' +
+          'last 30 UTC days, total days; the same dates as /v2/history/{icao}), plus links to the public map and to a ' +
+          'public photo page. One request. Never returns owner or operator names. No photo is embedded: ' +
+          "Planespotters.net's API terms forbid re-serving their photos through another API, so `photos.page` is a " +
+          'link to their public page, and it is null (with `withheld`) for PIA and LADD aircraft.',
+        tags: ['live', 'history'],
+        parameters: [icaoParam],
+        responses: {
+          '200': {
+            description: 'The profile.',
+            headers: planHeaders,
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Profile' } } },
+          },
+          '400': error('icao is not 6 hex characters.'),
+          '401': { $ref: '#/components/responses/Unauthorized' },
+          '404': error('Not received now and no recorded history for this aircraft.'),
+          '429': { $ref: '#/components/responses/TooManyRequests' },
+          '503': error('Live data or the archive is briefly unavailable: retry shortly.'),
+        },
+      },
+    },
     '/v2/me/location': {
       get: {
         summary: "The position saved on the key's account",
@@ -367,6 +393,65 @@ const spec = {
           count: { type: 'integer' },
           dates: { type: 'array', items: { type: 'string', format: 'date' } },
           archive_unavailable: { type: 'boolean', description: 'Present when the archive could not be listed: only recent days are included.' },
+        },
+      },
+      Profile: {
+        type: 'object',
+        required: ['icao', 'identity', 'live', 'history', 'links', 'photos'],
+        properties: {
+          icao: { type: 'string' },
+          identity: {
+            type: 'object',
+            properties: {
+              registration: { type: ['string', 'null'] },
+              icao_type: { type: ['string', 'null'], description: 'ICAO type designator, e.g. A319.' },
+              type_description: { type: ['string', 'null'] },
+              year: { type: ['integer', 'null'], description: 'Year of manufacture, when the aircraft database has it.' },
+              db_flags: { type: 'integer', description: 'Bits: 0 military, 1 interesting, 2 PIA, 3 LADD.' },
+              military: { type: 'boolean' },
+              interesting: { type: 'boolean' },
+              pia: { type: 'boolean' },
+              ladd: { type: 'boolean' },
+              trace_day: { type: ['string', 'null'], format: 'date', description: 'The day whose track supplied type_description and year.' },
+            },
+          },
+          live: {
+            type: 'object',
+            required: ['seen_now'],
+            description: 'When seen_now is true, also: now, callsign, source (adsb_icao, mlat, tisb_icao…) and the aircraft.json fields lat, lon, alt_baro, alt_geom, gs, track, baro_rate, squawk, emergency, category, seen, seen_pos, mlat.',
+            properties: {
+              seen_now: { type: 'boolean' },
+              now: { type: 'number', description: 'Time of the live data, Unix seconds.' },
+              callsign: { type: ['string', 'null'] },
+              source: { type: ['string', 'null'], description: 'Source of the current position.' },
+            },
+            additionalProperties: true,
+          },
+          history: {
+            type: 'object',
+            properties: {
+              first_day: { type: ['string', 'null'], format: 'date' },
+              last_day: { type: ['string', 'null'], format: 'date' },
+              days_last_30: { type: 'integer', description: 'Days with a track among today and the previous 29 (UTC).' },
+              total_days: { type: 'integer' },
+              archive_unavailable: { type: 'boolean', description: 'Present when the archive could not be listed: recent days only.' },
+            },
+          },
+          links: {
+            type: 'object',
+            properties: {
+              map: { type: ['string', 'null'], format: 'uri', description: 'The public map on this aircraft: live, or its last track the map can show.' },
+              history: { type: 'string', format: 'uri' },
+            },
+          },
+          photos: {
+            type: 'object',
+            properties: {
+              page: { type: ['string', 'null'], format: 'uri', description: 'Public photo page on Planespotters.net (no image in this API).' },
+              provider: { type: 'string' },
+              withheld: { type: ['string', 'null'], enum: ['pia', 'ladd', null], description: 'Why there is no photo link.' },
+            },
+          },
         },
       },
       Trace: {

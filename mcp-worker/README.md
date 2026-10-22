@@ -25,9 +25,14 @@ npm run mcp:dev                                    # http://localhost:8787
 python3 mcp-worker/e2e/e2e_mcp_oauth.py /tmp/mail.jsonl   # 26 checks, the whole OAuth flow
 python3 mcp-worker/e2e/e2e_auth_md.py /tmp/mail.jsonl     # 36 checks, auth.md agent registration
 uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/e2e_near_me.py /tmp/mail.jsonl  # 10 checks, "aircraft near me"
+uv run --with "psycopg[binary]==3.3.4" python mcp-worker/e2e/e2e_profile.py /tmp/mail.jsonl  # 13 checks, aircraft_profile
 # both expect a fresh local public-api: it recreates its e2e schema at start
 npm run mcp:check                                  # wrangler types + tsc
 ```
+
+Other ports, to run a second stack next to this one: `FIA_E2E_PG` (Postgres URL, for run_public_api_local.py and the
+e2e scripts), `FIA_E2E_API_PORT` (the local public-api), `FIA_E2E_SITE` (wrangler dev's URL; match `SITE` in
+`.dev.vars` and pass the same port to `wrangler dev --port`).
 
 ## Deploy
 
