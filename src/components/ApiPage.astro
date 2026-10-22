@@ -1,0 +1,561 @@
+---
+// The REST API page, /dati/api/ (IT) and /en/data/api/ (EN): what you get,
+// quickstart, endpoints, plans, the free key, FAQ, docs. The MCP server has
+// its own page since 2026-10-22 (McpPage.astro, /dati/mcp/); links to the
+// old #mcp section of this page are sent there by the script at the bottom.
+//
+// The hero picture is the live map (mappa.flyitalyadsb.com) over Rome on
+// 2026-10-22, public/img/api/: the same data the API returns.
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import ApiPlans from './ApiPlans.astro';
+import FaqList from './FaqList.astro';
+import Screenshot from './Screenshot.astro';
+import { PLANS, freeLimitsFrom } from '../data/plans';
+import { faqsFor } from '../data/faq';
+
+interface Props {
+  lang: 'it' | 'en';
+}
+const { lang } = Astro.props;
+const it = lang === 'it';
+const SITE = 'https://flyitalyadsb.com';
+
+const docsBase = it ? '/dati/api/docs/' : '/en/data/api/docs/';
+const docsPages = (await getCollection('docs', (e) => e.id.startsWith(`${lang}/`))).sort((a, b) => a.data.order - b.data.order);
+const doc = (slug: string, hash = '') => `${docsBase}${slug}/${hash}`;
+
+const href = it
+  ? { data: '/dati/', self: '/dati/api/', mcp: '/dati/mcp/', account: '/dati/api/account/', contact: '/contatti/', fields: doc('campi'), quickstart: doc('guida-rapida'), endpoints: doc('endpoint'), profile: doc('endpoint', '#profilo-di-un-aereo'), history: doc('storico'), alerts: doc('avvisi') }
+  : { data: '/en/data/', self: '/en/data/api/', mcp: '/en/data/mcp/', account: '/en/data/api/account/', contact: '/en/contact/', fields: doc('fields'), quickstart: doc('quickstart'), endpoints: doc('endpoints'), profile: doc('endpoints', '#aircraft-profile'), history: doc('history'), alerts: doc('alerts') };
+
+const T = it
+  ? {
+      title: 'API REST e piani',
+      description: 'La REST API v2 di FlyItalyADSB: gli aerei che la rete vede ora in tutto il mondo, in JSON, più storico, sorvoli, profilo di un aereo e traffico notevole. Chiave gratuita in pochi secondi, anche per uso commerciale; piani da 9 €/mese.',
+      crumb: 'API REST',
+      h1: 'Gli aerei della mappa, in JSON',
+      lede: 'La REST API dà gli stessi dati della mappa live: ogni aereo che la rete vede adesso, ovunque nel mondo, con lo storico delle tracce, i sorvoli di un luogo e il traffico notevole. La chiave è gratuita e arriva in pochi secondi, anche per uso commerciale.',
+      ctaKey: 'Chiave gratuita',
+      ctaDocs: 'Documentazione',
+      mapAlt: 'La mappa live di FlyItalyADSB sopra Roma e il Lazio, con gli aerei colorati per quota.',
+      mapCap: 'La mappa live sopra Roma, 22 ottobre 2026. La richiesta in basso restituisce in JSON gli aerei entro 50 km da Fiumicino. Mappa © contributori di OpenStreetMap.',
+      hud: { base: 'base url', auth: 'auth', format: 'formato', plans: 'piani', formatV: 'JSON readsb', plansV: 'da 9 €' },
+      index: 'Indice della pagina',
+      idx: [['#avvio-rapido', 'Avvio rapido'], ['#rest-api', 'Endpoint'], ['#piani', 'Piani'], ['#api-key', 'Chiave gratuita'], ['#agenti-ai', 'Agenti AI'], ['#faq', 'FAQ'], ['#documentazione', 'Documentazione']],
+      quickId: 'avvio-rapido',
+      quickH: 'Avvio rapido',
+      steps: [
+        { h: 'Chiedi la chiave', p: 'Scrivi la tua email nel <a href="#api-key">modulo qui sotto</a>: ti arriva un link che mostra la chiave una volta sola. Nessuna approvazione.' },
+        { h: 'Fai la prima richiesta', p: 'Tutti gli aerei entro 50 km da Roma Fiumicino, con la chiave nell’header <code>X-Api-Key</code>.' },
+        { h: 'Leggi la risposta', p: '<code>now</code> in secondi Unix, <code>count</code> e <code>ac</code>: un record per aereo nel formato di readsb, lo stesso di tar1090 e adsb.lol. Quote in piedi, velocità in nodi, raggio in km: <a href="FIELDS">campi e unità</a>.' },
+      ],
+      key: 'LA_TUA_CHIAVE',
+      reqLabel: 'Richiesta',
+      resLabel: 'Risposta, abbreviata, con valori di esempio',
+      moreCode: 'Lo stesso in Python e JavaScript',
+      copy: 'Copia',
+      copied: 'Copiato',
+      epH: 'Endpoint',
+      epLede: 'Base URL <code>https://api.flyitalyadsb.com/v2</code>: risposte JSON e la chiave nell’header <code>X-Api-Key</code>. La specifica completa è in <a href="/openapi.json">openapi.json</a>.',
+      groups: [
+        { name: 'Gli aerei adesso', doc: 'endpoints', rows: [
+          ['GET', '/icao/{hex}', 'Un aereo per indirizzo ICAO a 24 bit.'],
+          ['GET', '/callsign/{callsign}', 'Un aereo per nominativo (numero di volo).'],
+          ['GET', '/reg/{reg}', 'Un aereo per immatricolazione.'],
+          ['GET', '/lat/{lat}/lon/{lon}/dist/{km}', 'Tutti gli aerei entro km chilometri da un punto, ovunque nel mondo, con i record completi.'],
+          ['GET', '/mil', 'Il traffico militare visto ora.'],
+          ['GET', '/pia', 'Gli aerei con indirizzo ICAO privato (PIA).'],
+          ['GET', '/ladd', 'Gli aerei del programma FAA LADD.'],
+        ] },
+        { name: 'Un aereo', doc: 'profile', rows: [
+          ['GET', '/profile/{icao}', 'In una richiesta: identità, se e dove lo vediamo ora, primo e ultimo giorno nello storico, link alla mappa e alle foto. Mai nomi di proprietari.'],
+        ] },
+        { name: 'Storico', doc: 'history', rows: [
+          ['GET', '/history/{icao}', 'Le date con una traccia per un aereo, dal 2022.'],
+          ['GET', '/history/{icao}/{data}', 'La traccia di un giorno: posizione, quota, velocità e prua.'],
+          ['GET', '/overflights?lat=&lon=&dist=&from=&to=', 'Gli aerei passati entro dist km da un punto tra due istanti, con l’ora del punto più vicino. Dal 17/08/2026.'],
+        ] },
+        { name: 'Traffico notevole e avvisi', doc: 'alerts', rows: [
+          ['GET', '/events?lat=&lon=&dist=', 'Emergenze (7500, 7600, 7700), militari e altri aerei notevoli registrati in una zona, fino a 7 giorni fa.'],
+          ['POST', '/webhooks', 'Gli stessi eventi in push sul tuo URL, firmati con Standard Webhooks (HMAC-SHA256).', 'piani a pagamento'],
+        ] },
+      ],
+      groupDoc: 'Documentazione',
+      limitsNote: `Piano Free: 30 richieste/minuto per chiave, 300.000 al mese e raggio fino a 500 km dal ${freeLimitsFrom('it')} (fino ad allora 100 richieste/minuto per IP); i piani a pagamento hanno limiti propri per chiave, vedi i <a href="#piani">piani</a>. Le richieste senza <code>X-Api-Key</code> vengono respinte a livello edge.`,
+      commercialNote: 'Uso commerciale consentito con ogni piano, entro i suoi limiti, anche dentro app e dispositivi venduti. Rivendere i dati come API o feed per altri, SLA o volumi oltre il Business richiedono un accordo enterprise: <a href="/contatti/">contattaci</a>.',
+      keyH: 'Ottieni una API key',
+      keyP: 'REST API e server MCP usano la stessa chiave, nell’header <code>X-Api-Key</code>. È istantanea e gratuita: inserisci un’email e ti arriva un link che mostra la chiave una volta sola (la chiave non viaggia mai per email). Se la richiedi di nuovo con la stessa email, la vecchia continua a funzionare finché non apri il nuovo link, poi la sostituisce la nuova: è anche il modo per recuperarla se l’hai persa. Hai già una chiave? Piano, consumi e rigenerazione da <a href="/dati/api/account/">La mia API</a>.',
+      email: 'Email', emailPh: 'la-tua-email@esempio.com',
+      name: 'Nome o progetto', useCase: 'A cosa la usi?', optional: '(opzionale)',
+      submit: 'Inviami il link',
+      keyFine: 'Se questa email ha già una chiave gratuita, continua a funzionare finché non apri il link: da lì la sostituisce la nuova.',
+      msgs: {
+        sending: 'Invio in corso…',
+        ok: 'Fatto: controlla la tua email, c’è il link per vedere la chiave.',
+        r429: 'Hai già richiesto una chiave di recente: riprova tra qualche minuto.',
+        r409: 'Richiesta già in corso per questa email: riprova tra un istante.',
+        r413: 'Nome o descrizione troppo lunghi, accorciali e riprova.',
+        fail: 'Qualcosa è andato storto, riprova.',
+        offline: 'Impossibile contattare il servizio, riprova tra poco.',
+      },
+      mcpH: 'Usi Claude o ChatGPT?',
+      mcpP: 'Il server MCP dà gli stessi dati in chat: chiedi che aerei ci sono sopra un luogo e la risposta arriva con una mappa interattiva nella conversazione. Stessa chiave e stessi limiti della REST API.',
+      mcpCta: 'Server MCP e agenti AI',
+      mcpAlt: 'La mappa di FlyItalyADSB dentro una chat: 40 aerei entro 50 km da Roma Fiumicino.',
+      faqH: 'Domande frequenti',
+      faqAll: 'Tutte le domande frequenti',
+      docsH: 'Documentazione',
+      docsLede: 'Tutto quello che serve per usare l’API, pagina per pagina.',
+      breadcrumbData: 'Dati',
+    }
+  : {
+      title: 'REST API and plans',
+      description: 'FlyItalyADSB’s REST API v2: the aircraft the network sees now anywhere in the world, as JSON, plus history, overflights, one aircraft’s profile and notable traffic. A free key in seconds, commercial use included; plans from €9/month.',
+      crumb: 'REST API',
+      h1: 'The map’s aircraft, as JSON',
+      lede: 'The REST API gives you the same data as the live map: every aircraft the network sees right now, anywhere in the world, with track history, overflights of a place and notable traffic. The key is free and arrives in seconds, commercial use included.',
+      ctaKey: 'Free key',
+      ctaDocs: 'Documentation',
+      mapAlt: 'The FlyItalyADSB live map over Rome and Lazio, with aircraft coloured by altitude.',
+      mapCap: 'The live map over Rome, 22 October 2026. The request at the bottom returns the aircraft within 50 km of Fiumicino as JSON. Map © OpenStreetMap contributors.',
+      hud: { base: 'base url', auth: 'auth', format: 'format', plans: 'plans', formatV: 'readsb JSON', plansV: 'from €9' },
+      index: 'Page index',
+      idx: [['#quickstart', 'Quickstart'], ['#rest-api', 'Endpoints'], ['#piani', 'Plans'], ['#api-key', 'Free key'], ['#ai-agents', 'AI agents'], ['#faq', 'FAQ'], ['#documentation', 'Documentation']],
+      quickId: 'quickstart',
+      quickH: 'Quickstart',
+      steps: [
+        { h: 'Get a key', p: 'Enter your email in the <a href="#api-key">form below</a>: you get a link that shows the key once. No approval.' },
+        { h: 'Make your first request', p: 'Every aircraft within 50 km of Rome Fiumicino, with the key in the <code>X-Api-Key</code> header.' },
+        { h: 'Read the answer', p: '<code>now</code> in Unix seconds, <code>count</code> and <code>ac</code>: one record per aircraft in readsb’s format, the same as tar1090 and adsb.lol. Altitudes in feet, speeds in knots, radius in km: <a href="FIELDS">fields and units</a>.' },
+      ],
+      key: 'YOUR_KEY',
+      reqLabel: 'Request',
+      resLabel: 'Response, shortened, with sample values',
+      moreCode: 'The same in Python and JavaScript',
+      copy: 'Copy',
+      copied: 'Copied',
+      epH: 'Endpoints',
+      epLede: 'Base URL <code>https://api.flyitalyadsb.com/v2</code>: JSON responses and the key in the <code>X-Api-Key</code> header. The full spec is <a href="/openapi.json">openapi.json</a>.',
+      groups: [
+        { name: 'Aircraft right now', doc: 'endpoints', rows: [
+          ['GET', '/icao/{hex}', 'One aircraft by 24-bit ICAO address.'],
+          ['GET', '/callsign/{callsign}', 'One aircraft by callsign (flight number).'],
+          ['GET', '/reg/{reg}', 'One aircraft by registration.'],
+          ['GET', '/lat/{lat}/lon/{lon}/dist/{km}', 'Every aircraft within km kilometres of a point, anywhere in the world, with full records.'],
+          ['GET', '/mil', 'Military traffic seen now.'],
+          ['GET', '/pia', 'Aircraft with a Privacy ICAO Address (PIA).'],
+          ['GET', '/ladd', 'Aircraft in the FAA LADD program.'],
+        ] },
+        { name: 'One aircraft', doc: 'profile', rows: [
+          ['GET', '/profile/{icao}', 'In one request: identity, whether and where we see it now, first and last day in the history, map and photo links. Never owner names.'],
+        ] },
+        { name: 'History', doc: 'history', rows: [
+          ['GET', '/history/{icao}', 'The dates with a track for one aircraft, since 2022.'],
+          ['GET', '/history/{icao}/{date}', 'One day’s track: position, altitude, speed and heading.'],
+          ['GET', '/overflights?lat=&lon=&dist=&from=&to=', 'The aircraft that passed within dist km of a point between two times, with the time of the closest point. Since 17 August 2026.'],
+        ] },
+        { name: 'Notable traffic and alerts', doc: 'alerts', rows: [
+          ['GET', '/events?lat=&lon=&dist=', 'Emergencies (7500, 7600, 7700), military and other notable aircraft recorded in an area, up to 7 days back.'],
+          ['POST', '/webhooks', 'The same events pushed to your URL, signed with Standard Webhooks (HMAC-SHA256).', 'paid plans'],
+        ] },
+      ],
+      groupDoc: 'Documentation',
+      limitsNote: `Free plan: 30 requests/minute per key, 300,000 a month and a radius up to 500 km from ${freeLimitsFrom('en')} (until then 100 requests/minute per IP); paid plans have their own per-key limits, see the <a href="#piani">plans</a>. Requests without <code>X-Api-Key</code> are rejected at the edge.`,
+      commercialNote: 'Commercial use is allowed on every plan within its limits, inside apps and devices you sell too. Reselling the data as an API or feed for others, an SLA or volume beyond Business need an enterprise agreement: <a href="/en/contact/">contact us</a>.',
+      keyH: 'Get an API key',
+      keyP: 'The REST API and the MCP server share the same key, in the <code>X-Api-Key</code> header. Instant and free: enter an email and you get a link that shows the key once (the key itself never travels by email). Requesting again with the same email keeps the old key working until you open the new link, then the new key replaces it: that’s also how to recover a lost key. Already have a key? See its plan and usage, or rotate it, from <a href="/en/data/api/account/">My API</a>.',
+      email: 'Email', emailPh: 'you@example.com',
+      name: 'Name or project', useCase: 'What will you use it for?', optional: '(optional)',
+      submit: 'Email me the link',
+      keyFine: 'If this email already has a free key, it keeps working until you open the link: from then on the new one replaces it.',
+      msgs: {
+        sending: 'Sending…',
+        ok: 'Done: check your email for the link to see your key.',
+        r429: 'You already requested a key recently: try again in a few minutes.',
+        r409: 'A request for this email is already in progress: try again in a moment.',
+        r413: 'Name or use case is too long: shorten it and try again.',
+        fail: 'Something went wrong, please try again.',
+        offline: 'Could not reach the service, try again shortly.',
+      },
+      mcpH: 'Using Claude or ChatGPT?',
+      mcpP: 'The MCP server gives the same data in the chat: ask which aircraft are over a place and the answer comes with an interactive map in the conversation. Same key and same limits as the REST API.',
+      mcpCta: 'MCP server and AI agents',
+      mcpAlt: 'The FlyItalyADSB map inside a chat: 40 aircraft within 50 km of Rome Fiumicino.',
+      faqH: 'Frequently asked questions',
+      faqAll: 'All frequently asked questions',
+      docsH: 'Documentation',
+      docsLede: 'Everything you need to use the API, page by page.',
+      breadcrumbData: 'Data',
+    };
+
+const groupHref: Record<string, string> = { endpoints: href.endpoints, profile: href.profile, history: href.history, alerts: href.alerts };
+const steps = T.steps.map((s) => ({ ...s, p: s.p.replace('FIELDS', href.fields) }));
+const reqCode = `curl -H "X-Api-Key: ${T.key}" \\\n  https://api.flyitalyadsb.com/v2/lat/41.80/lon/12.25/dist/50`;
+const resCode = `{
+  "now": 1792670400.1,
+  "count": 37,
+  "ac": [
+    { "hex": "4ca7b5", "flight": "RYR42KD ", "r": "EI-ABC", "t": "B738",
+      "lat": 41.83, "lon": 12.31, "alt_baro": 7225, "gs": 251.4,
+      "track": 293.1, "squawk": "4361", "seen_pos": 0.6 },
+    …
+  ]
+}`;
+// A few colours for the JSON, at build time: keys, strings, numbers.
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const resHtml = esc(resCode)
+  .replace(/("[^"]*")(\s*:)/g, '<span class="j-k">$1</span>$2')
+  .replace(/(:\s*)("[^"]*")/g, '$1<span class="j-s">$2</span>')
+  .replace(/(:\s*)(-?\d+(?:\.\d+)?)/g, '$1<span class="j-n">$2</span>');
+
+// FAQ: the API questions; the MCP ones are on the MCP page.
+const faqs = faqsFor((f) => f.api);
+
+const pageUrl = `${SITE}${href.self}`;
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f[lang].q, acceptedAnswer: { '@type': 'Answer', text: f[lang].a } })),
+  },
+  // Plans as schema.org offers: the same prices and limits the Plans section
+  // shows (src/data/plans.ts); structured data must match visible content.
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: 'FlyItalyADSB API',
+    serviceType: it ? 'API dati ADS-B in tempo reale' : 'Real-time ADS-B data API',
+    provider: { '@type': 'Organization', name: 'Nesso Labs S.r.l.', vatID: 'IT04754860981', url: 'https://nessolabs.it' },
+    url: pageUrl,
+    offers: PLANS.map((p) => ({
+      '@type': 'Offer',
+      name: p.id.charAt(0).toUpperCase() + p.id.slice(1),
+      price: p.priceEur.toFixed(2),
+      priceCurrency: 'EUR',
+      url: `${pageUrl}#piani`,
+      ...(p.priceEur > 0 && {
+        priceSpecification: {
+          '@type': 'UnitPriceSpecification',
+          price: p.priceEur.toFixed(2),
+          priceCurrency: 'EUR',
+          valueAddedTaxIncluded: false,
+          billingDuration: 'P1M',
+          unitText: it ? 'mese' : 'month',
+        },
+      }),
+    })),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE}${it ? '/' : '/en/'}` },
+      { '@type': 'ListItem', position: 2, name: T.breadcrumbData, item: `${SITE}${href.data}` },
+      { '@type': 'ListItem', position: 3, name: T.crumb, item: pageUrl },
+    ],
+  },
+];
+---
+
+<Layout title={T.title} description={T.description} jsonLd={jsonLd}>
+  <div class="api pt-24 pb-20 px-4 sm:px-8 lg:px-12 max-w-6xl mx-auto">
+
+    <section class="grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] gap-10 lg:gap-14 items-center mb-10">
+      <div>
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">
+          <a href={href.data} class="text-slate-600 hover:text-slate-400 no-underline">{T.breadcrumbData}</a>
+          <span class="mx-2">/</span>
+          <span class="text-slate-500">{T.crumb}</span>
+        </p>
+        <h1 class="text-4xl sm:text-5xl font-bold tracking-tight leading-[1.08] mb-5 [text-wrap:balance]" style="color:#f0f9ff">{T.h1}</h1>
+        <p class="text-slate-300 text-lg leading-relaxed mb-8 max-w-xl">{T.lede}</p>
+        <div class="flex flex-wrap gap-3">
+          <a href="#api-key" class="btn-primary">{T.ctaKey}</a>
+          <a href={docsBase} class="btn-ghost">{T.ctaDocs}</a>
+        </div>
+      </div>
+      <figure class="m-0">
+        <div class="mapframe">
+          <Screenshot src="/img/api/live-map-rome" widths={[1280, 760]} width={1280} height={873} alt={T.mapAlt}
+            sizes="(min-width: 1152px) 560px, (min-width: 1024px) 48vw, calc(100vw - 32px)" eager class="mapimg" />
+          <code class="mapreq"><span>GET</span> /v2/lat/41.80/lon/12.25/dist/50</code>
+        </div>
+        <figcaption class="cap">{T.mapCap}</figcaption>
+      </figure>
+    </section>
+
+    <div class="hud-panel rounded-lg overflow-hidden mb-10">
+      <div class="hud-readout">
+        <div><div class="k">{T.hud.base}</div><div class="v" style="font-size:13px">api.flyitalyadsb.com/v2</div></div>
+        <div><div class="k">{T.hud.auth}</div><div class="v accent">X-Api-Key</div></div>
+        <div><div class="k">{T.hud.format}</div><div class="v" style="font-size:15px">{T.hud.formatV}</div></div>
+        <div><div class="k">{T.hud.plans}</div><div class="v">free<span style="font-size:11px;color:#8391a7"> · {T.hud.plansV}</span></div></div>
+      </div>
+    </div>
+
+    <nav class="page-index mb-16" aria-label={T.index}>
+      {T.idx.map(([h, label]) => <a href={h}>{label}</a>)}
+    </nav>
+
+    <!-- Quickstart: a real sequence, so numbered. -->
+    <section id={T.quickId} class="scroll-mt-24 mb-20">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-100 mb-8">{T.quickH}</h2>
+      <div class="grid lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)] gap-8 lg:gap-12 items-start">
+        <ol class="steps">
+          {steps.map((s) => (
+            <li>
+              <h3>{s.h}</h3>
+              <p set:html={s.p} />
+            </li>
+          ))}
+          <li class="steps-more"><a href={href.quickstart}>{T.moreCode}</a></li>
+        </ol>
+        <div class="terminal">
+          <div class="term-head"><span>{T.reqLabel}</span><button type="button" class="term-copy" data-copy={reqCode.replace(' \\\n  ', ' ')} data-done={T.copied}>{T.copy}</button></div>
+          <pre><code>{reqCode}</code></pre>
+          <div class="term-head term-sep"><span>{T.resLabel}</span></div>
+          <pre><code set:html={resHtml} /></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Endpoints, grouped by what they answer. id="rest-api" is linked from
+         the archive pages. -->
+    <section id="rest-api" class="scroll-mt-24 mb-20">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-100 mb-3">{T.epH}</h2>
+      <p class="text-slate-400 leading-relaxed max-w-2xl mb-8 prose-links" set:html={T.epLede} />
+      <div class="epgroups">
+        {T.groups.map((g) => (
+          <div class="epgroup">
+            <div class="epgroup-head">
+              <h3>{g.name}</h3>
+              <a href={groupHref[g.doc]}>{T.groupDoc}</a>
+            </div>
+            <table class="spec-table eptable">
+              {g.rows.map(([m, path, desc, tag]) => (
+                <tr>
+                  <td class="k"><span class={m === 'POST' ? 'm m-post' : 'm'}>{m}</span>{path}</td>
+                  <td class="d">{desc}{tag && <span class="ep-tag">{tag}</span>}</td>
+                </tr>
+              ))}
+            </table>
+          </div>
+        ))}
+      </div>
+      <p class="text-xs text-slate-500 mt-6 leading-relaxed prose-links" set:html={T.limitsNote} />
+      <p class="text-xs text-slate-500 mt-2 leading-relaxed prose-links" set:html={T.commercialNote} />
+    </section>
+
+    <ApiPlans lang={lang} />
+
+    <!-- Free key -->
+    <section id="api-key" class="rounded-xl p-6 sm:p-8 border scroll-mt-24 mb-14" style="background:#0a1320;border-color:#1e3048">
+      <h2 class="text-xl font-semibold text-slate-100 mb-2">{T.keyH}</h2>
+      <p class="text-sm text-slate-400 leading-relaxed mb-6 max-w-3xl prose-links" set:html={T.keyP} />
+      <form id="key-form" class="space-y-3" novalidate data-lang={lang} data-msgs={JSON.stringify(T.msgs)}>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <div>
+            <label for="key-email" class="block text-xs text-slate-400 mb-1.5">{T.email}</label>
+            <input type="email" id="key-email" name="email" required autocomplete="email" aria-describedby="key-status" placeholder={T.emailPh} class="field" />
+          </div>
+          <div>
+            <label for="key-name" class="block text-xs text-slate-400 mb-1.5">{T.name} <span class="text-slate-500">{T.optional}</span></label>
+            <input type="text" id="key-name" name="name" maxlength="200" class="field" />
+          </div>
+        </div>
+        <div>
+          <label for="key-use-case" class="block text-xs text-slate-400 mb-1.5">{T.useCase} <span class="text-slate-500">{T.optional}</span></label>
+          <input type="text" id="key-use-case" name="use_case" maxlength="500" class="field" />
+        </div>
+        <div class="flex flex-wrap items-center gap-4">
+          <button type="submit" id="key-submit" class="btn-primary">{T.submit}</button>
+          <p id="key-status" class="text-sm" role="status"></p>
+        </div>
+        <p class="text-xs text-slate-500">{T.keyFine}</p>
+      </form>
+    </section>
+
+    <!-- The MCP server, now on its own page. id="mcp" keeps old links landing
+         somewhere useful when the redirect script below can't run. -->
+    <section id={it ? 'agenti-ai' : 'ai-agents'} class="mcpcard scroll-mt-24 mb-20">
+      <span id="mcp" class="sr-only"></span>
+      <a href={href.mcp} class="mcpcard-img" tabindex="-1" aria-hidden="true">
+        <Screenshot src={`/img/mcp/chat-desktop-${lang}`} widths={[720]} width={720} height={537} alt=""
+          sizes="(min-width: 768px) 360px, calc(100vw - 32px)" class="mcpshot" />
+      </a>
+      <div class="mcpcard-body">
+        <h2 class="text-xl sm:text-2xl font-bold text-slate-100 mb-3">{T.mcpH}</h2>
+        <p class="text-slate-400 leading-relaxed mb-6">{T.mcpP}</p>
+        <a href={href.mcp} class="btn-ghost btn-violet">{T.mcpCta}</a>
+      </div>
+    </section>
+
+    <section id="faq" class="scroll-mt-24 mb-20">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-100 mb-6">{T.faqH}</h2>
+      <FaqList faqs={faqs} lang={lang} />
+      <p class="mt-4 text-sm"><a href={it ? '/faq/' : '/en/faq/'} class="text-sky-400 no-underline hover:text-sky-300">{T.faqAll}</a></p>
+    </section>
+
+    <section id={it ? 'documentazione' : 'documentation'} class="scroll-mt-24">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-100 mb-2">{T.docsH}</h2>
+      <p class="text-slate-400 mb-6">{T.docsLede}</p>
+      <ul class="doclinks">
+        {docsPages.map((e) => (
+          <li><a href={`${docsBase}${e.id.slice(3)}/`}><span class="dl-label">{e.data.title}</span><span class="dl-desc">{e.data.description}</span></a></li>
+        ))}
+      </ul>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .btn-primary {
+    display: inline-flex; align-items: center;
+    padding: 0.7rem 1.25rem; border-radius: 0.5rem;
+    background: #38bdf8; color: #070d1a; font-weight: 600; font-size: 0.9rem;
+    text-decoration: none; transition: background-color 0.15s; cursor: pointer;
+  }
+  .btn-primary:hover { background: #7dd3fc; color: #070d1a; }
+  .btn-primary:disabled { opacity: 0.6; cursor: progress; }
+  .btn-ghost {
+    display: inline-flex; align-items: center;
+    padding: 0.7rem 1.25rem; border-radius: 0.5rem;
+    background: #111e30; color: #e2e8f0; border: 1px solid #2a3f5c; font-weight: 500; font-size: 0.9rem;
+    text-decoration: none; transition: border-color 0.15s, color 0.15s;
+  }
+  .btn-ghost:hover { border-color: #38bdf8; color: #f0f9ff; }
+  .btn-violet:hover { border-color: #a78bfa; }
+
+  .mapframe { position: relative; }
+  :global(.api .mapimg) { display: block; width: 100%; height: auto; border-radius: 14px; border: 1px solid #22344f; }
+  .mapreq {
+    position: absolute; left: 12px; bottom: 12px; max-width: calc(100% - 24px);
+    padding: 0.45rem 0.7rem; border-radius: 0.45rem;
+    background: #070d1ae6; border: 1px solid #2a3f5c; color: #e2e8f0;
+    font-size: 0.75rem; overflow-wrap: anywhere;
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  }
+  .mapreq span { color: #38bdf8; font-weight: 600; margin-right: 0.35rem; }
+  .cap { margin-top: 0.75rem; color: #8391a7; font-size: 0.82rem; line-height: 1.55; }
+
+  .steps { counter-reset: step; display: grid; gap: 1.6rem; }
+  .steps > li { counter-increment: step; position: relative; padding-left: 2.6rem; }
+  .steps > li:not(.steps-more)::before {
+    content: counter(step); position: absolute; left: 0; top: 0;
+    width: 1.7rem; height: 1.7rem; border-radius: 999px; display: grid; place-items: center;
+    font: 600 12px/1 "JetBrains Mono", monospace; color: #7dd3fc; border: 1px solid #2a4a6b; background: #0f1d31;
+  }
+  .steps h3 { font-size: 1rem; font-weight: 600; color: #f0f9ff; margin-bottom: 0.3rem; line-height: 1.7rem; }
+  .steps p { color: #94a3b8; font-size: 0.92rem; line-height: 1.6; }
+  .steps-more a { font-size: 0.9rem; color: #38bdf8; text-decoration: none; }
+  .steps-more a:hover { color: #7dd3fc; }
+  .steps :global(code), .prose-links :global(code) { white-space: nowrap; font-size: 0.82em; color: #7dd3fc; background: #111e30; padding: 0.05rem 0.3rem; border-radius: 0.25rem; }
+  .steps :global(a), .prose-links :global(a), .d :global(a) { color: #38bdf8; text-decoration: none; }
+  .steps :global(a:hover), .prose-links :global(a:hover) { color: #7dd3fc; }
+
+  .terminal { border-radius: 0.9rem; border: 1px solid #1e3048; background: #070d1a; overflow: hidden; }
+  .term-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.55rem 1rem; background: #0a1320; border-bottom: 1px solid #1e3048; font-size: 0.75rem; color: #8391a7; }
+  .term-sep { border-top: 1px solid #1e3048; }
+  .term-copy { padding: 0.2rem 0.55rem; border-radius: 0.35rem; color: #cbd5e1; background: #111e30; border: 1px solid #2a3f5c; cursor: pointer; font-size: 0.75rem; }
+  .term-copy:hover { border-color: #38bdf8; }
+  .terminal pre { margin: 0; padding: 1rem 1.1rem; overflow-x: auto; font-size: 0.8rem; line-height: 1.7; color: #cbd5e1; }
+  .terminal :global(.j-k) { color: #7dd3fc; }
+  .terminal :global(.j-s) { color: #e2e8f0; }
+  .terminal :global(.j-n) { color: #fcd34d; }
+
+  .epgroup { margin-bottom: 2rem; }
+  .epgroup-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 0.5rem; }
+  .epgroup-head h3 { font-size: 1rem; font-weight: 600; color: #e2e8f0; }
+  .epgroup-head a { font-size: 0.82rem; color: #38bdf8; text-decoration: none; }
+  .epgroup-head a:hover { color: #7dd3fc; }
+  .eptable { table-layout: fixed; }
+  .eptable td.k { width: 25.5rem; white-space: normal; overflow-wrap: anywhere; }
+  @media (max-width: 640px) { .eptable td.k { width: auto; } }
+  .m { display: inline-block; min-width: 2.7rem; margin-right: 0.6rem; font-size: 11px; color: #8391a7; }
+  .m-post { color: #fbbf24; }
+  .ep-tag { display: inline-block; margin-left: 0.5rem; padding: 0.05rem 0.5rem; border-radius: 999px; border: 1px solid #5b4a1e; color: #fcd34d; font-size: 0.72rem; white-space: nowrap; }
+
+  .field { width: 100%; padding: 0.65rem 0.75rem; border-radius: 0.5rem; font-size: 0.875rem; background: #111e30; color: #e2e8f0; border: 1px solid var(--color-input-border); }
+
+  .mcpcard { display: grid; gap: 1.5rem 2.5rem; align-items: center; padding: 1.25rem; border-radius: 1rem; background: #0b1526; border: 1px solid #1e3048; }
+  @media (min-width: 768px) { .mcpcard { grid-template-columns: minmax(0, 360px) minmax(0, 1fr); padding: 1.5rem; } }
+  :global(.api .mcpshot) { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid #22344f; }
+  .mcpcard-img { display: block; }
+
+  .doclinks { display: grid; border-top: 1px solid #1e3048; }
+  .doclinks a { display: grid; gap: 0.15rem 1.5rem; padding: 0.9rem 0; border-bottom: 1px solid #1e3048; text-decoration: none; }
+  @media (min-width: 640px) { .doclinks a { grid-template-columns: 13rem minmax(0, 1fr); } }
+  .dl-label { color: #38bdf8; font-weight: 600; font-size: 0.95rem; }
+  .doclinks a:hover .dl-label { color: #7dd3fc; }
+  .dl-desc { color: #94a3b8; font-size: 0.9rem; line-height: 1.5; }
+</style>
+
+<script>
+  import { identify, track } from '../lib/analytics';
+
+  // Old links to the MCP section of this page (#mcp, and the "how to connect"
+  // anchors of both languages) go to the MCP page, which has it all now. A
+  // fragment never reaches the server, so this can't be a _redirects rule.
+  {
+    const en = location.pathname.startsWith('/en/');
+    const to: Record<string, string> = en
+      ? { '#mcp': '/en/data/mcp/', '#connect-claude': '/en/data/mcp/#connect' }
+      : { '#mcp': '/dati/mcp/', '#come-collegarlo': '/dati/mcp/#collega' };
+    const dest = to[location.hash];
+    if (dest) location.replace(dest);
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(btn.dataset.copy || ''); } catch { return; }
+      const before = btn.textContent;
+      btn.textContent = btn.dataset.done || '';
+      setTimeout(() => { btn.textContent = before; }, 2000);
+    });
+  });
+
+  const form = document.getElementById('key-form') as HTMLFormElement | null;
+  if (form) {
+    const msgs = JSON.parse(form.dataset.msgs || '{}') as Record<string, string>;
+    const lang = form.dataset.lang || 'it';
+    const submitBtn = document.getElementById('key-submit') as HTMLButtonElement;
+    const status = document.getElementById('key-status') as HTMLParagraphElement;
+    const setStatus = (text: string, color: string) => { status.textContent = text; status.style.color = color; };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = (document.getElementById('key-email') as HTMLInputElement).value.trim();
+      const name = (document.getElementById('key-name') as HTMLInputElement).value.trim();
+      const useCase = (document.getElementById('key-use-case') as HTMLInputElement).value.trim();
+      submitBtn.disabled = true;
+      setStatus(msgs.sending, '#94a3b8');
+      try {
+        const res = await fetch('https://api.flyitalyadsb.com/v2/keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, name: name || undefined, use_case: useCase || undefined, lang }),
+        });
+        if (res.status === 202) identify(email);
+        track('api_key_requested', { status: res.status });
+        if (res.status === 202) {
+          setStatus(msgs.ok, '#34d399');
+          form.reset();
+        } else if (res.status === 429) {
+          setStatus(msgs.r429, '#fbbf24');
+        } else if (res.status === 409) {
+          setStatus(msgs.r409, '#fbbf24');
+        } else if (res.status === 413) {
+          setStatus(msgs.r413, '#f87171');
+        } else {
+          const body = await res.json().catch(() => null);
+          setStatus(body?.error || msgs.fail, '#f87171');
+        }
+      } catch {
+        setStatus(msgs.offline, '#f87171');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  }
+</script>

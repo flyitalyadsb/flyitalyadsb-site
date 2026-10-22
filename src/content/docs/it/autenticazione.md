@@ -25,7 +25,7 @@ X-Api-Key: LA_TUA_CHIAVE
 ```
 
 **Per averla:**
-- dal modulo di [API e agenti AI](/dati/api/#api-key);
+- dal modulo di [API REST](/dati/api/#api-key);
 - oppure da codice:
 
   ```sh

@@ -21,7 +21,7 @@ Multiply one device's requests by the number of devices. For example, 10 devices
 - Asking every 15 seconds instead of every 5 cuts usage by three.
 - With a cache on your server, many devices in the same area cost as much as one.
 
-The plans are on [API & AI agents](/en/data/api/#piani). The key you already have moves to the new plan without changing.
+The plans are on [REST API](/en/data/api/#piani). The key you already have moves to the new plan without changing.
 
 ## Attribution and licence
 

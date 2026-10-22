@@ -38,7 +38,11 @@ export const GET: APIRoute = () =>
         {
           anchor: MCP,
           'service-desc': [{ href: `${SITE}/.well-known/mcp/server-card.json`, type: 'application/json' }],
-          'service-doc': [{ href: `${SITE}/en/data/api/#mcp`, type: 'text/html', hreflang: ['en'] }],
+          'service-doc': [
+            { href: `${SITE}/en/data/mcp/`, type: 'text/html', hreflang: ['en'] },
+            { href: `${SITE}/dati/mcp/`, type: 'text/html', hreflang: ['it'] },
+            { href: `${SITE}/en/data/api/docs/mcp/`, type: 'text/html', hreflang: ['en'] },
+          ],
         },
       ],
     }),

@@ -14,6 +14,7 @@ const staticPaths = [
   '/dati',
   '/dati/archivio',
   '/dati/api',
+  '/dati/mcp',
   '/dati/api/docs',
   '/dati/api/docs/guida-rapida',
   '/dati/api/docs/autenticazione',

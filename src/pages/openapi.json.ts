@@ -103,7 +103,7 @@ const spec = {
     contact: { name: 'FlyItalyADSB', email: 'info@flyitalyadsb.com', url: `${SITE}/en/contact/` },
     license: { name: 'Data: CC BY-SA 4.0', url: 'https://creativecommons.org/licenses/by-sa/4.0/' },
   },
-  externalDocs: { description: 'API page: plans, examples, MCP setup', url: `${SITE}/en/data/api/` },
+  externalDocs: { description: 'API page: plans, endpoints, free key', url: `${SITE}/en/data/api/` },
   servers: [{ url: 'https://api.flyitalyadsb.com' }],
   security: [{ ApiKey: [] }],
   tags: [

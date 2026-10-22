@@ -29,8 +29,8 @@ const next = i >= 0 && i < sorted.length - 1 ? sorted[i + 1] : entry ? undefined
 const toc = headings.filter((h) => h.depth === 2);
 const fmt = (d: Date) => new Intl.DateTimeFormat(it ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(d);
 const T = it
-  ? { docs: 'Documentazione', api: 'API e agenti AI', updated: 'Aggiornato il', onPage: 'In questa pagina', prev: '← Precedente', next: 'Successivo →', faq: 'Domande frequenti', faqHref: '/faq/', home: 'Home', data: 'Dati', dataHref: '/dati/' }
-  : { docs: 'Documentation', api: 'API & AI agents', updated: 'Updated', onPage: 'On this page', prev: '← Previous', next: 'Next →', faq: 'FAQ', faqHref: '/en/faq/', home: 'Home', data: 'Data', dataHref: '/en/data/' };
+  ? { docs: 'Documentazione', api: 'API REST', updated: 'Aggiornato il', onPage: 'In questa pagina', prev: '← Precedente', next: 'Successivo →', faq: 'Domande frequenti', faqHref: '/faq/', home: 'Home', data: 'Dati', dataHref: '/dati/' }
+  : { docs: 'Documentation', api: 'REST API', updated: 'Updated', onPage: 'On this page', prev: '← Previous', next: 'Next →', faq: 'FAQ', faqHref: '/en/faq/', home: 'Home', data: 'Data', dataHref: '/en/data/' };
 const url = `${SITE}${entry ? hrefOf(entry) : base}`;
 
 const crumbs = [

@@ -8,7 +8,7 @@ updated: 2026-10-22
 
 ## 1. Chiedi la chiave
 
-Scrivi la tua email nel modulo di [API e agenti AI](/dati/api/#api-key). Ti arriva un link che mostra la chiave una volta sola ed è valido 7 giorni. La chiave è gratuita, senza approvazione, anche per uso commerciale entro i limiti del piano.
+Scrivi la tua email nel modulo di [API REST](/dati/api/#api-key). Ti arriva un link che mostra la chiave una volta sola ed è valido 7 giorni. La chiave è gratuita, senza approvazione, anche per uso commerciale entro i limiti del piano.
 
 Puoi chiederla anche da codice: vedi [Autenticazione](/dati/api/docs/autenticazione/).
 

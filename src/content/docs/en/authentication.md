@@ -25,7 +25,7 @@ X-Api-Key: YOUR_KEY
 ```
 
 **To get one:**
-- use the form on [API & AI agents](/en/data/api/#api-key);
+- use the form on [REST API](/en/data/api/#api-key);
 - or request it from code:
 
   ```sh

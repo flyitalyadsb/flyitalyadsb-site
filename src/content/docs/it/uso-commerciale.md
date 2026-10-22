@@ -21,7 +21,7 @@ Moltiplica le richieste di un dispositivo per il numero di dispositivi. Per esem
 - Chiedere ogni 15 secondi invece che ogni 5 divide il consumo per tre.
 - Con una cache sul tuo server, molti dispositivi nella stessa zona costano come uno.
 
-I piani sono in [API e agenti AI](/dati/api/#piani). La chiave che hai già passa al nuovo piano senza cambiarla.
+I piani sono in [API REST](/dati/api/#piani). La chiave che hai già passa al nuovo piano senza cambiarla.
 
 ## Attribuzione e licenza
 

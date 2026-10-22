@@ -107,14 +107,14 @@ export const FAQS: Faq[] = [
       a: "Yes: /v2/lat/<lat>/lon/<lon>/dist/<km> returns every aircraft within the radius. The maximum radius depends on the plan: 500 km on Free, 1000 km on Starter, no limit on Pro and Business, which can ask for the whole world in one request. There is no single request for several aircraft by hex or registration: one request per aircraft, or one per radius." },
   },
   {
-    id: 'mcp-claude-chatgpt', cat: 'mcp', api: true,
+    id: 'mcp-claude-chatgpt', cat: 'mcp',
     it: { q: "Come uso il server MCP con Claude o ChatGPT?",
-      a: "Aggiungi https://flyitalyadsb.com/mcp come connettore personalizzato (su claude.ai: Connettori → Aggiungi connettore personalizzato) e premi Connetti: accedi con la tua email e un codice di 6 cifre, senza copiare chiavi. Nei client senza OAuth passa la tua chiave nell'header X-Api-Key. Poi puoi chiedere in chat cose come \"che aerei ci sono ora su Fiumicino?\" o \"c'è traffico militare sopra Roma?\" e l'agente chiamerà i tool automaticamente." },
+      a: "Aggiungi https://flyitalyadsb.com/mcp come connettore personalizzato (su claude.ai: Connettori → Aggiungi connettore personalizzato; su ChatGPT: un'app creata in modalità sviluppatore) e premi Connetti: accedi con la tua email e un codice di 6 cifre, senza copiare chiavi. Nei client senza OAuth passa la tua chiave nell'header X-Api-Key. Poi puoi chiedere in chat cose come \"che aerei ci sono ora su Fiumicino?\" o \"c'è traffico militare sopra Roma?\" e l'agente chiamerà i tool automaticamente. I passi uno per uno sono nella pagina MCP." },
     en: { q: "How do I use the MCP server with Claude or ChatGPT?",
-      a: "Add https://flyitalyadsb.com/mcp as a custom connector (on claude.ai: Connectors → Add custom connector) and press Connect: you sign in with your email and a 6-digit code, no key to copy. In clients without OAuth, pass your key in the X-Api-Key header. Then just ask things like \"what's flying over Fiumicino right now?\" or \"any military traffic over Rome?\" and the agent will call the tools automatically." },
+      a: "Add https://flyitalyadsb.com/mcp as a custom connector (on claude.ai: Connectors → Add custom connector; on ChatGPT: an app created in Developer mode) and press Connect: you sign in with your email and a 6-digit code, no key to copy. In clients without OAuth, pass your key in the X-Api-Key header. Then just ask things like \"what's flying over Fiumicino right now?\" or \"any military traffic over Rome?\" and the agent will call the tools automatically. The step-by-step guide is on the MCP page." },
   },
   {
-    id: 'mcp-vs-mappa', cat: 'mcp', api: true,
+    id: 'mcp-vs-mappa', cat: 'mcp',
     it: { q: "Cosa può fare il server MCP che la mappa non fa?",
       a: "Risponde in chat con dati strutturati: un aereo per hex ICAO, nominativo o immatricolazione, tutti gli aerei in un raggio da un punto qualsiasi, il traffico militare, PIA o LADD, il profilo di un aereo, cosa è passato sopra un luogo in una finestra di tempo, le emergenze recenti in una zona e lo storico di un aereo. Su Claude e ChatGPT mostra anche gli aerei su una mappa dentro la conversazione." },
     en: { q: "What can the MCP server do that the map can't?",

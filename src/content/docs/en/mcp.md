@@ -20,6 +20,8 @@ The [Model Context Protocol](https://modelcontextprotocol.io) is the standard th
 | `set_my_location` | saves your position on the account, for "near me" |
 | `clear_my_location` | deletes it |
 
+The [MCP and AI agents](/en/data/mcp/) page has the same steps with screenshots of the map in the chat and an example question for each tool.
+
 ## Connect it to Claude
 
 1. On [claude.ai](https://claude.ai/customize/connectors), open **Connectors** and choose **Add custom connector**.
