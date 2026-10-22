@@ -1,0 +1,56 @@
+---
+import type { Faq } from '../data/faq';
+
+// One list of questions, the <details> style of the API page. Each question
+// has its own anchor (#id), so an answer can be linked from an email or a
+// docs page. The answers are plain text in src/data/faq.ts; the names of
+// pages they mention become links here, so the data never carries HTML.
+interface Props {
+  faqs: Faq[];
+  lang: 'it' | 'en';
+}
+const { faqs, lang } = Astro.props;
+
+const LINKS: Record<'it' | 'en', [string, string][]> = {
+  it: [
+    ['admin@flyitalyadsb.com', 'mailto:admin@flyitalyadsb.com'],
+    ['La mia API', '/dati/api/account/'],
+    ['Diventa feeder', '/community/feeder/'],
+    ['«I miei dati arrivano?»', '/community/stato-feeder/'],
+    ['tabella dei piani', '/dati/api/#piani'],
+    ['pagina API', '/dati/api/#api-key'],
+    ['flyitalyadsb.com/dati/confronto', '/dati/confronto/'],
+  ],
+  en: [
+    ['admin@flyitalyadsb.com', 'mailto:admin@flyitalyadsb.com'],
+    ['My API', '/en/data/api/account/'],
+    ['Become a feeder', '/en/community/feeder/'],
+    ['“Is my data arriving?”', '/en/community/feeder-status/'],
+    ['plans table', '/en/data/api/#piani'],
+    ['API page', '/en/data/api/#api-key'],
+    ['flyitalyadsb.com/en/data/comparison', '/en/data/comparison/'],
+  ],
+};
+
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const linkRe = new RegExp(`(${LINKS[lang].map(([t]) => escapeRe(t)).join('|')})`);
+const hrefFor = Object.fromEntries(LINKS[lang]);
+const parts = (text: string) => text.split(linkRe).map((p) => (hrefFor[p] ? { text: p, href: hrefFor[p] } : p));
+---
+<div class="divide-y" style="border-color:#1e3048;border-top:1px solid #1e3048;border-bottom:1px solid #1e3048">
+  {faqs.map((f) => (
+    <details id={f.id} class="group scroll-mt-24" style="border-color:#1e3048" data-faq>
+      <summary class="py-4 cursor-pointer list-none flex items-center justify-between gap-4 text-sm font-semibold text-slate-200 hover:text-white">
+        {f[lang].q}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" class="shrink-0 transition-transform group-open:rotate-45" aria-hidden="true">
+          <path d="M12 5v14m-7-7h14" stroke-linecap="round"/>
+        </svg>
+      </summary>
+      <p class="text-sm text-slate-400 leading-relaxed pb-4 pr-8">
+        {parts(f[lang].a).map((p) => typeof p === 'string'
+          ? p
+          : <a href={p.href} class="text-sky-400 no-underline hover:text-sky-300">{p.text}</a>)}
+      </p>
+    </details>
+  ))}
+</div>

@@ -1,0 +1,151 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import type { MarkdownHeading } from 'astro';
+import Layout from './Layout.astro';
+import PlanLimitsTable from '../components/PlanLimitsTable.astro';
+
+// A page of the API documentation (src/content/docs): the sidebar with every
+// page of the same language, the page's own sections, the date it was last
+// checked, previous/next. The Markdown body comes in as the slot.
+interface Props {
+  lang: 'it' | 'en';
+  entry?: CollectionEntry<'docs'>; // absent on the docs index
+  pages: CollectionEntry<'docs'>[];
+  headings?: MarkdownHeading[];
+  title: string;
+  description: string;
+}
+const { lang, entry, pages, headings = [], title, description } = Astro.props;
+const SITE = 'https://flyitalyadsb.com';
+const it = lang === 'it';
+const base = it ? '/dati/api/docs/' : '/en/data/api/docs/';
+const apiHref = it ? '/dati/api/' : '/en/data/api/';
+const slugOf = (e: CollectionEntry<'docs'>) => e.id.split('/').pop()!;
+const hrefOf = (e: CollectionEntry<'docs'>) => `${base}${slugOf(e)}/`;
+const sorted = [...pages].sort((a, b) => a.data.order - b.data.order);
+const i = entry ? sorted.findIndex((e) => e.id === entry.id) : -1;
+const prev = i > 0 ? sorted[i - 1] : undefined;
+const next = i >= 0 && i < sorted.length - 1 ? sorted[i + 1] : entry ? undefined : sorted[0];
+const toc = headings.filter((h) => h.depth === 2);
+const fmt = (d: Date) => new Intl.DateTimeFormat(it ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(d);
+const T = it
+  ? { docs: 'Documentazione', api: 'API e agenti AI', updated: 'Aggiornato il', onPage: 'In questa pagina', prev: '← Precedente', next: 'Successivo →', faq: 'Domande frequenti', faqHref: '/faq/', home: 'Home', data: 'Dati', dataHref: '/dati/' }
+  : { docs: 'Documentation', api: 'API & AI agents', updated: 'Updated', onPage: 'On this page', prev: '← Previous', next: 'Next →', faq: 'FAQ', faqHref: '/en/faq/', home: 'Home', data: 'Data', dataHref: '/en/data/' };
+const url = `${SITE}${entry ? hrefOf(entry) : base}`;
+
+const crumbs = [
+  { name: T.home, item: `${SITE}${it ? '/' : '/en/'}` },
+  { name: T.data, item: `${SITE}${T.dataHref}` },
+  { name: T.api, item: `${SITE}${apiHref}` },
+  { name: T.docs, item: `${SITE}${base}` },
+  ...(entry ? [{ name: entry.data.title, item: url }] : []),
+];
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    headline: title,
+    description,
+    inLanguage: it ? 'it-IT' : 'en-US',
+    url,
+    ...(entry ? { dateModified: entry.data.updated.toISOString().slice(0, 10) } : {}),
+    isPartOf: { '@type': 'WebSite', name: 'FlyItalyADSB', url: SITE },
+    publisher: { '@type': 'Organization', name: 'FlyItalyADSB', url: SITE },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: crumbs.map((c, n) => ({ '@type': 'ListItem', position: n + 1, ...c })),
+  },
+];
+---
+<Layout title={entry ? `${title} · ${T.docs}` : title} description={description} ogType="article" jsonLd={jsonLd}>
+  <div class="max-w-6xl mx-auto px-4 pt-24 pb-16 lg:grid lg:grid-cols-[13rem_1fr] lg:gap-12">
+    <!-- On a phone the page list is a menu that opens on tap, so the text
+         isn't pushed down; from lg it is the sidebar. -->
+    <details class="lg:hidden mb-8 rounded-lg text-sm" style="border:1px solid #1e3048;background:#0a1320">
+      <summary class="px-4 py-3 cursor-pointer font-semibold text-slate-100">{T.docs}{entry && <span class="font-normal text-slate-400"> · {entry.data.title}</span>}</summary>
+      <ul class="px-2 pb-3 space-y-1">
+        {sorted.map((e) => (
+          <li><a href={hrefOf(e)} aria-current={entry?.id === e.id ? 'page' : undefined}
+            class={`block px-2 py-1 rounded no-underline ${entry?.id === e.id ? 'text-sky-300 bg-sky-400/10' : 'text-slate-400'}`}>{e.data.title}</a></li>
+        ))}
+        <li><a href={T.faqHref} class="block px-2 py-1 text-slate-400 no-underline">{T.faq}</a></li>
+      </ul>
+    </details>
+
+    <aside class="hidden lg:block">
+      <nav class="lg:sticky lg:top-24 text-sm" aria-label={T.docs}>
+        <a href={base} class="block font-semibold text-slate-100 no-underline mb-3">{T.docs}</a>
+        <ul class="space-y-1">
+          {sorted.map((e) => (
+            <li>
+              <a href={hrefOf(e)} aria-current={entry?.id === e.id ? 'page' : undefined}
+                class={`block px-2 py-1 rounded no-underline ${entry?.id === e.id ? 'text-sky-300 bg-sky-400/10' : 'text-slate-400 hover:text-slate-200'}`}>{e.data.title}</a>
+            </li>
+          ))}
+        </ul>
+        <div class="mt-5 pt-4 space-y-1" style="border-top:1px solid #1e3048">
+          <a href={apiHref} class="block px-2 py-1 text-slate-400 hover:text-slate-200 no-underline">{T.api}</a>
+          <a href={T.faqHref} class="block px-2 py-1 text-slate-400 hover:text-slate-200 no-underline">{T.faq}</a>
+          <a href="/openapi.json" class="block px-2 py-1 text-slate-400 hover:text-slate-200 no-underline">OpenAPI</a>
+        </div>
+      </nav>
+    </aside>
+
+    <article class="min-w-0">
+      <div class="text-xs font-mono uppercase tracking-widest text-slate-500 mb-3">
+        <a href={base} class="text-slate-500 hover:text-slate-300 no-underline">{T.docs}</a>{entry && ' /'}
+      </div>
+      <h1 class="text-3xl font-bold text-slate-100 mb-3">{title}</h1>
+      <p class="text-slate-400 mb-2">{description}</p>
+      {entry && <p class="text-xs text-slate-500 mb-8">{T.updated} <time datetime={entry.data.updated.toISOString().slice(0, 10)}>{fmt(entry.data.updated)}</time></p>}
+
+      {toc.length > 1 && (
+        <nav class="mb-8 text-sm rounded-lg px-4 py-3" style="border:1px solid #1e3048;background:#0a1320" aria-label={T.onPage}>
+          <div class="text-xs font-mono uppercase tracking-widest text-slate-500 mb-2">{T.onPage}</div>
+          <ul class="flex flex-wrap gap-x-4 gap-y-1">
+            {toc.map((h) => <li><a href={`#${h.slug}`} class="text-sky-400 hover:text-sky-300 no-underline">{h.text}</a></li>)}
+          </ul>
+        </nav>
+      )}
+
+      <div class="docs-prose">
+        {entry?.data.plans && <PlanLimitsTable lang={lang} />}
+        <slot />
+      </div>
+
+      {(prev || next) && (
+        <nav class="flex justify-between gap-4 mt-14 pt-6 text-sm" style="border-top:1px solid #1e3048">
+          {prev ? <a href={hrefOf(prev)} class="text-sky-400 hover:text-sky-300 no-underline">{T.prev}<br /><span class="text-slate-300">{prev.data.title}</span></a> : <span />}
+          {next && <a href={hrefOf(next)} class="text-right text-sky-400 hover:text-sky-300 no-underline">{T.next}<br /><span class="text-slate-300">{next.data.title}</span></a>}
+        </nav>
+      )}
+    </article>
+  </div>
+</Layout>
+
+<style is:global>
+  .docs-prose { color: #cbd5e1; font-size: 15px; line-height: 1.7; }
+  .docs-prose h2 { color: #f1f5f9; font-size: 1.35rem; font-weight: 700; margin: 2.4rem 0 0.8rem; scroll-margin-top: 6rem; }
+  .docs-prose h3 { color: #e2e8f0; font-size: 1.05rem; font-weight: 600; margin: 1.8rem 0 0.6rem; scroll-margin-top: 6rem; }
+  .docs-prose p, .docs-prose ul, .docs-prose ol, .docs-prose blockquote { margin: 0 0 1rem; }
+  .docs-prose ul { list-style: disc; padding-left: 1.3rem; }
+  .docs-prose ol { list-style: decimal; padding-left: 1.3rem; }
+  .docs-prose li { margin: 0.25rem 0; }
+  .docs-prose li > ul, .docs-prose li > ol { margin: 0.25rem 0 0; }
+  .docs-prose a { color: #38bdf8; text-decoration: none; }
+  .docs-prose a:hover { color: #7dd3fc; }
+  .docs-prose strong { color: #f1f5f9; }
+  .docs-prose code { font-size: 0.85em; padding: 0.1em 0.35em; border-radius: 0.3rem; background: #111e30; color: #7dd3fc; }
+  .docs-prose pre { margin: 0 0 1.2rem; padding: 1rem 1.1rem; border-radius: 0.6rem; border: 1px solid #1e3048; overflow-x: auto; font-size: 13px; line-height: 1.55; }
+  .docs-prose pre code { padding: 0; background: none; color: inherit; font-size: inherit; }
+  .docs-prose blockquote { padding: 0.6rem 1rem; border-left: 3px solid #38bdf8; background: #0a1320; color: #e2e8f0; border-radius: 0 0.4rem 0.4rem 0; }
+  /* display:block lets a wide table scroll by itself on a phone instead of the page. */
+  .docs-prose table { display: block; overflow-x: auto; width: 100%; border-collapse: collapse; margin: 0 0 1.2rem; font-size: 14px; }
+  .docs-prose th { text-align: left; color: #94a3b8; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .docs-prose th, .docs-prose td { padding: 0.55rem 0.7rem; border-bottom: 1px solid #1e3048; vertical-align: top; }
+  .docs-prose td code { white-space: nowrap; }
+  .docs-prose .overflow-x-auto { margin-bottom: 0.4rem; }
+  .docs-prose .note { font-size: 13px; color: #94a3b8; }
+</style>

@@ -9,6 +9,16 @@ export type Lang = 'it' | 'en';
 // Italian prefix → English prefix, without the /en part. Matched on whole
 // path segments, longest first.
 const PREFIXES: [string, string][] = [
+  // API docs (src/content/docs): one pair per page, slug = file name.
+  ['/dati/api/docs/guida-rapida', '/data/api/docs/quickstart'],
+  ['/dati/api/docs/autenticazione', '/data/api/docs/authentication'],
+  ['/dati/api/docs/endpoint', '/data/api/docs/endpoints'],
+  ['/dati/api/docs/campi', '/data/api/docs/fields'],
+  ['/dati/api/docs/limiti-ed-errori', '/data/api/docs/limits-and-errors'],
+  ['/dati/api/docs/storico', '/data/api/docs/history'],
+  ['/dati/api/docs/mcp', '/data/api/docs/mcp'],
+  ['/dati/api/docs/uso-commerciale', '/data/api/docs/commercial-use'],
+  ['/dati/api/docs/changelog', '/data/api/docs/changelog'],
   ['/dati/api/account', '/data/api/account'],
   ['/dati/api/chiave', '/data/api/key'],
   ['/dati/api/grazie', '/data/api/thanks'],

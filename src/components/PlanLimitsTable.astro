@@ -1,0 +1,35 @@
+---
+import { FREE_LIMITS_FROM, freeLimitsFrom, PLANS } from '../data/plans';
+
+// The limits of every plan, from src/data/plans.ts: the docs page on limits
+// shows it above its text (frontmatter `plans: true`).
+interface Props {
+  lang: 'it' | 'en';
+}
+const { lang } = Astro.props;
+const it = lang === 'it';
+const n = (v: number) => v.toLocaleString(it ? 'it-IT' : 'en-GB');
+const name = (id: string) => id.charAt(0).toUpperCase() + id.slice(1);
+const price = (eur: number) => (eur === 0 ? (it ? 'gratis' : 'free') : it ? `${eur} €/mese` : `€${eur}/month`);
+const radius = (km: number | null) => (km === null ? (it ? 'nessun limite' : 'no limit') : `${n(km)} km`);
+const H = it
+  ? ['Piano', 'Prezzo (IVA esclusa)', 'Richieste/minuto', 'Richieste/mese', 'Raggio massimo']
+  : ['Plan', 'Price (before tax)', 'Requests/minute', 'Requests/month', 'Maximum radius'];
+---
+<div class="overflow-x-auto">
+  <table>
+    <thead><tr>{H.map((h) => <th>{h}</th>)}</tr></thead>
+    <tbody>
+      {PLANS.map((p) => (
+        <tr><td>{name(p.id)}</td><td>{price(p.priceEur)}</td><td>{n(p.perMin)}</td><td>{n(p.perMonth)}</td><td>{radius(p.maxRadiusKm)}</td></tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+{FREE_LIMITS_FROM && (
+  <p class="note">
+    {it
+      ? `I limiti del piano Free valgono dal ${freeLimitsFrom('it')}: fino ad allora c’è solo il limite di 100 richieste al minuto per IP.`
+      : `The Free plan’s limits apply from ${freeLimitsFrom('en')}: until then there is only the limit of 100 requests per minute per IP.`}
+  </p>
+)}
