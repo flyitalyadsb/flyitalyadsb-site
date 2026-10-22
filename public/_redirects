@@ -30,3 +30,61 @@
 /en/dati/* /en/data/:splat 301
 /en/rete /en/network/ 301
 /en/rete/* /en/network/:splat 301
+
+# The old WordPress site (2021-2025): paths still requested, from the Wayback
+# Machine's captures (21/10/2026; /stato-mlat/ alone has ~3,000) and adsb.im,
+# which links /informazioni-legali-e-privacy/ as our privacy policy. Each one
+# goes to the page that now covers it; anything else gets the 404 page.
+# Longest paths first: Cloudflare Pages applies the first rule that matches.
+/come-costruire-un-ricevitore-ads-b-vecchio__trashed /community/feeder/ 301
+/come-costruire-un-ricevitore-ads-b-vecchio__trashed/* /community/feeder/ 301
+/installazione-di-realvnc-per-il-controllo-remoto /community/feeder/ 301
+/installazione-di-realvnc-per-il-controllo-remoto/* /community/feeder/ 301
+/come-costruire-un-ricevitore-ads-b-vecchio /community/feeder/ 301
+/come-costruire-un-ricevitore-ads-b-vecchio/* /community/feeder/ 301
+/guida-installazione-mappe-vrs-pp-tar1090 /community/feeder/ 301
+/guida-installazione-mappe-vrs-pp-tar1090/* /community/feeder/ 301
+/come-visualizzare-i-dati-di-dump1090 /community/feeder/ 301
+/come-visualizzare-i-dati-di-dump1090/* /community/feeder/ 301
+/come-condividere-la-propria-antenna /community/feeder/ 301
+/come-condividere-la-propria-antenna/* /community/feeder/ 301
+/come-costruire-un-ricevitore-ads-b /community/feeder/ 301
+/come-costruire-un-ricevitore-ads-b/* /community/feeder/ 301
+/decoder-alternativi-a-dump1090 /community/feeder/ 301
+/decoder-alternativi-a-dump1090/* /community/feeder/ 301
+/come-funziona-la-nostra-mappa https://mappa.flyitalyadsb.com/ 301
+/come-funziona-la-nostra-mappa/* https://mappa.flyitalyadsb.com/ 301
+/informazioni-legali-e-privacy /privacy/ 301
+/informazioni-legali-e-privacy/* /privacy/ 301
+/come-configurare-dump1090-fa /community/feeder/ 301
+/come-configurare-dump1090-fa/* /community/feeder/ 301
+/installazione-dump1090-fa /community/feeder/ 301
+/installazione-dump1090-fa/* /community/feeder/ 301
+/condividi-la-tua-antenna /community/feeder/ 301
+/condividi-la-tua-antenna/* /community/feeder/ 301
+/mlat-multilaterazione /community/mlat/ 301
+/mlat-multilaterazione/* /community/mlat/ 301
+/configurazione-script /community/feeder/ 301
+/configurazione-script/* /community/feeder/ 301
+/dump1090-su-windows /community/feeder/ 301
+/dump1090-su-windows/* /community/feeder/ 301
+/guida-statistiche /rete/ 301
+/guida-statistiche/* /rete/ 301
+/myflyitalyadsb /community/stato-feeder/ 301
+/myflyitalyadsb/* /community/stato-feeder/ 301
+/come-funziona /rete/ 301
+/come-funziona/* /rete/ 301
+/guida-mappa https://mappa.flyitalyadsb.com/ 301
+/guida-mappa/* https://mappa.flyitalyadsb.com/ 301
+/stato-mlat /community/stato-feeder/ 301
+/stato-mlat/* /community/stato-feeder/ 301
+/contattaci /contatti/ 301
+/contattaci/* /contatti/ 301
+/copertura /rete/ 301
+/copertura/* /rete/ 301
+/ads-b /dati/ 301
+/ads-b/* /dati/ 301
+/mlat /community/mlat/ 301
+/mlat/* /community/mlat/ 301
+/faq /community/feeder/ 301
+/faq/* /community/feeder/ 301
