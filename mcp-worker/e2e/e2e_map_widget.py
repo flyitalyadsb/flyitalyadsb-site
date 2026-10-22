@@ -91,12 +91,21 @@ for name in UNLINKED:
     ok(f"{name} has no UI", name in tools and not (tools[name].get("_meta") or {}).get("ui"), json.dumps(tools.get(name, {}).get("_meta")))
 
 
+def _conversation_block(c):
+    try:
+        return set(json.loads(c.get("text", ""))) == {"conversation_id"}
+    except (ValueError, TypeError, AttributeError):
+        return False
+
+
 def call(name, arguments, meta=None):
     params = {"name": name, "arguments": arguments}
     if meta:
         params["_meta"] = meta
     s, r, raw = result("tools/call", params)
-    content = r.get("content") or [{}]
+    # The analytics SDK appends {"conversation_id": ...} for the model to send
+    # back when MCP_INTENTS is on (mcp-worker/src/index.ts): not the tool's own.
+    content = [c for c in (r.get("content") or []) if not _conversation_block(c)] or [{}]
     try:
         data = json.loads(content[0].get("text", ""))
     except json.JSONDecodeError:

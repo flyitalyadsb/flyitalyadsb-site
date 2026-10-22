@@ -636,7 +636,11 @@
   }
 
   // ------------------------------------------------------------------ data
-  const textOf = (res) => ((res && res.content) || []).filter((c) => c && c.type === 'text').map((c) => c.text).join('\n');
+  // The analytics SDK on the Worker appends {"conversation_id":…} to every
+  // result for the model to send back (mcp-worker/src/index.ts): not text for people.
+  const textOf = (res) => ((res && res.content) || [])
+    .filter((c) => c && c.type === 'text' && !/^\s*\{\s*"conversation_id"\s*:\s*"[^"]*"\s*\}\s*$/.test(c.text || ''))
+    .map((c) => c.text).join('\n');
   // Where the payload may be. Hosts differ: claude.ai's view got a
   // structuredContent of the host's while ours was only in the text, Claude
   // Desktop strips structuredContent, the desktop Code tab replaces the text
