@@ -8,7 +8,7 @@ updated: 2026-10-22
 
 ## 1. Get a key
 
-Enter your email in the form on [API & AI agents](/en/data/api/#api-key). You receive a link that shows the key once and is valid for 7 days. The key is free, with no approval, and allows commercial use within the plan's limits.
+Enter your email in the form on [REST API](/en/data/api/#api-key). You receive a link that shows the key once and is valid for 7 days. The key is free, with no approval, and allows commercial use within the plan's limits.
 
 You can also request it from code: see [Authentication](/en/data/api/docs/authentication/).
 

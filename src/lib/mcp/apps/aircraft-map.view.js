@@ -89,7 +89,8 @@
     },
     it: {
       count: (n) => (n === 1 ? '1 aereo' : `${n} aerei`),
-      within: (r, place) => `entro ${r} km da ${place}`,
+      // "da" + "la tua posizione" is "dalla tua posizione", not "da la".
+      within: (r, place) => `entro ${r} km ${String(place ?? '').startsWith('la ') ? `dal${place}` : `da ${place}`}`,
       ago: (time, m) => `${time}, ${m} min fa`,
       shown: (n, total) => `${n} su ${total}`,
       savedPlace: (name) => (name ? `la tua posizione salvata (${name})` : 'la tua posizione salvata'),

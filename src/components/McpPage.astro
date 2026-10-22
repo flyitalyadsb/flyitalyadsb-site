@@ -1,0 +1,930 @@
+---
+// The MCP page, /dati/mcp/ (IT) and /en/data/mcp/ (EN): FlyItalyADSB in
+// Claude, ChatGPT and other MCP clients. Until 2026-10-22 this was the #mcp
+// section of the API page, which now has the REST API only (ApiPage.astro).
+//
+// Screenshots: public/img/mcp/, the in-chat map (src/lib/mcp/apps/) as the
+// Worker serves it, played with sample data in mcp-worker/preview/ (both
+// themes, IT/EN, inline/fullscreen, phone width), plus the sign-in page of
+// the local Worker. The chat around them is drawn here, on purpose neutral:
+// no host's UI, logo or colours. Real claude.ai / ChatGPT screenshots could
+// replace them later; keep the file names and sizes.
+import Layout from '../layouts/Layout.astro';
+import FaqList from './FaqList.astro';
+import Screenshot from './Screenshot.astro';
+import { faqsFor } from '../data/faq';
+import { PLANS, FREE_LIMITS_FROM, freeLimitsFrom } from '../data/plans';
+
+interface Props {
+  lang: 'it' | 'en';
+}
+const { lang } = Astro.props;
+const it = lang === 'it';
+const SITE = 'https://flyitalyadsb.com';
+const MCP_URL = 'https://flyitalyadsb.com/mcp';
+const img = (name: string) => `/img/mcp/${name}-${lang}`;
+const nf = new Intl.NumberFormat(it ? 'it-IT' : 'en-GB');
+
+const href = it
+  ? { data: '/dati/', api: '/dati/api/', key: '/dati/api/#api-key', plans: '/dati/api/#piani', account: '/dati/api/account/', docs: '/dati/api/docs/mcp/', auth: '/dati/api/docs/autenticazione/#registrazione-degli-agenti-authmd', privacy: '/privacy/', faq: '/faq/#mcp', self: '/dati/mcp/' }
+  : { data: '/en/data/', api: '/en/data/api/', key: '/en/data/api/#api-key', plans: '/en/data/api/#piani', account: '/en/data/api/account/', docs: '/en/data/api/docs/mcp/', auth: '/en/data/api/docs/authentication/#agent-registration-authmd', privacy: '/en/privacy/', faq: '/en/faq/#mcp', self: '/en/data/mcp/' };
+
+const id = it
+  ? { connect: 'collega', tools: 'strumenti', map: 'mappa', near: 'vicino-a-me', limits: 'limiti', privacy: 'privacy', faq: 'faq', docs: 'documentazione' }
+  : { connect: 'connect', tools: 'tools', map: 'map', near: 'near-me', limits: 'limits', privacy: 'privacy', faq: 'faq', docs: 'documentation' };
+
+// ------------------------------------------------------------------ copy
+const T = it
+  ? {
+      title: 'Server MCP per Claude, ChatGPT e agenti AI',
+      description: 'Collega FlyItalyADSB a Claude o ChatGPT con il server MCP: chiedi in chat che aerei ci sono sopra un luogo, il traffico militare o cosa è passato sopra casa tua, e vedi la risposta su una mappa interattiva. Gratis, con email e codice.',
+      crumb: 'MCP e agenti AI',
+      h1: 'Il traffico aereo nella tua chat',
+      lede: 'Collega il server MCP di FlyItalyADSB a Claude o ChatGPT e chiedi come parli: che aerei ci sono sopra Fiumicino, se c’è traffico militare, cosa è passato sopra casa tua ieri sera. La risposta arriva con una mappa interattiva dentro la conversazione.',
+      ctaConnect: 'Come collegarlo',
+      copyUrl: 'Copia l’URL del server',
+      copied: 'URL copiato',
+      fine: 'Gratis, con la stessa chiave della REST API. Funziona in Claude, ChatGPT, Claude Code e negli altri client MCP.',
+      ask: 'Che aerei ci sono adesso vicino a Fiumicino?',
+      reply: 'Ci sono 40 aerei entro 50 km. Uno ha lo squawk 7700, emergenza generale: RYR4KP, un Boeing 737-800 a 7.800 piedi in discesa, 25 km a sud-est dell’aeroporto.',
+      heroAlt: 'La mappa di FlyItalyADSB dentro una conversazione: 40 aerei entro 50 km da Roma Fiumicino, colorati per quota, con il cerchio della ricerca e l’elenco degli aerei sotto; il primo, RYR4KP, ha lo squawk 7700.',
+      heroNote: 'La mappa è quella del server MCP, qui con dati di esempio. Claude e ChatGPT la mostrano dentro la loro conversazione.',
+      index: 'Indice della pagina',
+      idx: ['Collegalo', 'Cosa puoi chiedere', 'La mappa in chat', 'Vicino a me', 'Limiti', 'Privacy', 'FAQ', 'Documentazione'],
+
+      connectH: 'Collegalo',
+      connectLede: 'Ti servono un’email e un paio di minuti. Non devi copiare chiavi: entri con un codice di 6 cifre che ti mandiamo per email e, se non hai ancora una chiave API, la creiamo gratis in quel momento.',
+      tabsLabel: 'Scegli il tuo client',
+      tabs: ['claude.ai', 'ChatGPT', 'Claude Code e altri'],
+      claude: [
+        'Su <a href="https://claude.ai/customize/connectors" target="_blank" rel="noopener">claude.ai</a> apri <strong>Connettori</strong> e premi <strong>Aggiungi connettore personalizzato</strong>.',
+        'Come nome scrivi <strong>FlyItalyADSB</strong>, come URL:',
+        'Premi <strong>Connetti</strong>: si apre la pagina di FlyItalyADSB. Scrivi la tua email, poi il codice che ti arriva, e premi <strong>Consenti</strong>.',
+        'Torna in chat e chiedi:',
+      ],
+      claudeAsk: 'Che aerei ci sono ora vicino a Fiumicino?',
+      claudeNote: 'Una volta aggiunto, il connettore c’è anche in Claude desktop e nell’app per il telefono.',
+      chatgpt: [
+        'In ChatGPT apri <strong>Impostazioni → App e connettori → Impostazioni avanzate</strong> e attiva la <strong>modalità sviluppatore</strong>.',
+        'Torna in <strong>App e connettori</strong> e premi <strong>Crea</strong>: nome <strong>FlyItalyADSB</strong>, autenticazione <strong>OAuth</strong>, URL:',
+        'Accedi con la tua email e il codice di 6 cifre, poi premi <strong>Consenti</strong>.',
+        'In una chat nuova aggiungi FlyItalyADSB dal menu <strong>+</strong> e chiedi:',
+      ],
+      chatgptAsk: 'C’è traffico militare in volo adesso?',
+      chatgptNote: 'Le voci dei menu di ChatGPT cambiano spesso e la modalità sviluppatore non c’è in tutti i piani: se non le trovi, cerca «connettori» nelle impostazioni.',
+      codeIntro: 'In <a href="https://code.claude.com/docs/en/mcp" target="_blank" rel="noopener">Claude Code</a>, con la tua chiave nell’header:',
+      codeKey: 'LA_TUA_CHIAVE',
+      others: [
+        'Gli <strong>altri client MCP con OAuth</strong> si collegano come Claude: aggiungi l’URL e premi Connetti.',
+        'Dal <strong>tuo codice</strong> o da un client senza OAuth, manda la chiave nell’header <code>X-Api-Key</code>. È gratuita: <a href="/dati/api/#api-key">chiedila qui</a>.',
+        'Un <strong>agente che conosce solo la tua email</strong> può registrarsi con <a href="/dati/api/docs/autenticazione/#registrazione-degli-agenti-authmd">auth.md</a>: confermi tu, con il codice che ti mandiamo.',
+      ],
+      rawSummary: 'Una chiamata a mano, in JSON-RPC',
+      rawKey: '<la-tua-chiave>',
+      copy: 'Copia',
+      copyDone: 'Copiato',
+      signinAlt: 'La pagina di accesso di FlyItalyADSB: «Collega il tuo assistente a FlyItalyADSB», con il campo per l’email e il pulsante «Mandami il codice».',
+      signinCap: 'Questa è la pagina che si apre quando premi Connetti. Lo scolleghi quando vuoi da <a href="/dati/api/account/">La mia API</a>.',
+
+      toolsH: 'Cosa puoi chiedere',
+      toolsLede: 'Nove strumenti. Non devi nominarli: l’assistente sceglie da solo quale usare, anche più di uno per domanda. Le domande qui sotto sono esempi da provare.',
+      mapTag: 'mappa in chat',
+      groups: [
+        { name: 'Adesso', tools: [
+          { name: 'aircraft_near', map: true, desc: 'Tutti gli aerei in un raggio da un punto qualsiasi del mondo, o da un aeroporto italiano per nome.', ask: 'Che aerei ci sono adesso vicino a Fiumicino?' },
+          { name: 'find_aircraft', map: true, desc: 'Un aereo per hex ICAO, nominativo o immatricolazione, se la rete lo vede ora.', ask: 'Dov’è adesso EI-DWL?' },
+          { name: 'special_traffic', map: true, desc: 'Il traffico militare, PIA o LADD che la rete vede in questo momento.', ask: 'C’è traffico militare in volo adesso?' },
+        ] },
+        { name: 'Un aereo', tools: [
+          { name: 'aircraft_profile', desc: 'Quello che sappiamo di un aereo: identità, se e dove lo vediamo ora, primo e ultimo giorno nello storico, link alla mappa e alle foto.', ask: 'Cosa sai dell’aereo D-AIUK?' },
+          { name: 'aircraft_history', desc: 'Le date con una traccia per un aereo, o la traccia di un giorno: posizione, quota e velocità, dal 2022.', ask: 'Che voli ha fatto ieri EI-DWL?' },
+        ] },
+        { name: 'Cosa è passato', tools: [
+          { name: 'overflights', desc: 'Gli aerei passati sopra un luogo tra due istanti, con l’ora e la distanza del punto più vicino. Dal 17/08/2026.', ask: 'Quali aerei sono passati sopra Brescia ieri tra le 22 e le 23?' },
+          { name: 'notable_traffic', desc: 'Emergenze (7500, 7600, 7700), militari e altri aerei notevoli visti in una zona, fino a 7 giorni fa.', ask: 'Ci sono state emergenze vicino a Malpensa oggi?' },
+        ] },
+        { name: 'Vicino a me', tools: [
+          { name: 'set_my_location', desc: 'Salva la tua posizione sull’account, arrotondata a circa 1 km, per le domande «vicino a me».', ask: 'La mia posizione è Brescia.' },
+          { name: 'clear_my_location', desc: 'Cancella la posizione salvata.', ask: 'Dimentica la mia posizione.' },
+        ] },
+      ],
+
+      mapH: 'La mappa in chat',
+      mapLede: 'Su Claude (web, desktop e app) e su ChatGPT, aircraft_near, find_aircraft e special_traffic mostrano il risultato anche su una mappa, dentro la conversazione. Gli altri client ricevono gli stessi dati come testo.',
+      themeLabel: 'Tema dello screenshot',
+      light: 'Chiaro',
+      dark: 'Scuro',
+      fullAltLight: 'La mappa a schermo intero, tema chiaro: 300 dei 312 aerei entro 250 km da Milano su tutto il Nord Italia, con l’elenco ordinato a destra.',
+      fullAltDark: 'La mappa a schermo intero, tema scuro: gli aerei intorno a Fiumicino, il pannello con i dettagli dell’elicottero PS110 e l’elenco a destra.',
+      fullCap: 'A schermo intero la mappa prende tutta la finestra e l’elenco passa di lato. Il tema segue quello dell’assistente.',
+      detailAlt: 'Il dettaglio di un aereo sulla mappa: RYR4KP, Boeing 737-800, squawk 7700, con quota, velocità, rotta, fonte della posizione e i pulsanti «Chiedi di più» e «Apri la mappa live».',
+      detailCap: 'Tocca un aereo: quota, velocità, rotta, squawk e da dove viene la posizione. «Chiedi di più» scrive la domanda in chat.',
+      phoneAlt: 'La mappa su un telefono, tema chiaro: gli aerei intorno a Fiumicino e l’elenco che scorre sotto.',
+      phoneCap: 'Sul telefono l’elenco scorre sotto la mappa.',
+      phoneFullAlt: 'La mappa a schermo intero su un telefono, tema scuro: il traffico militare in Europa e il dettaglio del KC-135R LAGR221.',
+      phoneFullCap: 'Schermo intero sul telefono, qui con il traffico militare.',
+      openFull: 'Apri l’immagine intera',
+      keyH: 'Come si legge',
+      key: [
+        ['Colore', 'la quota, da 0 a oltre 40.000 piedi'],
+        ['Pieno', 'posizione inviata dall’aereo (ADS-B)'],
+        ['Contorno', 'posizione calcolata dalla rete (MLAT)'],
+        ['Sbiadito', 'posizione di oltre 30 secondi fa'],
+        ['Grigio', 'a terra, o quota sconosciuta'],
+        ['Rombo, anello', 'militare; PIA o LADD'],
+        ['Anello rosso', 'squawk di emergenza'],
+      ],
+      buttonsH: 'I pulsanti',
+      buttons: [
+        ['Aggiorna', 'ripete la ricerca: conta come una richiesta'],
+        ['Schermo intero', 'dove l’assistente lo permette'],
+        ['Chiedi di più', 'scrive in chat una domanda sull’aereo'],
+        ['Apri la mappa live', 'lo stesso aereo su mappa.flyitalyadsb.com'],
+      ],
+
+      nearH: 'Vicino a me',
+      nearLede: 'Nessun assistente ci passa la posizione del tuo telefono o del computer. Per chiedere «che aerei ci sono vicino a me?» senza dire ogni volta dove sei, salva una posizione una volta:',
+      nearWays: [
+        'dilla all’assistente:',
+        'oppure da <a href="/dati/api/account/">La mia API</a>, con <strong>Usa la mia posizione</strong>.',
+      ],
+      nearSay: 'La mia posizione è Pisa.',
+      nearThen: 'Poi basta chiedere:',
+      nearAsk: 'Che aerei ci sono vicino a me?',
+      nearNote: 'Su ChatGPT, se non ne hai salvata una, usiamo la città che ChatGPT allega alla richiesta. Valgono anche overflights e notable_traffic: «cosa è passato sopra di me ieri sera?».',
+      nearAlt: 'La mappa con 6 aerei entro 30 km dalla posizione salvata, a Pisa.',
+
+      limitsH: 'Limiti e richieste',
+      limitsLede: 'Ogni volta che l’assistente chiama uno strumento fa una richiesta all’API, e conta sul piano della tua chiave come una chiamata diretta. Una domanda può costarne più di una, se l’assistente usa più strumenti. Anche il raggio massimo è quello del piano.',
+      limitsCols: ['Piano', 'Al minuto', 'Al mese', 'Raggio massimo'],
+      limitsCaption: 'Richieste per chiave e raggio massimo di ogni piano',
+      worldwide: 'mondiale',
+      free: 'gratis',
+      perMonth: (eur: number) => `${eur} €/mese`,
+      limitsNote: FREE_LIMITS_FROM ? `I limiti del piano Free valgono dal ${freeLimitsFrom('it')}; fino ad allora una chiave Free resta a 100 richieste/minuto per IP.` : '',
+      limitsLink: 'Piani, prezzi e uso commerciale',
+
+      privacyH: 'Privacy',
+      privacy: [
+        ['La tua posizione', 'Non riceviamo la posizione del tuo dispositivo. Se ne salvi una, la arrotondiamo a circa 1 km prima di salvarla: una sola per account, e la cancelli quando vuoi.'],
+        ['Aerei, non persone', 'Nessuna risposta contiene i nomi di proprietari o operatori, e non sappiamo chi c’è a bordo.'],
+        ['La mappa', 'Carica solo le tessere di OpenStreetMap: non chiede permessi e non usa la tua posizione.'],
+        ['PIA e LADD', 'Gli aerei con indirizzo privacy o nel programma FAA LADD sono segnalati, non nascosti, come su tutta la rete. Per loro niente link alle foto.'],
+        ['Il collegamento', 'Lo scolleghi da <a href="/dati/api/account/">La mia API</a>, sotto «Assistenti collegati». La chiave non cambia.'],
+      ],
+      privacyLink: 'Informativa privacy completa',
+
+      faqH: 'Domande frequenti',
+      faqAll: 'Tutte le domande frequenti',
+      docsH: 'Documentazione',
+      docs: [
+        { href: '/dati/api/docs/mcp/', label: 'Server MCP', desc: 'gli strumenti, «vicino a me», i client e i limiti, nella documentazione' },
+        { href: '/dati/api/', label: 'API REST', desc: 'gli stessi dati dal tuo codice: endpoint, piani e chiave gratuita' },
+        { href: '/auth.md', label: 'auth.md', desc: 'come un agente ottiene e usa una credenziale' },
+        { href: '/.well-known/mcp/server-card.json', label: 'Server card', desc: 'la descrizione del server in JSON, per le macchine' },
+      ],
+    }
+  : {
+      title: 'MCP server for Claude, ChatGPT and AI agents',
+      description: 'Connect FlyItalyADSB to Claude or ChatGPT with the MCP server: ask in the chat which aircraft are over a place, about military traffic or what flew over your home, and see the answer on an interactive map. Free, with an email and a code.',
+      crumb: 'MCP and AI agents',
+      h1: 'Air traffic in your chat',
+      lede: 'Connect the FlyItalyADSB MCP server to Claude or ChatGPT and ask the way you talk: which aircraft are over Fiumicino, whether there is military traffic, what flew over your home last night. The answer comes with an interactive map inside the conversation.',
+      ctaConnect: 'How to connect it',
+      copyUrl: 'Copy the server URL',
+      copied: 'URL copied',
+      fine: 'Free, with the same key as the REST API. Works in Claude, ChatGPT, Claude Code and other MCP clients.',
+      ask: 'Which aircraft are near Fiumicino right now?',
+      reply: 'There are 40 aircraft within 50 km. One is squawking 7700, a general emergency: RYR4KP, a Boeing 737-800 at 7,800 feet and descending, 25 km south-east of the airport.',
+      heroAlt: 'The FlyItalyADSB map inside a conversation: 40 aircraft within 50 km of Rome Fiumicino, coloured by altitude, with the search circle and the aircraft list below; the first one, RYR4KP, is squawking 7700.',
+      heroNote: 'This is the MCP server’s map, shown here with sample data. Claude and ChatGPT display it inside their own conversation.',
+      index: 'Page index',
+      idx: ['Connect', 'What you can ask', 'The map in the chat', 'Near me', 'Limits', 'Privacy', 'FAQ', 'Documentation'],
+
+      connectH: 'Connect it',
+      connectLede: 'All you need is an email and a couple of minutes. There is no key to copy: you sign in with a 6-digit code we email you, and if you don’t have an API key yet, we create a free one there and then.',
+      tabsLabel: 'Choose your client',
+      tabs: ['claude.ai', 'ChatGPT', 'Claude Code and others'],
+      claude: [
+        'On <a href="https://claude.ai/customize/connectors" target="_blank" rel="noopener">claude.ai</a>, open <strong>Connectors</strong> and press <strong>Add custom connector</strong>.',
+        'Name it <strong>FlyItalyADSB</strong>, with this URL:',
+        'Press <strong>Connect</strong>: the FlyItalyADSB page opens. Enter your email, then the code you receive, and press <strong>Allow</strong>.',
+        'Go back to the chat and ask:',
+      ],
+      claudeAsk: 'Which aircraft are near Fiumicino right now?',
+      claudeNote: 'Once added, the connector is also in Claude desktop and the mobile app.',
+      chatgpt: [
+        'In ChatGPT, open <strong>Settings → Apps &amp; Connectors → Advanced settings</strong> and turn on <strong>Developer mode</strong>.',
+        'Back in <strong>Apps &amp; Connectors</strong>, press <strong>Create</strong>: name <strong>FlyItalyADSB</strong>, authentication <strong>OAuth</strong>, URL:',
+        'Sign in with your email and the 6-digit code, then press <strong>Allow</strong>.',
+        'In a new chat, add FlyItalyADSB from the <strong>+</strong> menu and ask:',
+      ],
+      chatgptAsk: 'Is there any military traffic in the air right now?',
+      chatgptNote: 'ChatGPT’s menu labels change often and Developer mode isn’t on every plan: if you can’t find them, search Settings for “connectors”.',
+      codeIntro: 'In <a href="https://code.claude.com/docs/en/mcp" target="_blank" rel="noopener">Claude Code</a>, with your key in the header:',
+      codeKey: 'YOUR_KEY',
+      others: [
+        '<strong>Other MCP clients with OAuth</strong> connect the way Claude does: add the URL and press Connect.',
+        'From <strong>your own code</strong> or a client without OAuth, send the key in the <code>X-Api-Key</code> header. It’s free: <a href="/en/data/api/#api-key">get one here</a>.',
+        'An <strong>agent that only knows your email</strong> can register with <a href="/en/data/api/docs/authentication/#agent-registration-authmd">auth.md</a>: you confirm it, with the code we email you.',
+      ],
+      rawSummary: 'A call by hand, in JSON-RPC',
+      rawKey: '<your-key>',
+      copy: 'Copy',
+      copyDone: 'Copied',
+      signinAlt: 'The FlyItalyADSB sign-in page: “Connect your assistant to FlyItalyADSB”, with the email field and the “Send me the code” button.',
+      signinCap: 'This is the page that opens when you press Connect. Disconnect any time from <a href="/en/data/api/account/">My API</a>.',
+
+      toolsH: 'What you can ask',
+      toolsLede: 'Nine tools. You don’t have to name them: the assistant picks the right one, sometimes more than one per question. The questions below are examples to try.',
+      mapTag: 'map in the chat',
+      groups: [
+        { name: 'Right now', tools: [
+          { name: 'aircraft_near', map: true, desc: 'Every aircraft within a radius of any point in the world, or of an Italian airport by name.', ask: 'Which aircraft are near Fiumicino right now?' },
+          { name: 'find_aircraft', map: true, desc: 'One aircraft by ICAO hex, callsign or registration, if the network sees it now.', ask: 'Where is EI-DWL right now?' },
+          { name: 'special_traffic', map: true, desc: 'The military, PIA or LADD traffic the network sees at this moment.', ask: 'Is there any military traffic in the air right now?' },
+        ] },
+        { name: 'One aircraft', tools: [
+          { name: 'aircraft_profile', desc: 'What we know about one aircraft: identity, whether and where we see it now, first and last day in the history, map and photo links.', ask: 'What do you know about D-AIUK?' },
+          { name: 'aircraft_history', desc: 'An aircraft’s dates with a track, or one day’s track: position, altitude and speed, since 2022.', ask: 'Which flights did EI-DWL make yesterday?' },
+        ] },
+        { name: 'What happened', tools: [
+          { name: 'overflights', desc: 'The aircraft that flew over a place between two times, with the time and distance of the closest point. Since 17 August 2026.', ask: 'Which aircraft flew over Brescia yesterday between 10 and 11 pm?' },
+          { name: 'notable_traffic', desc: 'Emergencies (7500, 7600, 7700), military and other notable aircraft seen in an area, up to 7 days back.', ask: 'Anything unusual near Malpensa today?' },
+        ] },
+        { name: 'Near me', tools: [
+          { name: 'set_my_location', desc: 'Saves your position on the account, rounded to about 1 km, for “near me” questions.', ask: 'My position is Brescia.' },
+          { name: 'clear_my_location', desc: 'Deletes the saved position.', ask: 'Forget my position.' },
+        ] },
+      ],
+
+      mapH: 'The map in the chat',
+      mapLede: 'In Claude (web, desktop and mobile) and ChatGPT, aircraft_near, find_aircraft and special_traffic also show their result on a map, inside the conversation. Other clients get the same data as text.',
+      themeLabel: 'Screenshot theme',
+      light: 'Light',
+      dark: 'Dark',
+      fullAltLight: 'The full-screen map, light theme: 300 of the 312 aircraft within 250 km of Milan across northern Italy, with the sorted list on the right.',
+      fullAltDark: 'The full-screen map, dark theme: the aircraft around Fiumicino, the details panel of the PS110 helicopter and the list on the right.',
+      fullCap: 'In full screen the map takes the whole window and the list moves to the side. The theme follows the assistant’s.',
+      detailAlt: 'One aircraft’s details on the map: RYR4KP, Boeing 737-800, squawk 7700, with altitude, speed, track, position source and the “Ask about it” and “Open live map” buttons.',
+      detailCap: 'Tap an aircraft: altitude, speed, track, squawk and where the position comes from. “Ask about it” writes the question in the chat.',
+      phoneAlt: 'The map on a phone, light theme: the aircraft around Fiumicino and the list scrolling below.',
+      phoneCap: 'On a phone the list scrolls under the map.',
+      phoneFullAlt: 'The full-screen map on a phone, dark theme: military traffic over Europe and the details of the KC-135R LAGR221.',
+      phoneFullCap: 'Full screen on a phone, here with military traffic.',
+      openFull: 'Open the full image',
+      keyH: 'How to read it',
+      key: [
+        ['Colour', 'altitude, from 0 to over 40,000 feet'],
+        ['Filled', 'position sent by the aircraft (ADS-B)'],
+        ['Outline', 'position computed by the network (MLAT)'],
+        ['Faded', 'position older than 30 seconds'],
+        ['Grey', 'on the ground, or altitude unknown'],
+        ['Diamond, ring', 'military; PIA or LADD'],
+        ['Red ring', 'emergency squawk'],
+      ],
+      buttonsH: 'The buttons',
+      buttons: [
+        ['Refresh', 'repeats the search: it counts as one request'],
+        ['Full screen', 'where the assistant allows it'],
+        ['Ask about it', 'writes a question about the aircraft in the chat'],
+        ['Open live map', 'the same aircraft on mappa.flyitalyadsb.com'],
+      ],
+
+      nearH: 'Near me',
+      nearLede: 'No assistant passes your phone’s or computer’s position to us. To ask “which aircraft are near me?” without saying where you are every time, save a position once:',
+      nearWays: [
+        'tell the assistant:',
+        'or from <a href="/en/data/api/account/">My API</a>, with <strong>Use my position</strong>.',
+      ],
+      nearSay: 'My position is Pisa.',
+      nearThen: 'Then just ask:',
+      nearAsk: 'Which aircraft are near me?',
+      nearNote: 'On ChatGPT, if you haven’t saved one, we use the city ChatGPT attaches to the request. It works for overflights and notable_traffic too: “what flew over me last night?”.',
+      nearAlt: 'The map with 6 aircraft within 30 km of the saved position, in Pisa.',
+
+      limitsH: 'Limits and requests',
+      limitsLede: 'Every time the assistant calls a tool it makes one API request, which counts on your key’s plan like a direct call. One question can cost more than one if the assistant uses several tools. The maximum radius is the plan’s too.',
+      limitsCols: ['Plan', 'Per minute', 'Per month', 'Maximum radius'],
+      limitsCaption: 'Requests per key and maximum radius of each plan',
+      worldwide: 'worldwide',
+      free: 'free',
+      perMonth: (eur: number) => `€${eur}/month`,
+      limitsNote: FREE_LIMITS_FROM ? `Free-plan limits apply from ${freeLimitsFrom('en')}; until then a Free key stays at 100 requests/minute per IP.` : '',
+      limitsLink: 'Plans, prices and commercial use',
+
+      privacyH: 'Privacy',
+      privacy: [
+        ['Your position', 'We don’t receive your device’s position. If you save one, we round it to about 1 km before storing it: one per account, and you can delete it any time.'],
+        ['Aircraft, not people', 'No answer contains the names of owners or operators, and we don’t know who is on board.'],
+        ['The map', 'It loads only OpenStreetMap tiles: it asks for no permissions and doesn’t use your location.'],
+        ['PIA and LADD', 'Aircraft with a privacy address or in the FAA LADD program are flagged, not hidden, as everywhere on the network. No photo links for them.'],
+        ['The connection', 'Disconnect it from <a href="/en/data/api/account/">My API</a>, under “Connected assistants”. Your key doesn’t change.'],
+      ],
+      privacyLink: 'Full privacy policy',
+
+      faqH: 'Frequently asked questions',
+      faqAll: 'All frequently asked questions',
+      docsH: 'Documentation',
+      docs: [
+        { href: '/en/data/api/docs/mcp/', label: 'MCP server', desc: 'the tools, “near me”, clients and limits, in the documentation' },
+        { href: '/en/data/api/', label: 'REST API', desc: 'the same data from your own code: endpoints, plans and a free key' },
+        { href: '/auth.md', label: 'auth.md', desc: 'how an agent gets and uses a credential' },
+        { href: '/.well-known/mcp/server-card.json', label: 'Server card', desc: 'the server described in JSON, for machines' },
+      ],
+    };
+
+const codeCmd = `claude mcp add --transport http flyitalyadsb ${MCP_URL} \\\n  --header "X-Api-Key: ${T.codeKey}"`;
+const rawCall = `POST ${MCP_URL}
+Content-Type: application/json
+Accept: application/json, text/event-stream
+X-Api-Key: ${T.rawKey}
+
+{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"aircraft_near","arguments":{"airport":"FCO","radiusKm":25}}}`;
+
+const faqs = faqsFor((f) => f.cat === 'mcp');
+
+// ------------------------------------------------------------------ JSON-LD
+const pageUrl = `${SITE}${href.self}`;
+const tools = T.groups.flatMap((g) => g.tools);
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: it ? 'Server MCP di FlyItalyADSB' : 'FlyItalyADSB MCP server',
+    applicationCategory: 'DeveloperApplication',
+    applicationSubCategory: 'Model Context Protocol server',
+    operatingSystem: 'Any',
+    url: pageUrl,
+    installUrl: MCP_URL,
+    description: T.description,
+    inLanguage: it ? 'it-IT' : 'en-US',
+    isAccessibleForFree: true,
+    featureList: tools.map((t) => `${t.name}: ${t.desc}`),
+    screenshot: [`${SITE}${img('chat-desktop')}-1440.webp`, `${SITE}${img('fullscreen-light')}-1920.webp`, `${SITE}${img('chat-mobile')}-720.webp`],
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR', url: `${SITE}${href.plans}` },
+    provider: { '@type': 'Organization', name: 'Nesso Labs S.r.l.', vatID: 'IT04754860981', url: 'https://nessolabs.it' },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f[lang].q, acceptedAnswer: { '@type': 'Answer', text: f[lang].a } })),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE}${it ? '/' : '/en/'}` },
+      { '@type': 'ListItem', position: 2, name: it ? 'Dati' : 'Data', item: `${SITE}${href.data}` },
+      { '@type': 'ListItem', position: 3, name: T.crumb, item: pageUrl },
+    ],
+  },
+];
+
+const idxIds = [id.connect, id.tools, id.map, id.near, id.limits, id.privacy, id.faq, id.docs];
+const planName = (p: string) => p.charAt(0).toUpperCase() + p.slice(1);
+---
+
+<Layout title={T.title} description={T.description} image={`/img/mcp/og-${lang}.jpg`} jsonLd={jsonLd}>
+  <div class="mcp pt-24 pb-20 px-4 sm:px-8 lg:px-12 max-w-6xl mx-auto">
+
+    <!-- Hero: the copy, and the thing itself: a question and the map it gets. -->
+    <section class="hero grid lg:grid-cols-[minmax(0,4fr)_minmax(0,6fr)] gap-10 lg:gap-14 items-center mb-14">
+      <div>
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">
+          <a href={href.data} class="text-slate-600 hover:text-slate-400 no-underline">{it ? 'Dati' : 'Data'}</a>
+          <span class="mx-2">/</span>
+          <span class="text-slate-500">{T.crumb}</span>
+        </p>
+        <h1 class="text-4xl sm:text-5xl font-bold tracking-tight leading-[1.08] mb-5 [text-wrap:balance]" style="color:#f0f9ff">{T.h1}</h1>
+        <p class="text-slate-300 text-lg leading-relaxed mb-8 max-w-xl">{T.lede}</p>
+        <div class="flex flex-wrap items-center gap-3 mb-5">
+          <a href={`#${id.connect}`} class="btn-primary">{T.ctaConnect}</a>
+          <button type="button" class="copy-url" data-copy={MCP_URL} data-done={T.copied} title={T.copyUrl}>
+            <span class="sr-only">{T.copyUrl}: </span><span class="font-mono">flyitalyadsb.com/mcp</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+          </button>
+          <span class="copy-status text-sm" role="status" aria-live="polite"></span>
+        </div>
+        <p class="text-sm text-slate-500 max-w-md leading-relaxed">{T.fine}</p>
+      </div>
+
+      <figure class="chat">
+        <p class="bubble bubble-lg chat-in" style="--d:0ms">{T.ask}</p>
+        <p class="call chat-in" style="--d:160ms" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z" stroke-linejoin="round"/></svg>
+          <span><b>aircraft_near</b>(airport: "FCO", radiusKm: 50)</span>
+        </p>
+        <div class="widget chat-rise" style="--d:260ms">
+          <picture>
+            <source media="(max-width: 559px)" type="image/avif" srcset={`${img('chat-mobile')}-720.avif 720w`} sizes="calc(100vw - 58px)" width="720" height="974" />
+            <source media="(max-width: 559px)" type="image/webp" srcset={`${img('chat-mobile')}-720.webp 720w`} sizes="calc(100vw - 58px)" width="720" height="974" />
+            <source type="image/avif" srcset={`${img('chat-desktop')}-1440.avif 1440w, ${img('chat-desktop')}-720.avif 720w`} sizes="(min-width: 1152px) 620px, (min-width: 1024px) 54vw, calc(100vw - 96px)" />
+            <source type="image/webp" srcset={`${img('chat-desktop')}-1440.webp 1440w, ${img('chat-desktop')}-720.webp 720w`} sizes="(min-width: 1152px) 620px, (min-width: 1024px) 54vw, calc(100vw - 96px)" />
+            <img src={`${img('chat-desktop')}-1440.webp`} width="1440" height="1074" alt={T.heroAlt} fetchpriority="high" class="hero-img" />
+          </picture>
+        </div>
+        <p class="reply chat-in" style="--d:520ms">{T.reply}</p>
+        <figcaption class="chat-note">{T.heroNote}</figcaption>
+      </figure>
+    </section>
+
+    <nav class="page-index mb-16" aria-label={T.index}>
+      {T.idx.map((label, i) => <a href={`#${idxIds[i]}`}>{label}</a>)}
+    </nav>
+
+    <!-- Connect -->
+    <section id={id.connect} class="scroll-mt-24 mb-20">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-100 mb-3">{T.connectH}</h2>
+      <p class="text-slate-400 leading-relaxed max-w-2xl mb-8">{T.connectLede}</p>
+
+      <div class="grid lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] gap-8 lg:gap-12 items-start">
+        <div class="tabs" data-tabs>
+          <div class="tablist" role="tablist" aria-label={T.tabsLabel} hidden>
+            {T.tabs.map((label, i) => (
+              <button type="button" role="tab" id={`tab-${i}`} aria-controls={`panel-${i}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>{label}</button>
+            ))}
+          </div>
+
+          <div class="panel" role="tabpanel" id="panel-0" aria-labelledby="tab-0">
+            <h3 class="panel-h">{T.tabs[0]}</h3>
+            <ol class="steps">
+              <li><span set:html={T.claude[0]} /></li>
+              <li><span set:html={T.claude[1]} />
+                <button type="button" class="copy-inline" data-copy={MCP_URL} data-done={T.copyDone}><code>{MCP_URL}</code><span class="copy-label">{T.copy}</span></button>
+              </li>
+              <li><span set:html={T.claude[2]} /></li>
+              <li><span set:html={T.claude[3]} /> <span class="bubble">{T.claudeAsk}</span></li>
+            </ol>
+            <p class="panel-note">{T.claudeNote}</p>
+          </div>
+
+          <div class="panel" role="tabpanel" id="panel-1" aria-labelledby="tab-1">
+            <h3 class="panel-h">{T.tabs[1]}</h3>
+            <ol class="steps">
+              <li><span set:html={T.chatgpt[0]} /></li>
+              <li><span set:html={T.chatgpt[1]} />
+                <button type="button" class="copy-inline" data-copy={MCP_URL} data-done={T.copyDone}><code>{MCP_URL}</code><span class="copy-label">{T.copy}</span></button>
+              </li>
+              <li><span set:html={T.chatgpt[2]} /></li>
+              <li><span set:html={T.chatgpt[3]} /> <span class="bubble">{T.chatgptAsk}</span></li>
+            </ol>
+            <p class="panel-note">{T.chatgptNote}</p>
+          </div>
+
+          <div class="panel" role="tabpanel" id="panel-2" aria-labelledby="tab-2">
+            <h3 class="panel-h">{T.tabs[2]}</h3>
+            <p class="text-slate-300 text-[15px] leading-relaxed mb-3" set:html={T.codeIntro} />
+            <div class="code">
+              <pre><code>{codeCmd}</code></pre>
+              <button type="button" class="code-copy" data-copy={codeCmd.replace(' \\\n  ', ' ')} data-done={T.copyDone}>{T.copy}</button>
+            </div>
+            <ul class="others">
+              {T.others.map((o) => <li set:html={o} />)}
+            </ul>
+            <details class="raw">
+              <summary>{T.rawSummary}</summary>
+              <pre><code>{rawCall}</code></pre>
+            </details>
+          </div>
+        </div>
+
+        <figure class="signin">
+          <Screenshot src={img('sign-in')} widths={[776]} width={776} height={760} alt={T.signinAlt}
+            sizes="(min-width: 1024px) 360px, min(388px, calc(100vw - 32px))" class="shot shot-signin" />
+          <figcaption class="cap" set:html={T.signinCap} />
+        </figure>
+      </div>
+    </section>
+
+    <!-- Tools -->
+    <section id={id.tools} class="scroll-mt-24 mb-20">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-100 mb-3">{T.toolsH}</h2>
+      <p class="text-slate-400 leading-relaxed max-w-2xl mb-8">{T.toolsLede}</p>
+      <div class="toolgroups">
+        {T.groups.map((g) => (
+          <div class="toolgroup">
+            <h3 class="group-name">{g.name}</h3>
+            <ul class="toollist">
+              {g.tools.map((t) => (
+                <li class="tool">
+                  <div class="tool-head">
+                    <code class="tool-name">{t.name}</code>
+                    {t.map && (
+                      <span class="tag-map">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" stroke-linejoin="round"/></svg>
+                        {T.mapTag}
+                      </span>
+                    )}
+                  </div>
+                  <p class="tool-desc">{t.desc}</p>
+                  <p class="bubble">{t.ask}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- The map in the chat -->
+    <section id={id.map} class="scroll-mt-24 mb-20">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-100 mb-3">{T.mapH}</h2>
+      <p class="text-slate-400 leading-relaxed max-w-2xl mb-8">{T.mapLede}</p>
+
+      <figure class="mb-10" data-theme-figure>
+        <div class="theme-shot" data-shot="light">
+          <a href={`${img('fullscreen-light')}-1920.webp`} class="zoom" aria-label={T.openFull}>
+            <Screenshot src={img('fullscreen-light')} widths={[1920, 1100]} width={1920} height={1200} alt={T.fullAltLight}
+              sizes="(min-width: 1152px) 1056px, calc(100vw - 32px)" class="shot" />
+          </a>
+        </div>
+        <div class="theme-shot" data-shot="dark" hidden>
+          <a href={`${img('fullscreen-dark')}-1920.webp`} class="zoom" aria-label={T.openFull}>
+            <Screenshot src={img('fullscreen-dark')} widths={[1920, 1100]} width={1920} height={1200} alt={T.fullAltDark}
+              sizes="(min-width: 1152px) 1056px, calc(100vw - 32px)" class="shot" />
+          </a>
+        </div>
+        <figcaption class="cap flex flex-wrap items-center justify-between gap-3">
+          <span>{T.fullCap}</span>
+          <span class="seg" role="group" aria-label={T.themeLabel} hidden>
+            <button type="button" data-theme-btn="light" aria-pressed="true">{T.light}</button>
+            <button type="button" data-theme-btn="dark" aria-pressed="false">{T.dark}</button>
+          </span>
+        </figcaption>
+      </figure>
+
+      <div class="gallery">
+        <figure class="g-detail">
+          <a href={`${img('chat-detail')}-1440.webp`} class="zoom" aria-label={T.openFull}>
+            <Screenshot src={img('chat-detail')} widths={[1440, 720]} width={1440} height={1074} alt={T.detailAlt}
+              sizes="(min-width: 1152px) 600px, (min-width: 1024px) 52vw, calc(100vw - 32px)" class="shot" />
+          </a>
+          <figcaption class="cap">{T.detailCap}</figcaption>
+        </figure>
+        <figure class="g-phone">
+          <a href={`${img('phone-light')}-720.webp`} class="zoom" aria-label={T.openFull}>
+            <Screenshot src={img('phone-light')} widths={[720]} width={720} height={974} alt={T.phoneAlt}
+              sizes="(min-width: 1024px) 220px, calc(50vw - 24px)" class="shot shot-phone" />
+          </a>
+          <figcaption class="cap">{T.phoneCap}</figcaption>
+        </figure>
+        <figure class="g-phone">
+          <a href={`${img('phone-fullscreen-dark')}-720.webp`} class="zoom" aria-label={T.openFull}>
+            <Screenshot src={img('phone-fullscreen-dark')} widths={[720]} width={720} height={1330} alt={T.phoneFullAlt}
+              sizes="(min-width: 1024px) 220px, calc(50vw - 24px)" class="shot shot-phone" />
+          </a>
+          <figcaption class="cap">{T.phoneFullCap}</figcaption>
+        </figure>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-8 mt-12">
+        <div>
+          <h3 class="text-lg font-semibold text-slate-100 mb-3">{T.keyH}</h3>
+          <dl class="defs">
+            {T.key.map(([k, v]) => (<div><dt>{k}</dt><dd>{v}</dd></div>))}
+          </dl>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-slate-100 mb-3">{T.buttonsH}</h3>
+          <dl class="defs">
+            {T.buttons.map(([k, v]) => (<div><dt>{k}</dt><dd>{v}</dd></div>))}
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <!-- Near me -->
+    <section id={id.near} class="scroll-mt-24 mb-20">
+      <div class="grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-8 lg:gap-14 items-center">
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-bold text-slate-100 mb-3">{T.nearH}</h2>
+          <p class="text-slate-400 leading-relaxed mb-5">{T.nearLede}</p>
+          <ul class="near-ways">
+            <li><span>{T.nearWays[0]}</span> <span class="bubble">{T.nearSay}</span></li>
+            <li set:html={T.nearWays[1]} />
+          </ul>
+          <p class="text-slate-400 leading-relaxed mt-6 mb-2">{T.nearThen}</p>
+          <p class="bubble mb-6">{T.nearAsk}</p>
+          <p class="text-sm text-slate-500 leading-relaxed">{T.nearNote}</p>
+        </div>
+        <figure>
+          <Screenshot src={img('near-me')} widths={[1440, 720]} width={1440} height={1074} alt={T.nearAlt}
+            sizes="(min-width: 1152px) 620px, (min-width: 1024px) 54vw, calc(100vw - 32px)" class="shot" />
+        </figure>
+      </div>
+    </section>
+
+    <!-- Limits -->
+    <section id={id.limits} class="scroll-mt-24 mb-20">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-100 mb-3">{T.limitsH}</h2>
+      <p class="text-slate-400 leading-relaxed max-w-2xl mb-6">{T.limitsLede}</p>
+      <div class="overflow-x-auto">
+        <table class="limits">
+          <caption class="sr-only">{T.limitsCaption}</caption>
+          <thead><tr>{T.limitsCols.map((c) => <th scope="col">{c}</th>)}</tr></thead>
+          <tbody>
+            {PLANS.map((p) => (
+              <tr>
+                <th scope="row">{planName(p.id)} <span>{p.priceEur ? T.perMonth(p.priceEur) : T.free}</span></th>
+                <td>{nf.format(p.perMin)}</td>
+                <td>{nf.format(p.perMonth)}</td>
+                <td>{p.maxRadiusKm ? `${nf.format(p.maxRadiusKm)} km` : T.worldwide}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {T.limitsNote && <p class="text-xs text-slate-500 mt-3">{T.limitsNote}</p>}
+      <p class="mt-4 text-sm"><a href={href.plans} class="text-sky-400 no-underline hover:text-sky-300">{T.limitsLink}</a></p>
+    </section>
+
+    <!-- Privacy -->
+    <section id={id.privacy} class="scroll-mt-24 mb-20">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-100 mb-6">{T.privacyH}</h2>
+      <table class="spec-table privacy-table">
+        {T.privacy.map(([k, v]) => (
+          <tr>
+            <td class="k" style="font-family:inherit;color:#e2e8f0">{k}</td>
+            <td class="d" set:html={v} />
+          </tr>
+        ))}
+      </table>
+      <p class="mt-4 text-sm"><a href={href.privacy} class="text-sky-400 no-underline hover:text-sky-300">{T.privacyLink}</a></p>
+    </section>
+
+    <!-- FAQ: the same questions as the FAQPage JSON-LD above. -->
+    <section id={id.faq} class="scroll-mt-24 mb-20">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-100 mb-6">{T.faqH}</h2>
+      <FaqList faqs={faqs} lang={lang} />
+      <p class="mt-4 text-sm"><a href={it ? '/faq/' : '/en/faq/'} class="text-sky-400 no-underline hover:text-sky-300">{T.faqAll}</a></p>
+    </section>
+
+    <!-- Docs -->
+    <section id={id.docs} class="scroll-mt-24">
+      <h2 class="text-2xl sm:text-3xl font-bold text-slate-100 mb-6">{T.docsH}</h2>
+      <ul class="doclinks">
+        {T.docs.map((d) => (
+          <li><a href={d.href}><span class="dl-label">{d.label}</span><span class="dl-desc">{d.desc}</span></a></li>
+        ))}
+      </ul>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .btn-primary {
+    display: inline-flex; align-items: center;
+    padding: 0.7rem 1.25rem; border-radius: 0.5rem;
+    background: #38bdf8; color: #070d1a; font-weight: 600; font-size: 0.9rem;
+    text-decoration: none; transition: background-color 0.15s;
+  }
+  .btn-primary:hover { background: #7dd3fc; color: #070d1a; }
+  .copy-url {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    padding: 0.65rem 0.95rem; border-radius: 0.5rem;
+    background: #111e30; color: #cbd5e1; border: 1px solid #2a3f5c;
+    font-size: 0.85rem; cursor: pointer; transition: border-color 0.15s, color 0.15s;
+  }
+  .copy-url:hover { border-color: #38bdf8; color: #f0f9ff; }
+  .copy-status { color: #34d399; min-width: 1px; }
+
+  /* The conversation around the screenshot: neutral on purpose, it imitates
+     no assistant's UI. Prompts are the only bubbles on the page. */
+  .chat {
+    margin: 0;
+    padding: 18px;
+    border-radius: 22px;
+    background: #0b1526;
+    border: 1px solid #1e3048;
+    box-shadow: 0 30px 80px -40px #000;
+  }
+  .bubble {
+    display: inline-block;
+    padding: 0.5rem 0.85rem;
+    border-radius: 16px 16px 4px 16px;
+    background: #17304d;
+    color: #e6f0fb;
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+  /* Quoted for screen readers too; «» in Italian, as in the rest of the site. */
+  .bubble { quotes: "“" "”"; }
+  :global(html[lang="it"]) .bubble { quotes: "«" "»"; }
+  .bubble::before { content: open-quote; color: #7dd3fc; margin-right: 1px; }
+  .bubble::after { content: close-quote; color: #7dd3fc; margin-left: 1px; }
+  .chat .bubble { display: table; margin: 0 0 0 auto; max-width: 88%; }
+  .chat .bubble::before, .chat .bubble::after { content: none; }
+  .bubble-lg { font-size: 1rem; padding: 0.65rem 1rem; }
+  .call {
+    display: flex; align-items: center; gap: 0.45rem;
+    margin: 16px 0 10px;
+    font: 500 12px/1.4 "JetBrains Mono", ui-monospace, monospace;
+    color: #8391a7;
+    overflow-wrap: anywhere;
+  }
+  .call svg { color: #a78bfa; flex: none; }
+  .call b { color: #c4b5fd; font-weight: 600; }
+  .widget :global(img) { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid #22344f; }
+  .reply { margin: 14px 2px 0; color: #cbd5e1; font-size: 0.95rem; line-height: 1.6; }
+  .chat-note { margin: 14px 2px 0; padding-top: 12px; border-top: 1px solid #1a2a40; color: #7a889e; font-size: 0.78rem; line-height: 1.5; }
+  @media (max-width: 559px) {
+    .chat { padding: 12px; border-radius: 18px; }
+    .bubble-lg { font-size: 0.95rem; }
+  }
+
+  /* One moment on load: the question, the call, the map, the answer, in the
+     order they happen in a chat. The map moves but is never transparent: it
+     is the page's largest image. */
+  @media (prefers-reduced-motion: no-preference) {
+    .chat-in { animation: chat-in 420ms ease-out both; animation-delay: var(--d); }
+    .chat-rise { animation: chat-rise 520ms cubic-bezier(.2,.7,.2,1) both; animation-delay: var(--d); }
+  }
+  @keyframes chat-in { from { opacity: 0; transform: translateY(6px); } }
+  @keyframes chat-rise { from { transform: translateY(14px); } }
+
+  /* Connect: tabs once the script runs; without it, the three panels one
+     after the other, each with its heading. */
+  .tablist[hidden], .seg[hidden] { display: none; }
+  .tablist { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; margin-bottom: 1.25rem; border-radius: 0.6rem; background: #0a1320; border: 1px solid #1e3048; width: fit-content; max-width: 100%; }
+  .tablist button {
+    padding: 0.5rem 0.9rem; border-radius: 0.45rem; font-size: 0.9rem; font-weight: 500;
+    color: #94a3b8; background: transparent; cursor: pointer; transition: color 0.15s, background-color 0.15s;
+  }
+  .tablist button:hover { color: #e2e8f0; }
+  .tablist button[aria-selected="true"] { background: #17304d; color: #f0f9ff; }
+  .panel { padding: 1.5rem; border-radius: 0.9rem; background: #0a1320; border: 1px solid #1e3048; }
+  .panel + .panel { margin-top: 1rem; }
+  .panel-h { font-size: 1.05rem; font-weight: 600; color: #f0f9ff; margin-bottom: 1rem; }
+  .tabs.is-tabs .panel + .panel { margin-top: 0; }
+  .tabs.is-tabs .panel-h {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
+  .steps { counter-reset: step; display: grid; gap: 1.1rem; }
+  .steps > li { counter-increment: step; position: relative; padding-left: 2.4rem; color: #cbd5e1; font-size: 0.95rem; line-height: 1.6; }
+  .steps > li::before {
+    content: counter(step); position: absolute; left: 0; top: 0;
+    width: 1.6rem; height: 1.6rem; border-radius: 999px; display: grid; place-items: center;
+    font: 600 12px/1 "JetBrains Mono", monospace; color: #7dd3fc; border: 1px solid #2a4a6b; background: #0f1d31;
+  }
+  .steps :global(strong) { color: #f0f9ff; font-weight: 600; }
+  .steps :global(a), .others :global(a), .cap :global(a), .near-ways :global(a), .spec-table :global(a) { color: #38bdf8; text-decoration: none; }
+  .steps :global(a:hover), .others :global(a:hover), .cap :global(a:hover), .near-ways :global(a:hover), .spec-table :global(a:hover) { color: #7dd3fc; }
+  .steps .bubble { display: table; margin-top: 0.5rem; }
+  .copy-inline {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+    width: 100%; max-width: 30rem; margin-top: 0.5rem; padding: 0.55rem 0.75rem;
+    border-radius: 0.5rem; background: #111e30; border: 1px solid #2a3f5c; cursor: pointer; text-align: left;
+    transition: border-color 0.15s;
+  }
+  .copy-inline:hover { border-color: #38bdf8; }
+  .copy-inline code { font-size: 0.85rem; color: #7dd3fc; overflow-wrap: anywhere; }
+  .copy-label { font-size: 0.75rem; color: #94a3b8; flex: none; }
+  .panel-note { margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid #1a2a40; color: #8391a7; font-size: 0.85rem; line-height: 1.55; }
+  .code { position: relative; }
+  .code pre, .raw pre {
+    margin: 0; padding: 1rem 1.1rem; border-radius: 0.6rem; overflow-x: auto;
+    background: #070d1a; border: 1px solid #1e3048; color: #cbd5e1; font-size: 0.8rem; line-height: 1.65;
+  }
+  .code pre { padding-right: 4.5rem; }
+  .code-copy {
+    position: absolute; top: 0.55rem; right: 0.55rem; padding: 0.3rem 0.6rem; border-radius: 0.4rem;
+    font-size: 0.75rem; color: #cbd5e1; background: #111e30; border: 1px solid #2a3f5c; cursor: pointer;
+  }
+  .code-copy:hover { border-color: #38bdf8; }
+  .others { margin-top: 1.25rem; display: grid; gap: 0.75rem; }
+  .others li { position: relative; padding-left: 1rem; color: #94a3b8; font-size: 0.9rem; line-height: 1.6; }
+  .others li::before { content: ""; position: absolute; left: 0; top: 0.65em; width: 5px; height: 5px; border-radius: 50%; background: #3b5577; }
+  .others :global(strong) { color: #e2e8f0; font-weight: 600; }
+  .others :global(code) { font-size: 0.8rem; color: #7dd3fc; }
+  .raw { margin-top: 1.25rem; }
+  .raw summary { cursor: pointer; color: #94a3b8; font-size: 0.85rem; }
+  .raw summary:hover { color: #e2e8f0; }
+  .raw pre { margin-top: 0.75rem; font-size: 0.75rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .signin { margin: 0; }
+  .signin :global(.shot-signin) { max-width: 388px; }
+
+  /* Screenshots */
+  :global(.mcp .shot) { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid #22344f; background: #0a1320; }
+  :global(.mcp .shot-phone) { border-radius: 20px; }
+  .zoom { display: block; border-radius: 12px; }
+  .cap { margin-top: 0.75rem; color: #8391a7; font-size: 0.85rem; line-height: 1.55; }
+  .gallery { display: grid; gap: 2rem 1.5rem; grid-template-columns: 1fr 1fr; align-items: start; }
+  .gallery figure { margin: 0; }
+  .g-detail { grid-column: 1 / -1; }
+  @media (min-width: 1024px) {
+    .gallery { grid-template-columns: minmax(0, 6fr) minmax(0, 2.6fr) minmax(0, 2.6fr); }
+    .g-detail { grid-column: auto; }
+  }
+  .seg { display: inline-flex; padding: 3px; border-radius: 0.5rem; background: #0a1320; border: 1px solid #1e3048; }
+  .seg button { padding: 0.3rem 0.75rem; border-radius: 0.35rem; font-size: 0.8rem; color: #94a3b8; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: #17304d; color: #f0f9ff; }
+
+  /* Tools: grouped by what you want to know; the group is the label column. */
+  .toolgroup { display: grid; gap: 0.75rem 2rem; padding: 1.5rem 0; border-top: 1px solid #1e3048; }
+  .toolgroup:last-child { border-bottom: 1px solid #1e3048; }
+  @media (min-width: 768px) { .toolgroup { grid-template-columns: 11rem minmax(0, 1fr); } }
+  .group-name { font-size: 0.95rem; font-weight: 600; color: #94a3b8; padding-top: 0.15rem; }
+  .toollist { display: grid; gap: 1.75rem; }
+  @media (min-width: 1024px) { .toollist { grid-template-columns: 1fr 1fr; } }
+  .tool-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem; }
+  .tool-name { font: 600 0.95rem/1.3 "JetBrains Mono", monospace; color: #c4b5fd; }
+  .tag-map { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; color: #7dd3fc; padding: 0.15rem 0.5rem; border-radius: 999px; border: 1px solid #23476a; }
+  .tool-desc { color: #94a3b8; font-size: 0.92rem; line-height: 1.6; margin-bottom: 0.6rem; max-width: 34rem; }
+
+  .defs > div { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: 1rem; padding: 0.6rem 0; border-top: 1px solid #1e3048; font-size: 0.9rem; }
+  .defs > div:last-child { border-bottom: 1px solid #1e3048; }
+  .defs dt { color: #e2e8f0; font-weight: 500; }
+  .defs dd { color: #94a3b8; }
+
+  .near-ways { display: grid; gap: 0.75rem; color: #cbd5e1; font-size: 0.95rem; line-height: 1.6; }
+  .near-ways li { position: relative; padding-left: 1rem; }
+  .near-ways li::before { content: ""; position: absolute; left: 0; top: 0.65em; width: 5px; height: 5px; border-radius: 50%; background: #3b5577; }
+  .near-ways .bubble { display: table; margin-top: 0.4rem; }
+  .near-ways :global(strong) { color: #f0f9ff; font-weight: 600; }
+
+  .limits { width: 100%; max-width: 52rem; border-collapse: collapse; font-size: 0.9rem; }
+  @media (max-width: 480px) { .limits th, .limits td { padding-right: 0.6rem; } .limits td { font-size: 0.78rem; } }
+  .limits th, .limits td { padding: 0.75rem 1rem 0.75rem 0; text-align: left; border-bottom: 1px solid #1e3048; }
+  .limits thead th { font-size: 0.78rem; font-weight: 500; color: #8391a7; border-bottom-color: #2a3f5c; }
+  .limits tbody th { color: #e2e8f0; font-weight: 600; }
+  .limits tbody th span { display: block; font-weight: 400; font-size: 0.78rem; color: #8391a7; }
+  .limits td { font-family: "JetBrains Mono", monospace; font-size: 0.85rem; color: #cbd5e1; font-variant-numeric: tabular-nums; }
+
+  .privacy-table td.k { padding-left: 0; width: 13rem; white-space: normal; }
+  @media (max-width: 640px) { .privacy-table td.k, .privacy-table td.d { padding-left: 0; padding-right: 0; } }
+  .doclinks { display: grid; gap: 0; border-top: 1px solid #1e3048; }
+  .doclinks a { display: grid; gap: 0.15rem 1.5rem; padding: 0.9rem 0; border-bottom: 1px solid #1e3048; text-decoration: none; }
+  @media (min-width: 640px) { .doclinks a { grid-template-columns: 11rem minmax(0, 1fr); } }
+  .dl-label { color: #38bdf8; font-weight: 600; font-size: 0.95rem; }
+  .doclinks a:hover .dl-label { color: #7dd3fc; }
+  .dl-desc { color: #94a3b8; font-size: 0.9rem; }
+</style>
+
+<script>
+  // Copy buttons: the server URL and the Claude Code command.
+  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const text = btn.dataset.copy || '';
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        return;
+      }
+      const status = btn.parentElement?.querySelector<HTMLElement>('.copy-status');
+      const label = btn.querySelector<HTMLElement>('.copy-label') || (btn.classList.contains('code-copy') ? btn : null);
+      if (status) {
+        status.textContent = btn.dataset.done || '';
+        setTimeout(() => { status.textContent = ''; }, 2000);
+      } else if (label) {
+        const before = label.textContent;
+        label.textContent = btn.dataset.done || '';
+        setTimeout(() => { label.textContent = before; }, 2000);
+      }
+    });
+  });
+
+  // Tabs (WAI-ARIA tabs pattern, manual arrows + Home/End).
+  document.querySelectorAll<HTMLElement>('[data-tabs]').forEach((root) => {
+    const list = root.querySelector<HTMLElement>('[role="tablist"]');
+    if (!list) return;
+    const tabs = [...list.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const panels = tabs.map((t) => document.getElementById(t.getAttribute('aria-controls') || '')!);
+    const select = (i: number, focus = false) => {
+      tabs.forEach((t, j) => {
+        t.setAttribute('aria-selected', String(i === j));
+        t.tabIndex = i === j ? 0 : -1;
+        panels[j].hidden = i !== j;
+      });
+      if (focus) tabs[i].focus();
+    };
+    list.hidden = false;
+    root.classList.add('is-tabs');
+    panels.forEach((p) => { p.tabIndex = 0; });
+    select(0);
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => select(i));
+      t.addEventListener('keydown', (e) => {
+        const n = tabs.length;
+        const k = e.key;
+        if (k === 'ArrowRight' || k === 'ArrowLeft' || k === 'Home' || k === 'End') {
+          e.preventDefault();
+          select(k === 'Home' ? 0 : k === 'End' ? n - 1 : (i + (k === 'ArrowRight' ? 1 : n - 1)) % n, true);
+        }
+      });
+    });
+  });
+
+  // Light/dark switch of the full-screen screenshot.
+  document.querySelectorAll<HTMLElement>('[data-theme-figure]').forEach((fig) => {
+    const seg = fig.querySelector<HTMLElement>('.seg');
+    if (!seg) return;
+    seg.hidden = false;
+    const btns = [...seg.querySelectorAll<HTMLButtonElement>('[data-theme-btn]')];
+    btns.forEach((b) => b.addEventListener('click', () => {
+      const theme = b.dataset.themeBtn;
+      btns.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      fig.querySelectorAll<HTMLElement>('[data-shot]').forEach((s) => { s.hidden = s.dataset.shot !== theme; });
+    }));
+  });
+</script>

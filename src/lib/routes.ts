@@ -24,6 +24,7 @@ const PREFIXES: [string, string][] = [
   ['/dati/api/chiave', '/data/api/key'],
   ['/dati/api/grazie', '/data/api/thanks'],
   ['/dati/api', '/data/api'],
+  ['/dati/mcp', '/data/mcp'],
   ['/dati/archivio', '/data/archive'],
   ['/dati/confronto', '/data/comparison'],
   ['/dati', '/data'],
