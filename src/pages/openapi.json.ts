@@ -228,7 +228,7 @@ const spec = {
         description:
           'Every aircraft whose recorded track passed within `dist` km of the point between `from` and `to`, one entry per ' +
           'aircraft, sorted by the time of its closest point. Tracks are interpolated between received positions (gaps over ' +
-          '5 minutes are not). Covers the days since 2026-08-17; the current day lags by up to ~40 minutes, and the periods ' +
+          '5 minutes are not). Covers the days since 2026-08-17; the current day is indexed only after midnight UTC (by ~02:00 UTC), and the periods ' +
           'not searched are listed in `coverage.gaps`. One request per call. The maximum `dist` and window depend on the ' +
           `plan (Free 10 km / 6 h, Starter 25 km / 24 h, others 50 km / 24 h): ${PLANS}. ` +
           'Aircraft data only: registration, type, description and dbFlags, never the owner or operator.',
