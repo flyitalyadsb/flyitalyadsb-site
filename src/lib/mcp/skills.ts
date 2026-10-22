@@ -263,6 +263,50 @@ function overflightsSkillMd(): string {
   ].join('\n');
 }
 
+function notableTrafficSkillMd(): string {
+  return [
+    '# Notable traffic in an area',
+    '',
+    'What notable traffic the FlyItalyADSB network saw near a place over the last hours, via the',
+    '`notable_traffic` MCP tool: emergency squawks (7500, 7600, 7700, or the ADS-B emergency status),',
+    'military aircraft, and other "interesting" aircraft from the aircraft database. It reads the',
+    'events the network records as aircraft enter ~50 km grid cells (REST: `GET /v2/events`), so it',
+    'answers "anything unusual near me today?", not "where is this aircraft now?" (`aircraft_near`).',
+    '',
+    '## Requirements',
+    '',
+    `- Connect to the MCP server at \`${MCP_URL}\` (Streamable HTTP, stateless).`,
+    '- Every request needs an `X-Api-Key` header (or the OAuth connection). One call counts as one request;',
+    "  the plan's maximum radius applies.",
+    '- The place: `airport` (one of FlyItalyADSB\'s curated Italian airports), or `lat` and `lon` anywhere,',
+    '  or nothing to use the position saved on the account (see the `my-location` skill), like `aircraft_near`.',
+    '- Optional `radiusKm` (default 100, max 500), `sinceHours` (default 24, max 168), `kinds`',
+    '  (`emergency`, `military`, `interesting`; default all) and `limit` (aircraft, default 30, max 100).',
+    '- An emergency squawk is what the transponder sent, not a confirmed emergency; positions can be wrong',
+    '  or spoofed. Say so when you report one.',
+    '- Push alerts for the same events are signed webhooks on paid plans, set up with the REST API',
+    '  (`POST /v2/webhooks`), not with this tool.',
+    '',
+    '## Validate',
+    '',
+    '```',
+    `POST ${MCP_URL}`,
+    'Content-Type: application/json',
+    'X-Api-Key: <your-key>',
+    '',
+    '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"notable_traffic","arguments":{"airport":"MXP","sinceHours":24}}}',
+    '```',
+    '',
+    'Check that `result.content[0].text` parses as JSON with:',
+    '',
+    '- `aircraft` — one entry per aircraft and kind: `kind`, `reason` (emergencies), `hex`, `callsign`,',
+    '  `registration`, `type`, `firstSeen`, `lastSeen`, `sightings` and `closest` (position, distance, time)',
+    '- `countsByKind`, `totalEvents`, `totalAircraft` (before `limit`), `truncated`',
+    '- `center` (`{label, lat, lon, source}`), `radiusKm`, `since`, `until` — echo of the query',
+    '',
+  ].join('\n');
+}
+
 function myLocationSkillMd(): string {
   return [
     '# Save or forget my position',
@@ -326,6 +370,11 @@ export const SKILLS: Record<string, SkillDefinition> = {
     name: 'overflights',
     description: 'List the aircraft that flew over a place (lat/lon, an Italian airport, or the saved position) in a past time window.',
     markdown: overflightsSkillMd(),
+  },
+  'notable-traffic': {
+    name: 'notable-traffic',
+    description: 'Emergencies, military and other notable aircraft seen near a place in the last hours or days.',
+    markdown: notableTrafficSkillMd(),
   },
   'my-location': {
     name: 'my-location',

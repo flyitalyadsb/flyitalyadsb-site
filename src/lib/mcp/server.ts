@@ -4,6 +4,7 @@ import { aircraftNear, aircraftNearInputSchema, chatgptLocationHint } from './to
 import { aircraftProfile, aircraftProfileInputSchema } from './tools/aircraft-profile';
 import { findAircraft, findAircraftInputSchema } from './tools/find-aircraft';
 import { clearMyLocationInputSchema, forgetMyLocation, setMyLocation, setMyLocationInputSchema } from './tools/my-location';
+import { notableTraffic, notableTrafficInputSchema } from './tools/notable-traffic';
 import { overflights, overflightsInputSchema } from './tools/overflights';
 import { specialTraffic, specialTrafficInputSchema } from './tools/special-traffic';
 import { V2ApiError } from './v2-client';
@@ -41,6 +42,18 @@ export const TOOLS = {
     description:
       'List aircraft currently tracked network-wide that are flagged military, PIA (Privacy ICAO Address), or LADD (FAA Limiting Aircraft Data Displayed) — thanks to FlyItalyADSB\'s own MLAT, this includes aircraft without full ADS-B.',
     inputSchema: specialTrafficInputSchema,
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    } satisfies ToolAnnotations,
+  },
+  notable_traffic: {
+    title: 'Notable traffic in an area',
+    description:
+      'What notable traffic the FlyItalyADSB network saw in an area over the last hours (up to 7 days): emergency squawks (7500 hijack, 7600 radio failure, 7700 general emergency), military aircraft, and other "interesting" aircraft (government and similar), one entry per aircraft with first and last time seen and its closest recorded position. Takes an Italian airport, lat/lon anywhere, or no place at all to use the position saved on the user\'s account (or ChatGPT\'s approximate location), like aircraft_near. For what is flying right now use aircraft_near or special_traffic. Push alerts for the same events are webhooks on paid plans, set up through the REST API, not through this tool.',
+    inputSchema: notableTrafficInputSchema,
     annotations: {
       readOnlyHint: true,
       destructiveHint: false,
@@ -152,6 +165,15 @@ export function initializeMcpServer(server: McpServer, apiKey: string): void {
   server.registerTool('special_traffic', TOOLS.special_traffic, async (args) => {
     try {
       const result = await specialTraffic(args, apiKey);
+      return { content: [{ type: 'text', text: JSON.stringify(result) }] };
+    } catch (err) {
+      return errorResult(err);
+    }
+  });
+
+  server.registerTool('notable_traffic', TOOLS.notable_traffic, async (args, ctx) => {
+    try {
+      const result = await notableTraffic(args, apiKey, chatgptLocationHint(ctx.mcpReq._meta));
       return { content: [{ type: 'text', text: JSON.stringify(result) }] };
     } catch (err) {
       return errorResult(err);

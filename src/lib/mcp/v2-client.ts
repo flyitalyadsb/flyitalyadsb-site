@@ -97,6 +97,8 @@ async function v2Fetch<T>(path: string, apiKey: string, body?: unknown): Promise
   if (res.status === 401) throw await errorWithHelp(res, KEY_REJECTED);
   if (res.status === 429) throw await errorWithHelp(res, RATE_LIMITED);
   if (res.status === 403) throw await errorWithHelp(res, 'The flyitalyadsb API refused this request.', true);
+  // The API says which parameter is wrong (e.g. /events' "since can be at most 7 days ago").
+  if (res.status === 400) throw await errorWithHelp(res, 'The flyitalyadsb API refused these parameters.', true);
   if (!res.ok) throw new V2ApiError(res.status, `flyitalyadsb API returned ${res.status}.`);
   return res.json() as Promise<T>;
 }
@@ -330,4 +332,70 @@ export async function getOverflights(q: OverflightsQuery, apiKey: string): Promi
   if (res.status === 429) throw await errorWithHelp(res, RATE_LIMITED);
   if (!res.ok) throw await errorWithHelp(res, `flyitalyadsb API returned ${res.status}.`, true);
   return res.json() as Promise<OverflightsResult>;
+}
+
+/** One notable-traffic event from `/v2/events` (public-api events.py): an
+ * emergency (squawk 7500/7600/7700 or readsb's `emergency`), a military or an
+ * "interesting" aircraft (dbFlags), recorded when it entered a ~0.5° cell.
+ * Aircraft fields keep readsb's names; `source` is readsb's `type` (adsb_icao,
+ * mlat, ...). */
+export type EventKind = 'emergency' | 'military' | 'interesting';
+
+export interface TrafficEvent {
+  id: number;
+  kind: EventKind;
+  /** Emergencies only: general, hijack, radio_failure, minimum_fuel, downed. */
+  reason?: string;
+  hex: string;
+  /** ISO 8601, UTC. */
+  time: string;
+  lat: number;
+  lon: number;
+  distance_km?: number;
+  flight?: string;
+  r?: string;
+  t?: string;
+  desc?: string;
+  alt_baro?: number | 'ground';
+  gs?: number;
+  track?: number;
+  squawk?: string;
+  emergency?: string;
+  source?: string;
+  dbFlags?: number;
+  map?: string;
+  [key: string]: unknown;
+}
+
+export interface EventsResult {
+  now: number;
+  since: string;
+  until: string;
+  center: { lat: number; lon: number };
+  dist: number;
+  kinds: EventKind[];
+  count: number;
+  /** More events matched than `limit` returned. */
+  truncated: boolean;
+  events: TrafficEvent[];
+}
+
+export interface EventsQuery {
+  lat: number;
+  lon: number;
+  distKm: number;
+  /** Unix seconds. */
+  since?: number;
+  kinds?: EventKind[];
+  limit?: number;
+}
+
+/** Notable traffic within a radius since a time; counted as one request, the
+ * plan's radius applies (403 above it). */
+export function getNotableEvents(q: EventsQuery, apiKey: string): Promise<EventsResult> {
+  const params = new URLSearchParams({ lat: String(q.lat), lon: String(q.lon), dist: String(q.distKm) });
+  if (q.since !== undefined) params.set('since', String(Math.floor(q.since)));
+  if (q.kinds?.length) params.set('kinds', q.kinds.join(','));
+  if (q.limit !== undefined) params.set('limit', String(q.limit));
+  return v2Fetch(`/events?${params}`, apiKey);
 }

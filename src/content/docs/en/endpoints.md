@@ -21,6 +21,7 @@ updated: 2026-10-22
 | `/history/{icao}/{date}` | one aircraft's track on one day |
 | `/profile/{icao}` | what we know about one aircraft: identity, live status, history summary |
 | `/overflights?lat=&lon=&dist=&from=&to=` | the aircraft that flew within `dist` km of a point between two times |
+| `/events?lat=…&lon=…&dist=…` | notable traffic (emergencies, military) within a radius, over the last hours |
 
 ## One aircraft
 
@@ -67,6 +68,10 @@ curl -H "X-Api-Key: YOUR_KEY" https://api.flyitalyadsb.com/v2/profile/3c66a3
 ```
 
 The profile is about the aircraft: it never returns the names of owners or operators. It has no photo, because Planespotters.net's terms do not allow their photos to be served through another API: `photos.page` is a link to their public page, where every photo credits its photographer, and the aircraft panel of the map shows one the same way. For PIA and LADD aircraft `photos.page` is `null` and `withheld` says why. Their data is still in the profile, flagged, as everywhere in the API.
+
+## Notable traffic and webhooks
+
+`/events` lists the emergencies, military and other notable aircraft the network recorded in an area, and paid plans can receive them as signed webhooks (`POST /v2/webhooks`). Both are in [Alerts and notable traffic](/en/data/api/docs/alerts/).
 
 ## Errors
 
