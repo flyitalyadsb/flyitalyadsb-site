@@ -2,67 +2,13 @@
 import Layout from '../../../layouts/Layout.astro';
 import ApiPlans from '../../../components/ApiPlans.astro';
 import { PLANS, freeLimitsFrom } from '../../../data/plans';
+import { faqsFor } from '../../../data/faq';
+import FaqList from '../../../components/FaqList.astro';
 
 const SITE = 'https://flyitalyadsb.com';
 
-const faqs = [
-  {
-    q: 'Do I need an API key?',
-    a: 'Yes, for both the REST API (api.flyitalyadsb.com/v2/*) and the MCP server (flyitalyadsb.com/mcp) — same key for both, passed in the X-Api-Key header. It\'s self-service and instant: just an email address: within seconds you get a link to see the key, no manual approval. The key is free; paid plans raise its limits without changing it.',
-  },
-  {
-    q: 'Can I use the API commercially?',
-    a: 'Yes, on every plan, free included, within that plan\'s limits. Above the free limits you need a paid plan (Starter from €9/month, Pro, Business): self-serve, cancel any time, the key you already have is upgraded in place. You can use it inside apps and devices you sell too (see below). An enterprise agreement is needed only to resell the data as an API or feed for other people\'s products, for an SLA or for volume beyond Business.',
-  },
-  {
-    q: 'Can I put the key in an app or a device I sell? And use it from my server?',
-    a: 'Yes. The key can be built into an app or device you distribute or sell, and your server can use it, caching included, to serve your product\'s users. Requests from all the devices and users count together towards that key\'s plan: for example 10 devices asking 12 times a minute, day and night, make 120 requests a minute and over 5 million a month, which is the Pro plan. Use one key per product and credit FlyItalyADSB and flyitalyadsb.com in the product (CC BY-SA 4.0). A key inside an app can be extracted: to keep it safe, use it only from your server. An enterprise agreement is needed only to resell the data as an API or feed for other people\'s products.',
-  },
-  {
-    q: 'I run a receiver that feeds the network: do I get anything?',
-    a: 'Yes: whoever feeds FlyItalyADSB gets the Pro plan limits on their Free keys at no cost (300 requests a minute, 10 million a month, worldwide radius), for non-commercial use. Turn it on in My API by opening the page from the same network as the receiver: we check that data arrives from there, as on the "Is my data arriving?" page. It lasts as long as the receiver feeds the network, with 3 days of grace if it stops.',
-  },
-  {
-    q: 'How do payment and cancellation work?',
-    a: 'A monthly subscription paid by card or wallet, prices before tax: your country\'s tax is added at checkout. Change plan or cancel any time from the links in your receipt; a cancellation takes effect at the end of the period and the key goes back to the Free plan. The data stays CC BY-SA 4.0: a plan pays for access and higher limits, not for a different licence.',
-  },
-  {
-    q: 'Is there an SLA? How fast do you reply?',
-    a: 'No plan includes an SLA or guaranteed response times, for the API or for email: FlyItalyADSB is a community and the paid plans only cover the cost of servers and bandwidth. The service is best effort and we reply as soon as we can. An SLA can only be agreed in an enterprise agreement.',
-  },
-  {
-    q: 'Where does the data come from?',
-    a: 'Almost all of it from the receivers of the FlyItalyADSB network, which send us their data first-hand, and from our own multilateration (MLAT). A small part comes from outside sources: ADSBHub and, for gliders and ultralights, the Open Glider Network (OGN). Aircraft seen only by those sources are about 1% of the total (measured on 19 October 2026): if one of them stops, the rest is unaffected.',
-  },
-  {
-    q: 'How fresh are the positions?',
-    a: 'The server rewrites the picture of every aircraft every 2 seconds and the API reloads it at most every 3. Each aircraft carries seen_pos, the seconds since its last position: in a measurement on 19 October 2026 half of the positions were under a second old and 9 in 10 under 7 seconds. Positions older than about 60 seconds are not returned.',
-  },
-  {
-    q: 'Which fields does a response have? Is the flight route included?',
-    a: 'Each aircraft is a record in readsb\'s aircraft.json format, the same as tar1090 and adsb.lol: ICAO hex, callsign (flight), registration (r) and type (t) for about 99% of aircraft, position, altitude, speed, track, squawk, category and the military, PIA and LADD flags. There is no route (departure and arrival airports) and no photos: for those you need another source.',
-  },
-  {
-    q: 'Can I get every aircraft in an area in a single request?',
-    a: 'Yes: /v2/lat/<lat>/lon/<lon>/dist/<km> returns every aircraft within the radius. The maximum radius depends on the plan: 500 km on Free, 1000 km on Starter, no limit on Pro and Business, which can ask for the whole world in one request. There is no single request for several aircraft by hex or registration: one request per aircraft, or one per radius.',
-  },
-  {
-    q: 'How do I use the MCP server with Claude or ChatGPT?',
-    a: 'Add https://flyitalyadsb.com/mcp as a custom connector (on claude.ai: Connectors → Add custom connector) and press Connect: you sign in with your email and a 6-digit code, no key to copy. In clients without OAuth, pass your key in the X-Api-Key header. Then just ask things like "what\'s flying over Fiumicino right now?" or "any military traffic over Rome?" and the agent will call the tools automatically.',
-  },
-  {
-    q: 'What can the MCP server do that the map can\'t?',
-    a: 'It returns structured data (JSON) instead of a web page: look up one aircraft by ICAO hex/callsign/registration, list every aircraft within a radius of any point on the planet with full records, and pull filtered lists of military, PIA (privacy), or LADD traffic.',
-  },
-  {
-    q: 'Is the network limited to Italy?',
-    a: 'No. FlyItalyADSB was born in Italy but is a global network with 3,200+ direct feeders worldwide — both the REST API and the MCP tools accept coordinates anywhere on the planet, not just Italy. Coverage follows the receivers: dense in Italy, much of Europe and North America, thinner in Asia, Africa and Oceania. For a given area, check the live map or try a request with a Free key.',
-  },
-  {
-    q: 'How does this compare to other open ADS-B APIs (adsb.fi, airplanes.live, adsb.lol...)?',
-    a: 'See the factual comparison at flyitalyadsb.com/en/data/comparison: rate limits, feeder requirements, and commercial-use terms for each, compared without value judgments.',
-  },
-];
+// The questions marked `api` in src/data/faq.ts (the full list is /faq/).
+const faqs = faqsFor((f) => f.api).map((f) => f.en);
 
 const faqJsonLd = {
   '@context': 'https://schema.org',
@@ -147,6 +93,7 @@ X-Api-Key: <your-key>
       <a href="#mcp"><span>04</span>MCP server</a>
       <a href="#connect-claude"><span>05</span>Connect to Claude</a>
       <a href="#faq"><span>06</span>FAQ</a>
+      <a href="/en/data/api/docs/"><span>07</span>Documentation</a>
     </nav>
 
     <!-- At-a-glance readout — the reference specs a developer scans for
@@ -317,19 +264,8 @@ X-Api-Key: <your-key>
          visible counterpart at all. -->
     <section id="faq" class="mb-14 scroll-mt-24">
       <h2 class="text-2xl font-bold text-slate-100 mb-6">Frequently asked questions</h2>
-      <div class="divide-y" style="border-color:#1e3048;border-top:1px solid #1e3048;border-bottom:1px solid #1e3048">
-        {faqs.map((f) => (
-          <details class="group" style="border-color:#1e3048">
-            <summary class="py-4 cursor-pointer list-none flex items-center justify-between gap-4 text-sm font-semibold text-slate-200 hover:text-white">
-              {f.q}
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" class="shrink-0 transition-transform group-open:rotate-45">
-                <path d="M12 5v14m-7-7h14" stroke-linecap="round"/>
-              </svg>
-            </summary>
-            <p class="text-sm text-slate-400 leading-relaxed pb-4 pr-8">{f.a}</p>
-          </details>
-        ))}
-      </div>
+      <FaqList faqs={faqsFor((f) => f.api)} lang="en" />
+      <p class="mt-4 text-sm"><a href="/en/faq/" class="text-sky-400 no-underline hover:text-sky-300">All frequently asked questions →</a></p>
     </section>
 
   </div>

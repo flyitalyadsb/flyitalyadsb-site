@@ -1,0 +1,114 @@
+---
+import Layout from '../layouts/Layout.astro';
+import FaqList from './FaqList.astro';
+import { FAQ_CATEGORIES, faqsFor } from '../data/faq';
+
+// /faq/ and /en/faq/: every question of src/data/faq.ts by category, with a
+// search box that filters as you type (the list works without it).
+interface Props {
+  lang: 'it' | 'en';
+}
+const { lang } = Astro.props;
+const SITE = 'https://flyitalyadsb.com';
+const it = lang === 'it';
+const path = it ? '/faq/' : '/en/faq/';
+
+const T = it
+  ? {
+      title: 'Domande frequenti',
+      description: 'Le risposte alle domande più comuni su FlyItalyADSB: chiave API, piani e limiti, uso commerciale, errori, storico, MCP, ricevitori e mappa.',
+      intro: 'Le risposte alle domande che ci fate più spesso. I dettagli tecnici sono nella',
+      docs: 'documentazione',
+      search: 'Cerca una domanda…',
+      none: 'Nessuna domanda trovata. Prova con un’altra parola, oppure scrivici.',
+      more: 'Non hai trovato la risposta? Scrivi a',
+      home: 'Home',
+    }
+  : {
+      title: 'FAQ',
+      description: 'Answers to the most common questions about FlyItalyADSB: API key, plans and limits, commercial use, errors, history, MCP, receivers and the map.',
+      intro: 'Answers to the questions we are asked most. The technical details are in the',
+      docs: 'documentation',
+      search: 'Search a question…',
+      none: 'No question found. Try another word, or write to us.',
+      more: 'Didn’t find your answer? Write to',
+      home: 'Home',
+    };
+const docsHref = it ? '/dati/api/docs/' : '/en/data/api/docs/';
+const groups = FAQ_CATEGORIES.map((c) => ({ ...c, faqs: faqsFor((f) => f.cat === c.id) })).filter((g) => g.faqs.length);
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  inLanguage: it ? 'it-IT' : 'en-US',
+  mainEntity: groups.flatMap((g) => g.faqs).map((f) => ({
+    '@type': 'Question',
+    name: f[lang].q,
+    acceptedAnswer: { '@type': 'Answer', text: f[lang].a },
+  })),
+};
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: T.home, item: `${SITE}${it ? '/' : '/en/'}` },
+    { '@type': 'ListItem', position: 2, name: T.title, item: `${SITE}${path}` },
+  ],
+};
+---
+<Layout title={T.title} description={T.description} jsonLd={[faqJsonLd, breadcrumbJsonLd]}>
+  <div class="max-w-4xl mx-auto px-4 pt-24 pb-20">
+    <h1 class="text-4xl font-bold text-slate-100 mb-4">{T.title}</h1>
+    <p class="text-slate-400 mb-8">{T.intro} <a href={docsHref} class="text-sky-400 no-underline hover:text-sky-300">{T.docs}</a>.</p>
+
+    <input id="faq-search" type="search" placeholder={T.search} aria-label={T.search} autocomplete="off"
+      class="w-full rounded-lg px-4 py-3 mb-6 text-sm text-slate-100 placeholder-slate-500 outline-none focus:ring-2 focus:ring-sky-500/40"
+      style="background:#0a1320;border:1px solid #1e3048" />
+
+    <nav class="flex flex-wrap gap-2 mb-12" aria-label={T.title}>
+      {groups.map((g) => (
+        <a href={`#${g.id}`} class="text-xs px-3 py-1.5 rounded-full no-underline text-slate-300 hover:text-white" style="border:1px solid #1e3048">{g[lang]}</a>
+      ))}
+    </nav>
+
+    {groups.map((g) => (
+      <section id={g.id} class="mb-12 scroll-mt-24" data-faq-group>
+        <h2 class="text-xl font-bold text-slate-100 mb-4">{g[lang]}</h2>
+        <FaqList faqs={g.faqs} lang={lang} />
+      </section>
+    ))}
+
+    <p id="faq-none" class="hidden text-sm text-slate-400 mb-12">{T.none}</p>
+    <p class="text-sm text-slate-400">{T.more} <a href="mailto:admin@flyitalyadsb.com" class="text-sky-400 no-underline hover:text-sky-300">admin@flyitalyadsb.com</a>.</p>
+  </div>
+
+  <script>
+    // Filter on question and answer text; a link to #question opens it.
+    const input = document.getElementById('faq-search') as HTMLInputElement | null;
+    const none = document.getElementById('faq-none');
+    const items = [...document.querySelectorAll<HTMLDetailsElement>('details[data-faq]')];
+    const groups = [...document.querySelectorAll<HTMLElement>('[data-faq-group]')];
+    const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const text = new Map(items.map((d) => [d, norm(d.textContent ?? '')]));
+    function filter(q: string) {
+      const words = norm(q).split(/\s+/).filter(Boolean);
+      let shown = 0;
+      for (const d of items) {
+        const hit = words.every((w) => text.get(d)!.includes(w));
+        d.hidden = !hit;
+        if (hit) shown++;
+        if (words.length && hit) d.open = true;
+      }
+      for (const g of groups) g.hidden = !g.querySelector('details:not([hidden])');
+      none?.classList.toggle('hidden', shown > 0);
+    }
+    input?.addEventListener('input', () => filter(input.value));
+    const q = new URLSearchParams(location.search).get('q');
+    if (q && input) {
+      input.value = q;
+      filter(q);
+    }
+    const target = location.hash && document.getElementById(location.hash.slice(1));
+    if (target instanceof HTMLDetailsElement) target.open = true;
+  </script>
+</Layout>

@@ -103,5 +103,5 @@
 /ads-b/* /dati/ 301
 /mlat /community/mlat/ 301
 /mlat/* /community/mlat/ 301
-/faq /community/feeder/ 301
-/faq/* /community/feeder/ 301
+# /faq (the old WordPress feeder FAQ) is the site's FAQ page again since
+# 2026-10-22, feeder questions included: no redirect.

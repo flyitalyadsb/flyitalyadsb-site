@@ -1,0 +1,18 @@
+---
+import { getCollection } from 'astro:content';
+import DocsLayout from '../../../../layouts/DocsLayout.astro';
+
+const pages = (await getCollection('docs', (e) => e.id.startsWith('it/'))).sort((a, b) => a.data.order - b.data.order);
+const base = '/dati/api/docs/';
+---
+<DocsLayout lang="it" pages={pages} title="Documentazione API" description="La documentazione della REST API e del server MCP di FlyItalyADSB: guida rapida, autenticazione, endpoint, campi e unità, limiti ed errori, storico, uso commerciale.">
+  <p>Tutto quello che serve per usare l'API e il server MCP. Se hai una domanda veloce, guarda prima le <a href="/faq/">domande frequenti</a>.</p>
+  <div class="grid sm:grid-cols-2 gap-3 not-prose mt-6">
+    {pages.map((e) => (
+      <a href={`${base}${e.id.slice(3)}/`} class="block rounded-lg p-4 no-underline" style="border:1px solid #1e3048;background:#0a1320">
+        <span class="block font-semibold text-slate-100 mb-1">{e.data.title}</span>
+        <span class="block text-sm text-slate-400">{e.data.description}</span>
+      </a>
+    ))}
+  </div>
+</DocsLayout>

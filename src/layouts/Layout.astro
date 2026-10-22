@@ -45,7 +45,10 @@ const imageURL = new URL(image, siteOrigin).href;
 // pages have English paths since 2026-10-18 (src/lib/routes.ts), so this is a
 // mapping, not just adding/removing the /en prefix. Trailing slash preserved.
 const altLangPath = otherLanguagePath;
-const altHref = altLangPath(path);
+// The 404 page (one, bilingual) has no other-language twin: its switch goes to
+// the other language's home and it publishes no hreflang.
+const is404 = /^\/404(\.html|\/)?$/.test(path);
+const altHref = is404 ? (isEn ? '/' : '/en/') : altLangPath(path);
 const altLabel = isEn ? 'IT' : 'EN';
 
 // hreflang alternates (absolute)
@@ -96,6 +99,7 @@ const navLinks: NavLink[] = isEn
           { href: '/en/data/', label: 'About our data' },
           { href: '/en/data/archive/', label: 'Archive' },
           { href: '/en/data/api/', label: 'API & AI agents' },
+          { href: '/en/data/api/docs/', label: 'API documentation' },
           { href: '/en/data/comparison/', label: 'API comparison' },
         ] },
       { href: '/en/network/', label: nav.network, external: false, match: ['/en/community'], children: [
@@ -108,8 +112,9 @@ const navLinks: NavLink[] = isEn
           { href: '/en/research/', label: 'All projects' },
           { href: '/en/research/weather/', label: 'weather32' },
         ] },
-      { href: '/en/about/', label: nav.about, external: false, match: ['/en/contact/'], children: [
+      { href: '/en/about/', label: nav.about, external: false, match: ['/en/contact/', '/en/faq/'], children: [
           { href: '/en/about/', label: 'About' },
+          { href: '/en/faq/', label: 'FAQ' },
           { href: '/en/contact/', label: 'Contact us' },
         ] },
     ]
@@ -121,6 +126,7 @@ const navLinks: NavLink[] = isEn
           { href: '/dati/', label: 'I nostri dati' },
           { href: '/dati/archivio/', label: 'Archivio storico' },
           { href: '/dati/api/', label: 'API e agenti AI' },
+          { href: '/dati/api/docs/', label: 'Documentazione API' },
           { href: '/dati/confronto/', label: 'Confronto API' },
         ] },
       { href: '/rete/', label: nav.network, external: false, match: ['/community'], children: [
@@ -133,8 +139,9 @@ const navLinks: NavLink[] = isEn
           { href: '/ricerca/', label: 'Tutti i progetti' },
           { href: '/ricerca/weather/', label: 'weather32' },
         ] },
-      { href: '/chi-siamo/', label: nav.about, external: false, match: ['/contatti/'], children: [
+      { href: '/chi-siamo/', label: nav.about, external: false, match: ['/contatti/', '/faq/'], children: [
           { href: '/chi-siamo/', label: 'Chi siamo' },
+          { href: '/faq/', label: 'Domande frequenti' },
           { href: '/contatti/', label: 'Contattaci' },
         ] },
     ];
@@ -178,9 +185,9 @@ const apiLabel = 'API';
     <link rel="canonical" href={canonicalURL} />
 
     <!-- hreflang alternates -->
-    <link rel="alternate" hreflang="it" href={itHref} />
-    <link rel="alternate" hreflang="en" href={enHref} />
-    <link rel="alternate" hreflang="x-default" href={itHref} />
+    {!is404 && <link rel="alternate" hreflang="it" href={itHref} />}
+    {!is404 && <link rel="alternate" hreflang="en" href={enHref} />}
+    {!is404 && <link rel="alternate" hreflang="x-default" href={itHref} />}
 
     <!-- Open Graph -->
     <meta property="og:title" content={`${title} — FlyItalyADSB`} />
@@ -380,6 +387,8 @@ const apiLabel = 'API';
               <li><a href={isEn ? '/en/aircraft/' : '/aeromobili/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Aircraft types' : 'Aeromobili'}</a></li>
               <li><a href={isEn ? '/en/data/archive/' : '/dati/archivio/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Archive' : 'Archivio storico'}</a></li>
               <li><a href={isEn ? '/en/data/api/' : '/dati/api/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'API & AI agents' : 'API e agenti AI'}</a></li>
+              <li><a href={isEn ? '/en/data/api/docs/' : '/dati/api/docs/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'API documentation' : 'Documentazione API'}</a></li>
+              <li><a href={isEn ? '/en/faq/' : '/faq/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'FAQ' : 'Domande frequenti'}</a></li>
             </ul>
           </div>
 

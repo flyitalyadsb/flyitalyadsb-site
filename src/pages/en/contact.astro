@@ -44,6 +44,16 @@ const channels = [
       <span><b>Volunteers</b> · + Nesso Labs infrastructure</span>
     </div>
 
+    <!-- Most emails ask something the FAQ already answers: the search
+         goes to /en/faq/?q=…, which filters the questions as you type. -->
+    <form action="/en/faq/" method="get" class="mb-12 p-5 rounded-xl border" style="background:#0a1320;border-color:#1e3048">
+      <label for="faq-q" class="block text-sm text-slate-300 mb-3">Before writing, look for the answer in the <a href="/en/faq/" class="text-sky-400 no-underline hover:text-sky-300">FAQ</a>:</label>
+      <div class="flex gap-2">
+        <input id="faq-q" name="q" type="search" placeholder="e.g. key, limits, feeder, history" class="flex-1 min-w-0 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 outline-none" style="background:#070d1a;border:1px solid #1e3048" />
+        <button type="submit" class="px-4 py-2 rounded-lg text-sm font-medium text-sky-100" style="background:#38bdf826;border:1px solid #38bdf866">Search</button>
+      </div>
+    </form>
+
     <div class="grid sm:grid-cols-3 gap-4 mb-14">
       {channels.map((c) => (
         <div class="p-5 rounded-xl border flex flex-col" style="background:#0f1929;border-color:#1e3048">

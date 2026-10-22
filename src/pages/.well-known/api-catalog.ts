@@ -27,6 +27,8 @@ export const GET: APIRoute = () =>
           anchor: API,
           'service-desc': [{ href: `${SITE}/openapi.json`, type: 'application/json' }],
           'service-doc': [
+            { href: `${SITE}/en/data/api/docs/`, type: 'text/html', hreflang: ['en'] },
+            { href: `${SITE}/dati/api/docs/`, type: 'text/html', hreflang: ['it'] },
             { href: `${SITE}/en/data/api/`, type: 'text/html', hreflang: ['en'] },
             { href: `${SITE}/dati/api/`, type: 'text/html', hreflang: ['it'] },
           ],
