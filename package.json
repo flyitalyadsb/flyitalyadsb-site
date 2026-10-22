@@ -10,6 +10,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
+    "check:links": "node scripts/check-links.mjs dist",
     "mcp:types": "wrangler types -c mcp-worker/wrangler.jsonc mcp-worker/worker-configuration.d.ts",
     "mcp:check": "npm run mcp:types && tsc -p mcp-worker",
     "mcp:dev": "wrangler dev -c mcp-worker/wrangler.jsonc --ip 127.0.0.1 --port 8787",

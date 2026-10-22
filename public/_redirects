@@ -1,34 +1,51 @@
 # English slugs since 2026-10-18 (English SEO): the old /en/<italian-slug>
 # URLs move permanently to the English ones. Same table as src/lib/routes.ts
 # — keep the two in sync. Most specific first: Cloudflare Pages applies the
-# first rule that matches.
+# first rule that matches. The `:slug` line before each `*` one gives a
+# one-segment path its trailing slash in the same hop: with only `:splat`,
+# /en/aeromobili/a320 went to /en/aircraft/a320 and then 308 to
+# /en/aircraft/a320/, two redirects (Search Console, 2026-10-22).
 /en/community/stato-feeder /en/community/feeder-status/ 301
+/en/community/stato-feeder/:slug /en/community/feeder-status/:slug/ 301
 /en/community/stato-feeder/* /en/community/feeder-status/:splat 301
 /en/dati/api/account /en/data/api/account/ 301
+/en/dati/api/account/:slug /en/data/api/account/:slug/ 301
 /en/dati/api/account/* /en/data/api/account/:splat 301
 /en/dati/api/grazie /en/data/api/thanks/ 301
+/en/dati/api/grazie/:slug /en/data/api/thanks/:slug/ 301
 /en/dati/api/grazie/* /en/data/api/thanks/:splat 301
 /en/dati/confronto /en/data/comparison/ 301
+/en/dati/confronto/:slug /en/data/comparison/:slug/ 301
 /en/dati/confronto/* /en/data/comparison/:splat 301
 /en/dati/archivio /en/data/archive/ 301
+/en/dati/archivio/:slug /en/data/archive/:slug/ 301
 /en/dati/archivio/* /en/data/archive/:splat 301
 /en/aeromobili /en/aircraft/ 301
+/en/aeromobili/:slug /en/aircraft/:slug/ 301
 /en/aeromobili/* /en/aircraft/:splat 301
 /en/aeroporti /en/airports/ 301
+/en/aeroporti/:slug /en/airports/:slug/ 301
 /en/aeroporti/* /en/airports/:splat 301
 /en/chi-siamo /en/about/ 301
+/en/chi-siamo/:slug /en/about/:slug/ 301
 /en/chi-siamo/* /en/about/:splat 301
 /en/dati/api /en/data/api/ 301
+/en/dati/api/:slug /en/data/api/:slug/ 301
 /en/dati/api/* /en/data/api/:splat 301
 /en/contatti /en/contact/ 301
+/en/contatti/:slug /en/contact/:slug/ 301
 /en/contatti/* /en/contact/:splat 301
 /en/ricerca /en/research/ 301
+/en/ricerca/:slug /en/research/:slug/ 301
 /en/ricerca/* /en/research/:splat 301
 /en/termini /en/terms/ 301
+/en/termini/:slug /en/terms/:slug/ 301
 /en/termini/* /en/terms/:splat 301
 /en/dati /en/data/ 301
+/en/dati/:slug /en/data/:slug/ 301
 /en/dati/* /en/data/:splat 301
 /en/rete /en/network/ 301
+/en/rete/:slug /en/network/:slug/ 301
 /en/rete/* /en/network/:splat 301
 
 # The old WordPress site (2021-2025): paths still requested, from the Wayback
