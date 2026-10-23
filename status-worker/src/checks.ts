@@ -111,3 +111,7 @@ export function median(values: number[]): number | null {
 
 /** UTC day of a timestamp in seconds: '2026-10-23'. */
 export const utcDay = (ts: number): string => new Date(ts * 1000).toISOString().slice(0, 10);
+
+/** When the alarm runs the next pass: 2 s into the next minute, so the passes
+ * stay on the minute however long the last one took. */
+export const nextPass = (nowMs: number): number => (Math.floor(nowMs / 60_000) + 1) * 60_000 + 2_000;

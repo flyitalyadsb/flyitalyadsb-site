@@ -3,9 +3,14 @@
 The Cloudflare Worker behind the status page, [flyitalyadsb.com/stato/](https://flyitalyadsb.com/stato/) (IT) and
 [/en/status/](https://flyitalyadsb.com/en/status/) (EN).
 
-- **Cron, every minute** (`wrangler.jsonc`): probes the public URLs from Cloudflare's network, outside the cluster
-  (`src/probes.ts`), classifies each component as up, degraded or down (`src/checks.ts`), and stores the result in a
-  Durable Object with SQLite storage (`src/store.ts`). A probe that comes back down is retried once after 3 s.
+- **Every minute, on the Durable Object's alarm** (`src/tick.ts`, `src/store.ts`): probes the public URLs from
+  Cloudflare's network, outside the cluster (`src/probes.ts`), classifies each component as up, degraded or down
+  (`src/checks.ts`), and stores the result in that Durable Object, SQLite storage. A probe that comes back down is
+  retried once after 3 s. Each pass sets the next alarm (2 s into the next minute) before it starts.
+- **The cron** (`wrangler.jsonc`, every minute) is only a watchdog: it starts the alarm loop after a deploy and
+  restarts it if an alarm is more than 3 minutes late. It used to run the passes. On 2026-10-23 Cloudflare skipped
+  about one cron minute in six and delivered others 15–25 minutes late and out of order, and the page went
+  `unknown` while everything was up.
 - **`GET flyitalyadsb.com/status.json`**, the Worker's only route (Terraform, nesso-infra
   `terraform/cloudflare/workers-flyitalyadsb-status.tf`): current state, 90 days of per-day minutes, the outages the
   probes detected, and the network totals. Cached 30 s at the edge; CORS open (public data).
@@ -48,6 +53,7 @@ the Worker secret `SLACK_WEBHOOK_URL`, the daily digest's (Infisical project `fl
 npm run dev                                  # the site, :4321 (PUBLIC_STATUS_URL=http://127.0.0.1:8791/status.json)
 npx wrangler dev -c status-worker/wrangler.jsonc --ip 127.0.0.1 --port 8791 --test-scheduled \
   --var ENVIRONMENT:development --var SITE_PROBE_URL:http://127.0.0.1:4321/stato/feed.xml
-curl 'http://127.0.0.1:8791/__scheduled?cron=*+*+*+*+*'   # one pass of the probes
+curl 'http://127.0.0.1:8791/cdn-cgi/handler/scheduled?cron=*+*+*+*+*'   # starts the alarm loop: a pass every minute
+# &time=<ms> sets the event's scheduledTime (the passes ignore it, see src/tick.ts)
 npm run status:test && npm run status:check
 ```

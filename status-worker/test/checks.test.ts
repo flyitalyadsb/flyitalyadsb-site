@@ -1,7 +1,7 @@
 // node --test status-worker/test/  (Node >= 22.6 runs the .ts directly)
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { classifyCount, classifyHttp, classifyLive, median, utcDay, worst } from '../src/checks.ts';
+import { classifyCount, classifyHttp, classifyLive, median, nextPass, utcDay, worst } from '../src/checks.ts';
 
 const net = (over: Record<string, unknown> = {}) => ({
   now: 1000, aircraft: 11000, aircraft_with_pos: 9000, messages_per_s: 9000,
@@ -51,4 +51,13 @@ test('helpers', () => {
   assert.equal(worst('up', 'degraded'), 'degraded');
   assert.equal(worst('degraded', 'down'), 'down');
   assert.equal(utcDay(1792713600), '2026-10-23');
+});
+
+test('next pass: 2 s into the next minute, whatever the time now', () => {
+  const m = Date.UTC(2026, 9, 23, 13, 40);
+  assert.equal(nextPass(m), m + 62_000);
+  assert.equal(nextPass(m + 1_999), m + 62_000);
+  assert.equal(nextPass(m + 59_999), m + 62_000);
+  // A pass that ran long into its minute still schedules the next one, not one an hour away.
+  assert.equal(nextPass(m + 60_000), m + 122_000);
 });

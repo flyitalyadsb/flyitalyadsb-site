@@ -9,8 +9,10 @@
 // project flyitalyadsb, prod, /status-monitor) and SLACK_WEBHOOK_URL (the
 // #alerts webhook, same project, /api-key-audit-env, the daily digest's).
 // Local: put MONITOR_API_KEY in status-worker/.dev.vars, then
-// `npm run status:dev` (port 8791) and trigger a pass with
-// `curl 'http://127.0.0.1:8791/__scheduled?cron=*+*+*+*+*'`.
+// `npm run status:dev` (port 8791) and start the passes with
+// `curl 'http://127.0.0.1:8791/cdn-cgi/handler/scheduled?cron=*+*+*+*+*'`.
+// The cron below is only a watchdog for the Durable Object's alarm loop,
+// which runs the passes (src/tick.ts).
 {
   "$schema": "../node_modules/wrangler/config-schema.json",
   "name": "flyitalyadsb-status",
