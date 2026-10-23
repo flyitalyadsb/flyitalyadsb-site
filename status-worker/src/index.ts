@@ -59,13 +59,18 @@ async function alert(env: Env, st: ReturnType<typeof store>, at: number): Promis
 }
 
 export default {
-  async scheduled(event: ScheduledController, env: Env): Promise<void> {
-    const minute = Math.floor(event.scheduledTime / 60_000);
+  async scheduled(_event: ScheduledController, env: Env): Promise<void> {
+    // Stamped with the time the probes really run, not event.scheduledTime:
+    // Cloudflare can deliver a cron event long after its minute (2026-10-23:
+    // events of 13:07 and 13:15 arriving at 13:32-13:33, out of order). Stamped
+    // with that, a fresh probe went in as 25 minutes old and the page said
+    // "unknown" with every component up.
+    const at = Math.floor(Date.now() / 1000);
+    const minute = Math.floor(at / 60);
     const due = new Set(COMPONENTS.filter((c) => minute % c.every === 0).map((c) => c.id));
     const st = store(env);
     const medians = await st.medians();
     const { results, network } = await runProbes(env, due, medians);
-    const at = Math.floor(event.scheduledTime / 1000);
     await st.record(at, results, network);
     if (env.SLACK_WEBHOOK_URL) await alert(env, st, at);
   },

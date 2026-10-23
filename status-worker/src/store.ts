@@ -111,8 +111,10 @@ export class StatusStore extends DurableObject {
       for (const r of results) {
         // Cloudflare can fire the same minute twice (seen after a deploy,
         // 2026-10-23: 11:02 three times, then 11:04-11:05 skipped). One sample
-        // per component per minute, or the daily counts would double.
-        const seen = sql.exec('SELECT 1 FROM samples WHERE component = ? AND ts = ? LIMIT 1', r.component, at).toArray();
+        // per component per wall-clock minute, or the daily counts would double.
+        const start = at - (at % 60);
+        const seen = sql.exec('SELECT 1 FROM samples WHERE component = ? AND ts >= ? AND ts < ? LIMIT 1',
+          r.component, start, start + 60).toArray();
         if (seen.length) continue;
         sql.exec('INSERT INTO samples (ts, component, status, latency_ms, value, note) VALUES (?, ?, ?, ?, ?, ?)',
           at, r.component, r.status, r.latencyMs, r.value, r.note);
@@ -121,8 +123,11 @@ export class StatusStore extends DurableObject {
         sql.exec(`INSERT INTO daily (day, component, ${r.status}) VALUES (?, ?, ?)
                   ON CONFLICT (day, component) DO UPDATE SET ${r.status} = ${r.status} + excluded.${r.status}`,
           utcDay(at), r.component, w);
-        const cur = sql.exec<{ status: Status; since: number }>(
-          'SELECT status, since FROM current WHERE component = ?', r.component).toArray()[0];
+        const cur = sql.exec<{ status: Status; since: number; checked_at: number }>(
+          'SELECT status, since, checked_at FROM current WHERE component = ?', r.component).toArray()[0];
+        // Two runs overlapping across a minute: the slower one must not put
+        // an older state back.
+        if (cur && at < cur.checked_at) continue;
         const since = cur && cur.status === r.status ? cur.since : at;
         sql.exec(`INSERT INTO current (component, status, since, checked_at, latency_ms, value, note)
                   VALUES (?, ?, ?, ?, ?, ?, ?)
