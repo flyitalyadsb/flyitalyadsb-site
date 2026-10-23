@@ -6,6 +6,7 @@
 
 import { DurableObject } from 'cloudflare:workers';
 import { COMPONENTS, median, utcDay, worst, type ComponentId, type Network, type Result, type Status } from './checks';
+import { DOWN_ALERT_MIN, type DownAlert, type UpAlert } from './alerts';
 
 const DAYS = 90;
 /** Shorter blips stay in the samples and the bars, not in the outage list. */
@@ -53,6 +54,41 @@ export class StatusStore extends DurableObject {
       id INTEGER PRIMARY KEY AUTOINCREMENT, component TEXT NOT NULL, status TEXT NOT NULL,
       started INTEGER NOT NULL, ended INTEGER)`);
     sql.exec('CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT NOT NULL)');
+    // Slack alerts (alerts.ts): when the "down" alert and the "back" alert
+    // went out for an outage. Added 2026-10-23 to a table that already had rows.
+    const cols = new Set(sql.exec<{ name: string }>('PRAGMA table_info(outages)').toArray().map((c) => c.name));
+    if (!cols.has('alerted_at')) sql.exec('ALTER TABLE outages ADD COLUMN alerted_at INTEGER');
+    if (!cols.has('resolved_alerted_at')) sql.exec('ALTER TABLE outages ADD COLUMN resolved_alerted_at INTEGER');
+  }
+
+  /** Outages to announce: down for DOWN_ALERT_MIN probes in a row and not yet
+   * announced; announced ones that have ended and whose end isn't announced. */
+  pendingAlerts(): { down: DownAlert[]; up: UpAlert[] } {
+    const sql = this.ctx.storage.sql;
+    const open = sql.exec<{ id: number; component: string; started: number }>(
+      `SELECT id, component, started FROM outages
+       WHERE status = 'down' AND ended IS NULL AND alerted_at IS NULL`).toArray();
+    const down: DownAlert[] = [];
+    for (const o of open) {
+      // Probes, not minutes: history runs every 5 minutes.
+      const n = sql.exec<{ n: number }>(
+        "SELECT COUNT(*) AS n FROM samples WHERE component = ? AND ts >= ? AND status = 'down'", o.component, o.started)
+        .toArray()[0]?.n ?? 0;
+      if (n < DOWN_ALERT_MIN) continue;
+      const cur = sql.exec<{ note: string | null }>('SELECT note FROM current WHERE component = ?', o.component).toArray()[0];
+      down.push({ id: o.id, component: o.component, started: o.started, note: cur?.note ?? null });
+    }
+    const up = sql.exec<{ id: number; component: string; started: number; ended: number; now: string | null }>(
+      `SELECT o.id, o.component, o.started, o.ended, c.status AS now FROM outages o
+       LEFT JOIN current c ON c.component = o.component
+       WHERE o.status = 'down' AND o.alerted_at IS NOT NULL AND o.ended IS NOT NULL
+         AND o.resolved_alerted_at IS NULL`).toArray();
+    return { down, up };
+  }
+
+  markAlerted(ids: number[], which: 'down' | 'up', at: number): void {
+    const col = which === 'down' ? 'alerted_at' : 'resolved_alerted_at';
+    for (const id of ids) this.ctx.storage.sql.exec(`UPDATE outages SET ${col} = ? WHERE id = ?`, at, id);
   }
 
   /** 7-day medians of the feeder counts, from samples that had a count. */

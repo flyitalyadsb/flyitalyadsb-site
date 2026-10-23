@@ -18,7 +18,7 @@
     "mcp:preview": "node mcp-worker/preview/serve.mjs",
     "status:types": "wrangler types -c status-worker/wrangler.jsonc status-worker/worker-configuration.d.ts",
     "status:check": "npm run status:types && tsc -p status-worker",
-    "status:test": "node --experimental-strip-types --test status-worker/test/checks.test.ts",
+    "status:test": "node --experimental-strip-types --test status-worker/test/checks.test.ts status-worker/test/alerts.test.ts",
     "status:dev": "wrangler dev -c status-worker/wrangler.jsonc --ip 127.0.0.1 --port 8791 --test-scheduled"
   },
   "dependencies": {

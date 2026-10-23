@@ -30,13 +30,24 @@ The monitor key is a keyed (`fiaent_`, 30/min) key of `ops-status@nessolabs.it`,
 
 Nothing in the Durable Object is ever deleted: about 11k sample rows a day.
 
+## Alerts in #alerts
+
+A component **down for 3 probes in a row** (3 minutes; 15 for history, which runs every 5) gets one message in
+`#alerts`, and one more when it's back (`src/alerts.ts`). It's the second exception, after the API purchase alert, to
+the rule "one flyitalyadsb message a day" (owner, 2026-10-23). Degraded performance and shorter blips go only in the
+daily digest. The text is made of the probes' facts only, in nesso_notify's shape (`[PROD]` first, coloured
+attachment, footer). It's sent from outside our cluster, so it still arrives when the cluster is down. An outage is
+marked as announced only once Slack accepted the post, so a failed post is retried the next minute. The webhook is
+the Worker secret `SLACK_WEBHOOK_URL`, the daily digest's (Infisical project `flyitalyadsb`, prod,
+`/api-key-audit-env`). Without it, nothing is sent.
+
 ## Local
 
 ```sh
 # status-worker/.dev.vars: MONITOR_API_KEY=<from Infisical>
 npm run dev                                  # the site, :4321 (PUBLIC_STATUS_URL=http://127.0.0.1:8791/status.json)
 npx wrangler dev -c status-worker/wrangler.jsonc --ip 127.0.0.1 --port 8791 --test-scheduled \
-  --var SITE_PROBE_URL:http://127.0.0.1:4321/stato/feed.xml
+  --var ENVIRONMENT:development --var SITE_PROBE_URL:http://127.0.0.1:4321/stato/feed.xml
 curl 'http://127.0.0.1:8791/__scheduled?cron=*+*+*+*+*'   # one pass of the probes
 npm run status:test && npm run status:check
 ```
