@@ -59,6 +59,9 @@ const SERVER_INFO = { name: 'flyitalyadsb', version: '1.2.0' };
 const ACCESS_TOKEN_TTL_S = 3600;
 const REFRESH_TOKEN_IDLE_TTL_S = 90 * 24 * 3600;
 
+// The status Worker's user agent (status-worker/src/probes.ts UA), see mcp().
+const STATUS_PROBE_UA = 'flyitalyadsb-status/';
+
 // What the model is asked to write in `context` when MCP_INTENTS is on.
 const INTENT_DESCRIPTION =
   'In a few words, what the user wants to find out with this call. No names, addresses or other personal details: it is kept for usage statistics only.';
@@ -79,9 +82,14 @@ const INTENT_DESCRIPTION =
  * .well-known (src/lib/mcp/server.ts TOOLS) don't list them, and a call
  * without them still works. The site's privacy notice (point 2) describes
  * all of this: change them together.
+ *
+ * The status page's probe (status-worker/src/probes.ts) runs an `initialize`
+ * every minute and stops there: it gets no events, or it would be most of
+ * the project's MCP traffic, one new anonymous person per probe.
  */
 function mcp(request: Request, apiKey: string, env: Env, ctx: ExecutionContext, email?: string): Promise<Response> {
-  const posthog = env.POSTHOG_PROJECT_TOKEN
+  const probe = request.headers.get('user-agent')?.startsWith(STATUS_PROBE_UA) ?? false;
+  const posthog = env.POSTHOG_PROJECT_TOKEN && !probe
     ? new PostHog(env.POSTHOG_PROJECT_TOKEN, { host: env.POSTHOG_HOST ?? 'https://eu.i.posthog.com', flushAt: 1, flushInterval: 0 })
     : null;
   const intents = env.MCP_INTENTS === 'on';
