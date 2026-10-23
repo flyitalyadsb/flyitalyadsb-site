@@ -5,8 +5,9 @@
 // The route (flyitalyadsb.com/status.json) and the script's identity are
 // managed by Terraform in nesso-infra
 // (terraform/cloudflare/workers-flyitalyadsb-status.tf); this file names what
-// the code binds to. Secret: MONITOR_API_KEY (wrangler secret put, value in
-// Infisical project flyitalyadsb, prod, /status-monitor).
+// the code binds to. Secrets (wrangler secret put): MONITOR_API_KEY (Infisical
+// project flyitalyadsb, prod, /status-monitor) and SLACK_WEBHOOK_URL (the
+// #alerts webhook, same project, /api-key-audit-env, the daily digest's).
 // Local: put MONITOR_API_KEY in status-worker/.dev.vars, then
 // `npm run status:dev` (port 8791) and trigger a pass with
 // `curl 'http://127.0.0.1:8791/__scheduled?cron=*+*+*+*+*'`.
@@ -25,7 +26,9 @@
   "vars": {
     "SITE": "https://flyitalyadsb.com",
     "MAP": "https://mappa.flyitalyadsb.com",
-    "API_BASE": "https://api.flyitalyadsb.com"
+    "API_BASE": "https://api.flyitalyadsb.com",
+    // [PROD] tag on the #alerts messages (alerts.ts). Local dev: --var ENVIRONMENT:development.
+    "ENVIRONMENT": "production"
   },
   "durable_objects": {
     "bindings": [{ "name": "STATUS", "class_name": "StatusStore" }]
