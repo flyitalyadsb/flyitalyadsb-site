@@ -426,13 +426,10 @@ const apiLabel = 'API & MCP';
             © {new Date().getFullYear()} FlyItalyADSB · {isEn ? 'Data license' : 'Dati licenza'} <a href="https://creativecommons.org/licenses/by-sa/4.0/" class="hover:text-slate-400" target="_blank" rel="noopener">CC BY-SA 4.0</a>
           </p>
           <!-- Who provides the service (paid API plans are sold for Nesso Labs
-               S.r.l.): company name, registered office and VAT number, as an
-               Italian company's website must show them (art. 35 DPR 633/72).
-               Verified on VIES 2026-10-18. -->
+               S.r.l.). Registered office and VAT number taken out of the
+               footer on the owner's request (2026-10-23). -->
           <p class="text-xs text-slate-600">
             {isEn ? 'Service provided by' : 'Servizio fornito da'} Nesso Labs S.r.l.
-            · Via Carlo Cattaneo 3, 25121 Brescia (BS), {isEn ? 'Italy' : 'Italia'}
-            · {isEn ? 'VAT' : 'P.IVA'} IT04754860981
             · <a href={isEn ? '/en/terms/' : '/termini/'} class="hover:text-slate-400">{isEn ? 'Terms' : 'Condizioni'}</a>
             · <a href={isEn ? '/en/privacy/' : '/privacy/'} class="hover:text-slate-400">Privacy</a>
           </p>
