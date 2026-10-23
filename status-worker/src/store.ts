@@ -109,6 +109,11 @@ export class StatusStore extends DurableObject {
     this.ctx.storage.transactionSync(() => {
       if (this.meta('since') === null) this.setMeta('since', String(at));
       for (const r of results) {
+        // Cloudflare can fire the same minute twice (seen after a deploy,
+        // 2026-10-23: 11:02 three times, then 11:04-11:05 skipped). One sample
+        // per component per minute, or the daily counts would double.
+        const seen = sql.exec('SELECT 1 FROM samples WHERE component = ? AND ts = ? LIMIT 1', r.component, at).toArray();
+        if (seen.length) continue;
         sql.exec('INSERT INTO samples (ts, component, status, latency_ms, value, note) VALUES (?, ?, ?, ?, ?, ?)',
           at, r.component, r.status, r.latencyMs, r.value, r.note);
         // A probe run every N minutes stands for those N minutes in the bars.
