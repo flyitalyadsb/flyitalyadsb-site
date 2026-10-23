@@ -33,6 +33,7 @@ const staticPaths = [
   '/ricerca/weather',
   '/chi-siamo',
   '/contatti',
+  '/stato',
   '/termini',
   '/privacy',
   '/community/feeder',

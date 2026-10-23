@@ -113,9 +113,10 @@ const navLinks: NavLink[] = isEn
           { href: '/en/research/', label: 'All projects' },
           { href: '/en/research/weather/', label: 'weather32' },
         ] },
-      { href: '/en/about/', label: nav.about, external: false, match: ['/en/contact/', '/en/faq/'], children: [
+      { href: '/en/about/', label: nav.about, external: false, match: ['/en/contact/', '/en/faq/', '/en/status/'], children: [
           { href: '/en/about/', label: 'About' },
           { href: '/en/faq/', label: 'FAQ' },
+          { href: '/en/status/', label: 'Service status' },
           { href: '/en/contact/', label: 'Contact us' },
         ] },
     ]
@@ -141,9 +142,10 @@ const navLinks: NavLink[] = isEn
           { href: '/ricerca/', label: 'Tutti i progetti' },
           { href: '/ricerca/weather/', label: 'weather32' },
         ] },
-      { href: '/chi-siamo/', label: nav.about, external: false, match: ['/contatti/', '/faq/'], children: [
+      { href: '/chi-siamo/', label: nav.about, external: false, match: ['/contatti/', '/faq/', '/stato/'], children: [
           { href: '/chi-siamo/', label: 'Chi siamo' },
           { href: '/faq/', label: 'Domande frequenti' },
+          { href: '/stato/', label: 'Stato del servizio' },
           { href: '/contatti/', label: 'Contattaci' },
         ] },
     ];
@@ -411,6 +413,7 @@ const apiLabel = 'API & MCP';
             <ul class="space-y-2 text-sm">
               <li><a href={isEn ? '/en/about/' : '/chi-siamo/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'About' : 'Chi siamo'}</a></li>
               <li><a href={isEn ? '/en/contact/' : '/contatti/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Contact us' : 'Contattaci'}</a></li>
+              <li><a href={isEn ? '/en/status/' : '/stato/'} class="text-slate-500 hover:text-slate-300 no-underline">{isEn ? 'Service status' : 'Stato del servizio'}</a></li>
               <li>
                 <a href="https://github.com/flyitalyadsb" target="_blank" rel="noopener"
                    class="text-slate-500 hover:text-slate-300 no-underline">GitHub ↗</a>

@@ -35,6 +35,7 @@ const PREFIXES: [string, string][] = [
   ['/chi-siamo', '/about'],
   ['/contatti', '/contact'],
   ['/community/stato-feeder', '/community/feeder-status'],
+  ['/stato', '/status'],
   ['/termini', '/terms'],
 ];
 

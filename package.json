@@ -15,7 +15,11 @@
     "mcp:check": "npm run mcp:types && tsc -p mcp-worker",
     "mcp:dev": "wrangler dev -c mcp-worker/wrangler.jsonc --ip 127.0.0.1 --port 8787",
     "mcp:deploy": "wrangler deploy -c mcp-worker/wrangler.jsonc",
-    "mcp:preview": "node mcp-worker/preview/serve.mjs"
+    "mcp:preview": "node mcp-worker/preview/serve.mjs",
+    "status:types": "wrangler types -c status-worker/wrangler.jsonc status-worker/worker-configuration.d.ts",
+    "status:check": "npm run status:types && tsc -p status-worker",
+    "status:test": "node --experimental-strip-types --test status-worker/test/checks.test.ts",
+    "status:dev": "wrangler dev -c status-worker/wrangler.jsonc --ip 127.0.0.1 --port 8791 --test-scheduled"
   },
   "dependencies": {
     "@cloudflare/workers-oauth-provider": "1.2.3",
