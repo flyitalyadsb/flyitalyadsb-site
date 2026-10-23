@@ -5,8 +5,9 @@
 // src/content/status/). Nothing is ever deleted: ~11k rows a day.
 
 import { DurableObject } from 'cloudflare:workers';
-import { COMPONENTS, median, utcDay, worst, type ComponentId, type Network, type Result, type Status } from './checks';
+import { COMPONENTS, median, nextPass, utcDay, worst, type ComponentId, type Network, type Result, type Status } from './checks';
 import { DOWN_ALERT_MIN, type DownAlert, type UpAlert } from './alerts';
+import { tick, type TickEnv } from './tick';
 
 const DAYS = 90;
 /** Shorter blips stay in the samples and the bars, not in the outage list. */
@@ -35,9 +36,12 @@ export interface Snapshot {
 
 const iso = (s: number | null | undefined): string | null => (s ? new Date(s * 1000).toISOString() : null);
 
-export class StatusStore extends DurableObject {
-  constructor(ctx: DurableObjectState, env: unknown) {
-    super(ctx, env as never);
+/** An alarm this late is a loop that stopped (a pass takes ~3 s). */
+const STUCK_MS = 3 * 60_000;
+
+export class StatusStore extends DurableObject<TickEnv> {
+  constructor(ctx: DurableObjectState, env: TickEnv) {
+    super(ctx, env);
     const sql = ctx.storage.sql;
     sql.exec(`CREATE TABLE IF NOT EXISTS samples (
       ts INTEGER NOT NULL, component TEXT NOT NULL, status TEXT NOT NULL,
@@ -59,6 +63,27 @@ export class StatusStore extends DurableObject {
     const cols = new Set(sql.exec<{ name: string }>('PRAGMA table_info(outages)').toArray().map((c) => c.name));
     if (!cols.has('alerted_at')) sql.exec('ALTER TABLE outages ADD COLUMN alerted_at INTEGER');
     if (!cols.has('resolved_alerted_at')) sql.exec('ALTER TABLE outages ADD COLUMN resolved_alerted_at INTEGER');
+  }
+
+  /** Called by the cron every minute: starts the alarm loop when there is
+   * none (first deploy) or when it stopped. True if it had to. */
+  async ensureTicking(): Promise<boolean> {
+    const next = await this.ctx.storage.getAlarm();
+    if (next !== null && next > Date.now() - STUCK_MS) return false;
+    await this.ctx.storage.setAlarm(nextPass(Date.now()));
+    return true;
+  }
+
+  /** One pass a minute. The next alarm is set first and errors are caught, so
+   * a failed or slow pass never stops the loop (a throwing alarm would be
+   * retried with backoff instead of running on the minute). */
+  async alarm(): Promise<void> {
+    await this.ctx.storage.setAlarm(nextPass(Date.now()));
+    try {
+      await tick(this.env, this);
+    } catch (e) {
+      console.error('status pass failed', e);
+    }
   }
 
   /** Outages to announce: down for DOWN_ALERT_MIN probes in a row and not yet

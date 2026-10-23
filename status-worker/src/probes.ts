@@ -1,5 +1,5 @@
-// The probes, run from Cloudflare's network once a minute (cron in
-// wrangler.jsonc): the same public URLs a visitor or a customer uses, never a
+// The probes, run from Cloudflare's network once a minute (the Durable
+// Object's alarm, tick.ts): the same public URLs a visitor or a customer uses, never a
 // shortcut into the cluster. A probe that fails is retried once after a short
 // pause before the component is marked down, so one lost packet isn't an outage.
 

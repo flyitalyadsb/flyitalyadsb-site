@@ -1,29 +1,18 @@
 // flyitalyadsb-status: the probes behind flyitalyadsb.com/stato/ (IT) and
-// /en/status/ (EN). Every minute (cron, wrangler.jsonc) it checks the site,
-// the map, the live data, the REST API, the MCP server, the history archive
-// and the receiver network from Cloudflare's network, outside our cluster,
-// and stores the results in a Durable Object (store.ts). The pages read
-// GET flyitalyadsb.com/status.json, the only route of this Worker (Terraform,
-// nesso-infra terraform/cloudflare/workers-flyitalyadsb-status.tf).
+// /en/status/ (EN). Every minute it checks the site, the map, the live data,
+// the REST API, the MCP server, the history archive and the receiver network
+// from Cloudflare's network, outside our cluster, and stores the results in a
+// Durable Object (store.ts), whose alarm runs the passes (tick.ts). The pages
+// read GET flyitalyadsb.com/status.json, the only route of this Worker
+// (Terraform, nesso-infra terraform/cloudflare/workers-flyitalyadsb-status.tf).
 
-import { downMessage, slackPayload, upMessage } from './alerts';
-import { COMPONENTS } from './checks';
-import { runProbes } from './probes';
 import type { StatusStore } from './store';
+import type { TickEnv } from './tick';
 
 export { StatusStore } from './store';
 
-interface Env {
+interface Env extends TickEnv {
   STATUS: DurableObjectNamespace<StatusStore>;
-  SITE: string;
-  MAP: string;
-  API_BASE: string;
-  MONITOR_API_KEY?: string;
-  SITE_PROBE_URL?: string;
-  /** #alerts incoming webhook (the daily digest's). Secret; unset = no alerts. */
-  SLACK_WEBHOOK_URL?: string;
-  /** production → [PROD] tag. */
-  ENVIRONMENT?: string;
 }
 
 const store = (env: Env) => env.STATUS.get(env.STATUS.idFromName('status'));
@@ -33,46 +22,11 @@ const CORS = {
   'access-control-allow-methods': 'GET, OPTIONS',
 };
 
-async function post(env: Env, body: unknown): Promise<boolean> {
-  try {
-    const res = await fetch(env.SLACK_WEBHOOK_URL!, {
-      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body),
-      signal: AbortSignal.timeout(10_000),
-    });
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
-
-/** Announce new outages and recoveries; mark them only once Slack took them,
- * so a failed post is retried on the next minute. */
-async function alert(env: Env, st: ReturnType<typeof store>, at: number): Promise<void> {
-  const page = `${env.SITE}/stato/`;
-  const { down, up } = await st.pendingAlerts();
-  if (down.length && await post(env, slackPayload(downMessage(down, at, page), env.ENVIRONMENT ?? '', at))) {
-    await st.markAlerted(down.map((d) => d.id), 'down', at);
-  }
-  if (up.length && await post(env, slackPayload(upMessage(up, page), env.ENVIRONMENT ?? '', at))) {
-    await st.markAlerted(up.map((u) => u.id), 'up', at);
-  }
-}
-
 export default {
+  /** A watchdog, not the clock: the passes run on the Durable Object's alarm.
+   * This only (re)starts that loop after a deploy or if it ever stops. */
   async scheduled(_event: ScheduledController, env: Env): Promise<void> {
-    // Stamped with the time the probes really run, not event.scheduledTime:
-    // Cloudflare can deliver a cron event long after its minute (2026-10-23:
-    // events of 13:07 and 13:15 arriving at 13:32-13:33, out of order). Stamped
-    // with that, a fresh probe went in as 25 minutes old and the page said
-    // "unknown" with every component up.
-    const at = Math.floor(Date.now() / 1000);
-    const minute = Math.floor(at / 60);
-    const due = new Set(COMPONENTS.filter((c) => minute % c.every === 0).map((c) => c.id));
-    const st = store(env);
-    const medians = await st.medians();
-    const { results, network } = await runProbes(env, due, medians);
-    await st.record(at, results, network);
-    if (env.SLACK_WEBHOOK_URL) await alert(env, st, at);
+    await store(env).ensureTicking();
   },
 
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
