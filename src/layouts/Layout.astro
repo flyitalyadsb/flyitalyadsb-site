@@ -173,6 +173,15 @@ const sectionAria = (link: NavLink) =>
 const isChildCurrent = (link: NavLink, child: NavChild) =>
   child.href === link.href ? here === child.href.replace(/\/+$/, '') : isCurrent(child.href);
 const apiLabel = 'API & MCP';
+// Live status in the bar (2026-10-23, owner: the page has to be findable, not
+// only inside the "Chi siamo" menu): a dot fed by /status.json, the status
+// Worker's JSON (status-worker/), read once per page. Grey until it answers,
+// and grey if it can't be read: the bar never claims "down" without knowing.
+const statusHref = isEn ? '/en/status/' : '/stato/';
+const statusUrl = import.meta.env.PUBLIC_STATUS_URL || '/status.json';
+const statusText = isEn
+  ? { label: 'Status', up: 'All systems operational', degraded: 'Some systems are degraded', down: 'Ongoing outage', unknown: 'Service status' }
+  : { label: 'Stato', up: 'Tutti i servizi sono operativi', degraded: 'Alcuni servizi hanno prestazioni ridotte', down: 'Disservizio in corso', unknown: 'Stato del servizio' };
 ---
 
 <!doctype html>
@@ -291,6 +300,13 @@ const apiLabel = 'API & MCP';
               {link.label}{link.external ? ' ↗' : ''}
             </a>
           ))}
+          <a href={statusHref} data-nav-status title={statusText.unknown}
+             aria-current={isCurrent(statusHref) ? 'page' : undefined}
+             class={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded hover:text-slate-100 hover:bg-white/5 transition-colors no-underline ${isCurrent(statusHref) ? 'text-slate-100 bg-white/5' : 'text-slate-400'}`}>
+            <span class="nav-status-dot" data-status="unknown" aria-hidden="true"></span>
+            {statusText.label}
+            <span class="sr-only nav-status-sr">: {statusText.unknown}</span>
+          </a>
           <a href={apiHref}
              class="ml-1 px-3 py-1.5 rounded text-sm font-semibold no-underline transition-colors"
              style="color:#7dd3fc;border:1px solid #38bdf840;background:#38bdf812"
@@ -309,6 +325,11 @@ const apiLabel = 'API & MCP';
         </div>
 
         <div class="flex lg:hidden items-center gap-2 text-sm">
+          <a href={statusHref} data-nav-status title={statusText.unknown} aria-label={statusText.unknown}
+             class="inline-flex items-center gap-1.5 px-2 py-1.5 rounded text-xs text-slate-400 no-underline">
+            <span class="nav-status-dot" data-status="unknown" aria-hidden="true"></span>
+            <span class="hidden sm:inline">{statusText.label}</span>
+          </a>
           <a href={apiHref}
              class="px-3 py-1.5 rounded text-sm font-semibold no-underline"
              style="color:#7dd3fc;border:1px solid #38bdf840;background:#38bdf812">
@@ -470,6 +491,32 @@ const apiLabel = 'API & MCP';
         if (!navbar) return;
         navbar.style.borderBottom = window.scrollY > 20 ? '1px solid #1e3048' : 'none';
       }, { passive: true });
+    </script>
+
+    <div id="nav-status-config" hidden data-url={statusUrl}
+         data-up={statusText.up} data-degraded={statusText.degraded} data-down={statusText.down}></div>
+    <script>
+      // The status dot in the bar: one read of /status.json per page (30 s edge
+      // cache in the Worker). Failure = stays grey, nothing else happens.
+      const cfgEl = document.getElementById('nav-status-config');
+      const links = document.querySelectorAll<HTMLElement>('[data-nav-status]');
+      if (cfgEl && links.length) {
+        fetch(cfgEl.dataset.url || '/status.json')
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d: { overall?: string } | null) => {
+            const st = d && ['up', 'degraded', 'down'].includes(d.overall || '') ? (d.overall as string) : null;
+            if (!st) return;
+            const text = cfgEl.dataset[st] || '';
+            links.forEach((a) => {
+              a.title = text;
+              a.querySelector<HTMLElement>('.nav-status-dot')!.dataset.status = st;
+              const sr = a.querySelector<HTMLElement>('.nav-status-sr');
+              if (sr) sr.textContent = `: ${text}`;
+              if (a.hasAttribute('aria-label')) a.setAttribute('aria-label', text);
+            });
+          })
+          .catch(() => {});
+      }
     </script>
 
     <Analytics />

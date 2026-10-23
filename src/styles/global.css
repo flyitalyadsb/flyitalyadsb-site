@@ -342,3 +342,9 @@ select:focus-visible {
     scroll-behavior: auto;
   }
 }
+
+/* Status dot in the nav bar (Layout.astro, data from /status.json). */
+.nav-status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 9999px; background: #475569; flex: none; }
+.nav-status-dot[data-status='up'] { background: #34d399; box-shadow: 0 0 0 3px #34d39926; }
+.nav-status-dot[data-status='degraded'] { background: #f59e0b; box-shadow: 0 0 0 3px #f59e0b26; }
+.nav-status-dot[data-status='down'] { background: #f87171; box-shadow: 0 0 0 3px #f8717126; }
