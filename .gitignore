@@ -27,5 +27,6 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 mcp-worker/worker-configuration.d.ts
+status-worker/worker-configuration.d.ts
 
 __pycache__/

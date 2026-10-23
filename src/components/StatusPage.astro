@@ -1,0 +1,582 @@
+---
+// The status page, /stato/ (IT) and /en/status/ (EN). Static parts (copy,
+// published incidents, how we measure) are built here; the live parts
+// (current state, numbers, 90-day bars, outages the probes detected) are
+// drawn in the browser from /status.json, which the flyitalyadsb-status
+// Worker serves (status-worker/), and refreshed every minute.
+//
+// PUBLIC_STATUS_URL overrides the JSON's address for a local preview against
+// `npm run status:dev` (http://127.0.0.1:8791/status.json).
+import Layout from '../layouts/Layout.astro';
+import { render } from 'astro:content';
+import { COMPONENTS, GROUPS, STATE_LABEL, entryAnchor, pagePath, statusEntries } from '../lib/status';
+
+interface Props {
+  lang: 'it' | 'en';
+}
+const { lang } = Astro.props;
+const it = lang === 'it';
+const STATUS_URL = import.meta.env.PUBLIC_STATUS_URL || '/status.json';
+
+const entries = await statusEntries(lang);
+const now = Date.now();
+const ongoing = entries.filter((e) => e.data.kind === 'incident' && !e.data.end);
+const upcoming = entries.filter((e) => e.data.kind === 'maintenance' && (!e.data.end || e.data.end.getTime() > now));
+const past = entries.filter((e) => !ongoing.includes(e) && !upcoming.includes(e));
+const bodies = new Map(await Promise.all(entries.map(async (e) => [e.id, (await render(e)).Content] as const)));
+
+const fmtDate = new Intl.DateTimeFormat(it ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Rome' });
+const fmtTime = new Intl.DateTimeFormat(it ? 'it-IT' : 'en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Rome', timeZoneName: 'short' });
+const span = (s: Date, e?: Date) => (e ? `${fmtTime.format(s)} → ${fmtTime.format(e)}` : `${it ? 'dal' : 'since'} ${fmtTime.format(s)}`);
+
+const href = it
+  ? { about: '/chi-siamo/', contact: '/contatti/', feed: '/stato/feed.xml', api: '/dati/api/', docsLimits: '/dati/api/docs/limiti-ed-errori/', feederStatus: '/community/stato-feeder/' }
+  : { about: '/en/about/', contact: '/en/contact/', feed: '/en/status/feed.xml', api: '/en/data/api/', docsLimits: '/en/data/api/docs/limits-and-errors/', feederStatus: '/en/community/feeder-status/' };
+
+const T = it
+  ? {
+      title: 'Stato del servizio',
+      description: 'Stato in tempo reale di sito, mappa, API REST, server MCP, storico e rete di ricevitori FlyItalyADSB, controllati ogni minuto dall\'esterno. Incidenti, manutenzioni e feed per gli avvisi.',
+      eyebrow: 'Chi siamo',
+      intro: 'Controlliamo ogni minuto sito, mappa, API, server MCP, storico e rete di ricevitori, con richieste vere fatte dalla rete di Cloudflare, fuori dai nostri server: se si ferma la nostra infrastruttura, questa pagina lo dice invece di fermarsi con lei.',
+      checking: 'Verifica in corso…',
+      ongoing: 'Incidenti in corso',
+      upcoming: 'Manutenzioni programmate',
+      components: 'Componenti',
+      ago90: '90 giorni fa',
+      ago30: '30 giorni fa',
+      today: 'Oggi',
+      legend: { up: 'Operativo', degraded: 'Prestazioni ridotte', down: 'Disservizio', none: 'Nessun dato' },
+      incidents: 'Incidenti e manutenzioni',
+      noIncidents: 'Nessun incidente pubblicato negli ultimi 90 giorni.',
+      affects: 'Riguarda',
+      impact: { minor: 'Impatto parziale', major: 'Disservizio' },
+      kind: { incident: 'Incidente', maintenance: 'Manutenzione' },
+      detected: 'Interruzioni rilevate dalle sonde',
+      detectedNote: 'L\'elenco automatico dei periodi di almeno 2 minuti in cui un componente non era operativo, negli ultimi 90 giorni. Quelli che spieghiamo sono negli incidenti qui sopra.',
+      subscribe: 'Ricevi gli avvisi',
+      subscribeIntro: 'Incidenti e manutenzioni programmate escono anche nel feed, in italiano e in inglese: aggiungilo al tuo lettore RSS, a Slack (app RSS) o a Microsoft Teams, e ti arrivano da soli.',
+      feedIt: 'Feed in italiano',
+      feedEn: 'Feed in inglese',
+      jsonTitle: 'Per i tuoi controlli automatici',
+      jsonText: 'Lo stato di ogni componente, aggiornato ogni minuto, è anche in JSON. Leggerlo non consuma richieste della tua chiave API.',
+      jsonFields: '«overall» e «components[].status» valgono up, degraded, down (null = non controllato negli ultimi 10 minuti).',
+      paid: 'Le manutenzioni programmate le annunciamo qui e nel feed prima di farle. Hai un piano a pagamento e ti serve un contatto diretto?',
+      contactUs: 'Scrivici',
+      how: 'Come misuriamo',
+      howIntro: 'Le sonde girano ogni minuto (lo storico ogni 5) da un Worker Cloudflare, fuori dai nostri server, e usano gli stessi indirizzi pubblici di chi usa il servizio. Un controllo fallito viene ripetuto dopo 3 secondi prima di segnare un disservizio, così un singolo pacchetto perso non conta. Le barre sono per giorno UTC; i dati partono dal giorno in cui abbiamo acceso il monitoraggio, senza nulla di ricostruito prima.',
+      feederHint: 'Vuoi sapere se arrivano i dati del tuo ricevitore?',
+      feederLink: 'I miei dati arrivano?',
+      unavailableTitle: 'Stato non disponibile in questo momento',
+      unavailableText: 'Non riusciamo a leggere i risultati delle sonde. Non vuol dire che i servizi siano fermi: riprova fra qualche minuto.',
+    }
+  : {
+      title: 'Service status',
+      description: 'Live status of the FlyItalyADSB website, map, REST API, MCP server, history and receiver network, checked every minute from outside. Incidents, maintenance and a feed for alerts.',
+      eyebrow: 'About',
+      intro: 'Every minute we check the website, the map, the API, the MCP server, the history and the receiver network with real requests from Cloudflare\'s network, outside our servers: if our infrastructure stops, this page says so instead of stopping with it.',
+      checking: 'Checking…',
+      ongoing: 'Ongoing incidents',
+      upcoming: 'Scheduled maintenance',
+      components: 'Components',
+      ago90: '90 days ago',
+      ago30: '30 days ago',
+      today: 'Today',
+      legend: { up: 'Operational', degraded: 'Degraded performance', down: 'Outage', none: 'No data' },
+      incidents: 'Incidents and maintenance',
+      noIncidents: 'No incidents published in the last 90 days.',
+      affects: 'Affects',
+      impact: { minor: 'Partial impact', major: 'Outage' },
+      kind: { incident: 'Incident', maintenance: 'Maintenance' },
+      detected: 'Interruptions detected by the probes',
+      detectedNote: 'The automatic list of periods of at least 2 minutes in which a component was not operational, in the last 90 days. The ones we explain are in the incidents above.',
+      subscribe: 'Get notified',
+      subscribeIntro: 'Incidents and scheduled maintenance also go out in the feed, in English and Italian: add it to your RSS reader, to Slack (RSS app) or to Microsoft Teams, and they reach you on their own.',
+      feedIt: 'Italian feed',
+      feedEn: 'English feed',
+      jsonTitle: 'For your own automated checks',
+      jsonText: 'Every component\'s status, updated every minute, is also available as JSON. Reading it doesn\'t use any requests of your API key.',
+      jsonFields: '"overall" and "components[].status" are up, degraded or down (null = not checked in the last 10 minutes).',
+      paid: 'We announce scheduled maintenance here and in the feed before doing it. On a paid plan and need a direct contact?',
+      contactUs: 'Write to us',
+      how: 'How we measure',
+      howIntro: 'The probes run every minute (history every 5) from a Cloudflare Worker, outside our servers, and use the same public addresses as everyone who uses the service. A failed check is repeated after 3 seconds before an outage is recorded, so a single lost packet doesn\'t count. Bars are per UTC day; data starts on the day we switched monitoring on, with nothing reconstructed before it.',
+      feederHint: 'Want to know whether your receiver\'s data is arriving?',
+      feederLink: 'Is my data arriving?',
+      unavailableTitle: 'Status unavailable right now',
+      unavailableText: 'We can\'t read the probes\' results. It doesn\'t mean the services are down: try again in a few minutes.',
+    };
+
+// Everything the browser script needs, as data (no inline code).
+const config = {
+  url: STATUS_URL,
+  lang,
+  components: Object.fromEntries(Object.values(COMPONENTS).map((c) => [c.id, c.name[lang]])),
+  incidents: entries.map((e) => ({
+    title: e.data.title, kind: e.data.kind, impact: e.data.impact, components: e.data.components,
+    start: e.data.start.toISOString(), end: e.data.end ? e.data.end.toISOString() : null, anchor: entryAnchor(e),
+  })),
+};
+
+const badge = (impact: 'minor' | 'major') =>
+  impact === 'major' ? 'background:#f8717120;color:#fca5a5;border:1px solid #f8717140' : 'background:#f59e0b18;color:#fcd34d;border:1px solid #f59e0b40';
+---
+
+<Layout title={T.title} description={T.description}>
+  <div class="pt-24 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+
+    <header class="mb-8">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
+        <a href={href.about} class="text-slate-500 hover:text-slate-300 no-underline">{T.eyebrow}</a>
+      </p>
+      <h1 class="text-4xl font-bold text-slate-100 mb-4">{T.title}</h1>
+      <p class="text-slate-400 max-w-2xl leading-relaxed">{T.intro}</p>
+    </header>
+
+    <!-- Overall state + live numbers (drawn by the script below) -->
+    <section aria-live="polite" class="rounded-xl border mb-10 overflow-hidden" style="background:#0f1929;border-color:#1e3048">
+      <div id="overall" class="flex items-start gap-4 p-5 sm:p-6">
+        <span class="status-dot mt-1.5" data-status="unknown" aria-hidden="true"></span>
+        <div class="min-w-0">
+          <h2 id="overall-title" class="text-xl font-semibold text-slate-100">{T.checking}</h2>
+          <p id="overall-sub" class="text-sm text-slate-500 mt-1"></p>
+        </div>
+      </div>
+      <div id="numbers" class="hud-readout" hidden></div>
+    </section>
+
+    {ongoing.length > 0 && (
+      <section class="mb-10">
+        <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">{T.ongoing}</h2>
+        {ongoing.map((e) => (
+          <a href={`#${entryAnchor(e)}`} class="block rounded-xl border p-5 mb-3 no-underline" style="background:#f8717110;border-color:#f8717150">
+            <span class="text-slate-100 font-semibold">{e.data.title}</span>
+            <span class="block text-sm text-slate-400 mt-1">{span(e.data.start)} · {STATE_LABEL[e.data.updates.at(-1)?.state ?? 'investigating'][lang]}</span>
+          </a>
+        ))}
+      </section>
+    )}
+
+    {upcoming.length > 0 && (
+      <section class="mb-10">
+        <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">{T.upcoming}</h2>
+        {upcoming.map((e) => (
+          <a href={`#${entryAnchor(e)}`} class="block rounded-xl border p-5 mb-3 no-underline" style="background:#38bdf810;border-color:#38bdf840">
+            <span class="text-slate-100 font-semibold">{e.data.title}</span>
+            <span class="block text-sm text-slate-400 mt-1">{span(e.data.start, e.data.end)} · {e.data.components.map((c) => COMPONENTS[c].name[lang]).join(', ')}</span>
+          </a>
+        ))}
+      </section>
+    )}
+
+    <!-- Components -->
+    <section class="mb-12" aria-labelledby="componenti">
+      <h2 id="componenti" class="sr-only">{T.components}</h2>
+      {GROUPS.map((g) => (
+        <div class="mb-8">
+          <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">{g.title[lang]}</h3>
+          <ul class="rounded-xl border divide-y" style="background:#0f1929;border-color:#1e3048;--tw-divide-opacity:1">
+            {g.ids.map((id) => (
+              <li class="component p-4 sm:p-5" data-id={id} style="border-color:#1e3048">
+                <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <div class="min-w-0">
+                    <span class="font-semibold text-slate-100">{COMPONENTS[id].name[lang]}</span>
+                    <span class="block sm:inline sm:ml-2 text-xs text-slate-500">{COMPONENTS[id].what[lang]}</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-sm">
+                    <span class="detail text-xs font-mono text-slate-500"></span>
+                    <span class="state inline-flex items-center gap-1.5 font-medium" data-status="unknown">
+                      <span class="status-dot" data-status="unknown" aria-hidden="true"></span><span class="label text-slate-500">—</span>
+                    </span>
+                  </div>
+                </div>
+                <div class="bars mt-3" role="img" aria-label=""></div>
+                <div class="flex justify-between mt-1.5 text-[11px] text-slate-600 font-mono">
+                  <span><span class="hidden sm:inline">{T.ago90}</span><span class="sm:hidden">{T.ago30}</span></span>
+                  <span class="uptime"></span>
+                  <span>{T.today}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      <p class="flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-500">
+        <span class="inline-flex items-center gap-1.5"><span class="legend-swatch" data-status="up"></span>{T.legend.up}</span>
+        <span class="inline-flex items-center gap-1.5"><span class="legend-swatch" data-status="degraded"></span>{T.legend.degraded}</span>
+        <span class="inline-flex items-center gap-1.5"><span class="legend-swatch" data-status="down"></span>{T.legend.down}</span>
+        <span class="inline-flex items-center gap-1.5"><span class="legend-swatch" data-status="none"></span>{T.legend.none}</span>
+      </p>
+      <div id="bar-tip" class="bar-tip" role="tooltip" hidden></div>
+    </section>
+
+    <!-- Published incidents and maintenance -->
+    <section class="mb-12" aria-labelledby="incidenti">
+      <h2 id="incidenti" class="text-2xl font-bold text-slate-100 mb-6">{T.incidents}</h2>
+      {entries.length === 0 && <p class="text-sm text-slate-500">{T.noIncidents}</p>}
+      <div class="space-y-6">
+        {[...ongoing, ...upcoming, ...past].map((e) => {
+          const Body = bodies.get(e.id)!;
+          return (
+            <article id={entryAnchor(e)} class="rounded-xl border p-5 sm:p-6 scroll-mt-24" style="background:#0f1929;border-color:#1e3048">
+              <div class="flex flex-wrap items-center gap-2 mb-2 text-xs">
+                <span class="px-2 py-0.5 rounded font-medium" style={badge(e.data.impact)}>{T.kind[e.data.kind]} · {T.impact[e.data.impact]}</span>
+                <span class="text-slate-500">{span(e.data.start, e.data.end)}</span>
+              </div>
+              <h3 class="text-lg font-semibold text-slate-100 mb-1">{e.data.title}</h3>
+              <p class="text-xs text-slate-500 mb-4">{T.affects}: {e.data.components.map((c) => COMPONENTS[c].name[lang]).join(', ')}</p>
+              <div class="prose-status text-sm text-slate-400 leading-relaxed"><Body /></div>
+              {e.data.updates.length > 0 && (
+                <ol class="mt-5 pt-4 space-y-3 border-t" style="border-color:#1e3048">
+                  {[...e.data.updates].reverse().map((u) => (
+                    <li class="text-sm">
+                      <span class="font-semibold text-slate-200">{STATE_LABEL[u.state][lang]}</span>
+                      <span class="text-xs text-slate-500 ml-2 font-mono">{fmtTime.format(u.at)}</span>
+                      <p class="text-slate-400 mt-0.5 leading-relaxed">{u.text}</p>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </article>
+          );
+        })}
+      </div>
+    </section>
+
+    <!-- Outages the probes detected (drawn by the script) -->
+    <section id="rilevate" class="mb-12" hidden aria-labelledby="rilevate-t">
+      <h2 id="rilevate-t" class="text-xl font-bold text-slate-100 mb-2">{T.detected}</h2>
+      <p class="text-sm text-slate-500 mb-4 max-w-2xl">{T.detectedNote}</p>
+      <ul id="outages" class="rounded-xl border divide-y text-sm" style="background:#0f1929;border-color:#1e3048"></ul>
+    </section>
+
+    <!-- Subscribe -->
+    <section class="mb-12" aria-labelledby="avvisi">
+      <h2 id="avvisi" class="text-2xl font-bold text-slate-100 mb-4">{T.subscribe}</h2>
+      <p class="text-slate-400 text-sm leading-relaxed mb-5 max-w-2xl">{T.subscribeIntro}</p>
+      <div class="flex flex-wrap gap-3 mb-8">
+        <a href="/stato/feed.xml" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium no-underline" style="background:#38bdf815;color:#7dd3fc;border:1px solid #38bdf830">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="19" r="2.5"/><path d="M3 10.5a10.5 10.5 0 0 1 10.5 10.5h-3A7.5 7.5 0 0 0 3 13.5zM3 4a17 17 0 0 1 17 17h-3A14 14 0 0 0 3 7z"/></svg>
+          {T.feedIt}
+        </a>
+        <a href="/en/status/feed.xml" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium no-underline" style="background:#ffffff08;color:#cbd5e1;border:1px solid #ffffff14">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="19" r="2.5"/><path d="M3 10.5a10.5 10.5 0 0 1 10.5 10.5h-3A7.5 7.5 0 0 0 3 13.5zM3 4a17 17 0 0 1 17 17h-3A14 14 0 0 0 3 7z"/></svg>
+          {T.feedEn}
+        </a>
+      </div>
+      <div class="rounded-xl border p-5 mb-5" style="background:#0a1320;border-color:#1e3048">
+        <h3 class="font-semibold text-slate-100 mb-2">{T.jsonTitle}</h3>
+        <p class="text-sm text-slate-400 leading-relaxed mb-3">{T.jsonText}</p>
+        <pre class="p-3 rounded-lg text-xs overflow-auto" style="background:#070d1a;color:#94a3b8;border:1px solid #1e3048"><code>curl -s https://flyitalyadsb.com/status.json | jq '.overall, (.components[] | {'{'}id, status{'}'})'</code></pre>
+        <p class="text-xs text-slate-500 mt-3 leading-relaxed">{T.jsonFields}</p>
+      </div>
+      <p class="text-sm text-slate-400">{T.paid} <a href={href.contact} class="text-sky-400 no-underline">{T.contactUs} →</a></p>
+    </section>
+
+    <!-- How we measure -->
+    <section aria-labelledby="metodo">
+      <h2 id="metodo" class="text-2xl font-bold text-slate-100 mb-4">{T.how}</h2>
+      <p class="text-slate-400 text-sm leading-relaxed mb-6 max-w-2xl">{T.howIntro}</p>
+      <table class="spec-table w-full text-sm">
+        <tbody>
+          {GROUPS.flatMap((g) => g.ids).map((id) => (
+            <tr>
+              <td class="k">{COMPONENTS[id].name[lang]}</td>
+              <td class="d">{COMPONENTS[id].rule[lang]}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p class="text-sm text-slate-500 mt-8">{T.feederHint} <a href={href.feederStatus} class="text-sky-400 no-underline">{T.feederLink} →</a></p>
+    </section>
+  </div>
+
+  <script type="application/json" id="status-config" set:html={JSON.stringify(config)} />
+</Layout>
+
+<style is:global>
+  .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 9999px; flex: none; background: #475569; }
+  #overall .status-dot { width: 14px; height: 14px; }
+  .status-dot[data-status='up'] { background: #34d399; box-shadow: 0 0 0 4px #34d39922; }
+  .status-dot[data-status='degraded'] { background: #f59e0b; box-shadow: 0 0 0 4px #f59e0b22; }
+  .status-dot[data-status='down'] { background: #f87171; box-shadow: 0 0 0 4px #f8717122; }
+  .state[data-status='up'] .label { color: #34d399; }
+  .state[data-status='degraded'] .label { color: #fbbf24; }
+  .state[data-status='down'] .label { color: #f87171; }
+  .bars { display: flex; gap: 2px; height: 30px; }
+  .bars .bar { flex: 1 1 0; min-width: 0; border-radius: 2px; background: #1e3048; outline-offset: 2px; }
+  .bars .bar[data-status='up'] { background: #34d399; }
+  .bars .bar[data-status='degraded'] { background: #f59e0b; }
+  .bars .bar[data-status='down'] { background: #f87171; }
+  .bars .bar:hover, .bars .bar:focus-visible { filter: brightness(1.25); }
+  @media (max-width: 639px) { .bars .bar[data-old] { display: none; } }
+  .legend-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #1e3048; }
+  .legend-swatch[data-status='up'] { background: #34d399; }
+  .legend-swatch[data-status='degraded'] { background: #f59e0b; }
+  .legend-swatch[data-status='down'] { background: #f87171; }
+  .bar-tip { position: fixed; z-index: 40; max-width: 280px; padding: 8px 10px; border-radius: 8px; font-size: 12px; line-height: 1.45;
+             background: #111e30; color: #cbd5e1; border: 1px solid #1e3048; box-shadow: 0 10px 30px #0008; pointer-events: none; }
+  .bar-tip b { color: #e2e8f0; }
+  .prose-status p + p { margin-top: 0.75rem; }
+  .prose-status a { color: #38bdf8; text-decoration: none; }
+  .prose-status strong { color: #e2e8f0; }
+</style>
+
+<script>
+  type Status = 'up' | 'degraded' | 'down';
+  interface Day { day: string; up: number; degraded: number; down: number }
+  interface Comp { id: string; status: Status | null; since: string | null; latency_ms: number | null; value: number | null; note: string | null; uptime_90d: number | null; days: Day[] }
+  interface Snap {
+    generated_at: string; monitoring_since: string | null; overall: Status | 'unknown'; components: Comp[];
+    network: { aircraft: number | null; messages_per_s: number | null; feeders_beast: number | null; feeders_mlat: number | null; data_age_s: number | null; checked_at: string } | null;
+    outages: { component: string; status: Status; started: string; ended: string | null; minutes: number }[];
+  }
+  interface Incident { title: string; kind: string; impact: 'minor' | 'major'; components: string[]; start: string; end: string | null; anchor: string }
+
+  const cfg = JSON.parse(document.getElementById('status-config')!.textContent || '{}') as {
+    url: string; lang: 'it' | 'en'; components: Record<string, string>; incidents: Incident[] };
+  const it = cfg.lang === 'it';
+  const locale = it ? 'it-IT' : 'en-GB';
+  // 'always': Italian leaves 4-digit numbers ungrouped by default (6935), the
+  // rest of the site writes 6.935.
+  const nf = new Intl.NumberFormat(locale, { useGrouping: 'always' });
+  const pf = new Intl.NumberFormat(locale, { maximumFractionDigits: 3, minimumFractionDigits: 2 });
+  const tf = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const dtf = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const df = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+  const dayf = new Intl.DateTimeFormat(locale, { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+
+  const L = it
+    ? {
+        state: { up: 'Operativo', degraded: 'Prestazioni ridotte', down: 'Disservizio' } as Record<Status, string>,
+        unknown: 'Nessun dato',
+        overall: { up: 'Tutti i servizi sono operativi', degraded: 'Alcuni servizi hanno prestazioni ridotte', down: 'Disservizio in corso', unknown: 'Stato non disponibile in questo momento' },
+        checked: 'Ultimo controllo alle', since: 'monitoraggio dal', refresh: 'si aggiorna ogni minuto',
+        numbers: { aircraft: 'Aerei tracciati', msgs: 'Messaggi al secondo', beast: 'Indirizzi feeder', mlat: 'Ricevitori in MLAT', age: 'Età del dato' },
+        uptime: (p: string, full: boolean) => `${p} % ${full ? 'negli ultimi 90 giorni' : 'da quando monitoriamo'}`,
+        noData: 'Nessun dato: il monitoraggio è partito dopo',
+        dayUp: (m: number) => `${nf.format(m)} min controllati`,
+        downMin: (m: number) => `${nf.format(m)} min di disservizio`,
+        degMin: (m: number) => `${nf.format(m)} min di prestazioni ridotte`,
+        incident: 'Incidente', maintenance: 'Manutenzione',
+        ongoingFor: 'da', ongoing: 'in corso', minutes: (m: number) => (m >= 120 ? `${nf.format(Math.round(m / 6) / 10)} h` : `${nf.format(m)} min`),
+        aircraft: (n: number) => `${nf.format(n)} aerei`, receivers: (n: number) => `${nf.format(n)} attivi`, days: (n: number) => `${nf.format(n)} giorni`,
+        downList: (n: string) => n,
+        unavailable: 'Non riusciamo a leggere i risultati delle sonde. Non vuol dire che i servizi siano fermi: riprova fra qualche minuto.',
+      }
+    : {
+        state: { up: 'Operational', degraded: 'Degraded performance', down: 'Outage' } as Record<Status, string>,
+        unknown: 'No data',
+        overall: { up: 'All systems operational', degraded: 'Some systems are degraded', down: 'Ongoing outage', unknown: 'Status unavailable right now' },
+        checked: 'Last check at', since: 'monitoring since', refresh: 'refreshes every minute',
+        numbers: { aircraft: 'Aircraft tracked', msgs: 'Messages per second', beast: 'Feeder addresses', mlat: 'Receivers in MLAT', age: 'Data age' },
+        uptime: (p: string, full: boolean) => `${p}% ${full ? 'over the last 90 days' : 'since monitoring started'}`,
+        noData: 'No data: monitoring started later, on',
+        dayUp: (m: number) => `${nf.format(m)} min checked`,
+        downMin: (m: number) => `${nf.format(m)} min of outage`,
+        degMin: (m: number) => `${nf.format(m)} min degraded`,
+        incident: 'Incident', maintenance: 'Maintenance',
+        ongoingFor: 'for', ongoing: 'ongoing', minutes: (m: number) => (m >= 120 ? `${nf.format(Math.round(m / 6) / 10)} h` : `${nf.format(m)} min`),
+        aircraft: (n: number) => `${nf.format(n)} aircraft`, receivers: (n: number) => `${nf.format(n)} active`, days: (n: number) => `${nf.format(n)} days`,
+        downList: (n: string) => n,
+        unavailable: 'We can\'t read the probes\' results. It doesn\'t mean the services are down: try again in a few minutes.',
+      };
+
+  // The Worker's notes are short English reasons; say them in the page's language.
+  const NOTES: [RegExp, (m: RegExpMatchArray) => string][] = it
+    ? [
+        [/^no response$/, () => 'nessuna risposta'], [/^HTTP (\d+)$/, (m) => `errore HTTP ${m[1]}`],
+        [/^slow: (\d+) ms$/, (m) => `lento: ${nf.format(+m[1])} ms`], [/^data (\d+) s old$/, (m) => `dato vecchio di ${nf.format(+m[1])} s`],
+        [/^(\d+) aircraft$/, (m) => `solo ${nf.format(+m[1])} aerei`], [/^no data$/, () => 'nessun dato'],
+        [/^count unavailable$/, () => 'conteggio non disponibile'], [/^no receivers connected$/, () => 'nessun ricevitore collegato'],
+        [/^(\d+) vs usual (\d+)$/, (m) => `${nf.format(+m[1])} contro i soliti ${nf.format(+m[2])}`],
+        [/^(\d+)\/(\d+) MLAT shards$/, (m) => `${m[1]} server MLAT su ${m[2]}`], [/^no MLAT shard readable$/, () => 'nessun server MLAT raggiungibile'],
+        [/^archive \(R2\) unavailable$/, () => 'archivio dei giorni passati non raggiungibile'], [/^unexpected body$/, () => 'risposta inattesa'],
+      ]
+    : [
+        [/^no response$/, () => 'no response'], [/^HTTP (\d+)$/, (m) => `HTTP error ${m[1]}`],
+        [/^slow: (\d+) ms$/, (m) => `slow: ${nf.format(+m[1])} ms`], [/^data (\d+) s old$/, (m) => `data ${nf.format(+m[1])} s old`],
+        [/^(\d+) aircraft$/, (m) => `only ${nf.format(+m[1])} aircraft`], [/^no data$/, () => 'no data'],
+        [/^count unavailable$/, () => 'count unavailable'], [/^no receivers connected$/, () => 'no receivers connected'],
+        [/^(\d+) vs usual (\d+)$/, (m) => `${nf.format(+m[1])} vs the usual ${nf.format(+m[2])}`],
+        [/^(\d+)\/(\d+) MLAT shards$/, (m) => `${m[1]} of ${m[2]} MLAT servers`], [/^no MLAT shard readable$/, () => 'no MLAT server reachable'],
+        [/^archive \(R2\) unavailable$/, () => 'past days\' archive unreachable'], [/^unexpected body$/, () => 'unexpected answer'],
+      ];
+  const note = (n: string | null) => {
+    if (!n) return '';
+    for (const [re, f] of NOTES) { const m = n.match(re); if (m) return f(m); }
+    return n;
+  };
+
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string);
+  const sev: Record<string, number> = { none: 0, up: 1, degraded: 2, down: 3 };
+  const utcDay = (d: Date) => d.toISOString().slice(0, 10);
+  const DAYS = 90;
+  const RECENT = 30; // shown on phones
+
+  function detail(c: Comp): string {
+    if (c.status && c.status !== 'up' && c.note) return note(c.note);
+    if (c.id === 'live' && c.value !== null) return L.aircraft(c.value);
+    if ((c.id === 'feeders' || c.id === 'mlat') && c.value !== null) return L.receivers(c.value);
+    if (c.id === 'history' && c.value !== null) return '';
+    if (c.latency_ms !== null) return `${nf.format(c.latency_ms)} ms`;
+    return '';
+  }
+
+  /** The worst of the probes' minutes and any published incident for a component on a UTC day. */
+  function dayStatus(id: string, day: string, d: Day | undefined): { status: string; incidents: Incident[] } {
+    const start = Date.parse(`${day}T00:00:00Z`);
+    const end = start + 86_400_000;
+    const incs = cfg.incidents.filter((i) => i.kind === 'incident' && i.components.includes(id)
+      && Date.parse(i.start) < end && (i.end === null || Date.parse(i.end) > start));
+    let s = 'none';
+    if (d && d.up + d.degraded + d.down > 0) s = d.down >= 5 ? 'down' : d.down > 0 || d.degraded >= 15 ? 'degraded' : 'up';
+    for (const i of incs) {
+      const is = i.impact === 'major' ? 'down' : 'degraded';
+      if (sev[is] > sev[s]) s = is;
+    }
+    return { status: s, incidents: incs };
+  }
+
+  const tip = document.getElementById('bar-tip')!;
+  function showTip(el: HTMLElement) {
+    tip.innerHTML = el.dataset.tip || '';
+    tip.hidden = false;
+    const r = el.getBoundingClientRect();
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    tip.style.left = `${Math.max(8, Math.min(window.innerWidth - w - 8, r.left + r.width / 2 - w / 2))}px`;
+    tip.style.top = `${r.top - h - 8 < 8 ? r.bottom + 8 : r.top - h - 8}px`;
+  }
+  const hideTip = () => { tip.hidden = true; };
+  document.addEventListener('scroll', hideTip, { passive: true });
+
+  function renderComponent(c: Comp, since: string | null) {
+    const li = document.querySelector<HTMLElement>(`.component[data-id="${c.id}"]`);
+    if (!li) return;
+    const st = c.status ?? 'unknown';
+    const state = li.querySelector<HTMLElement>('.state')!;
+    state.dataset.status = st;
+    state.querySelector<HTMLElement>('.status-dot')!.dataset.status = st;
+    state.querySelector<HTMLElement>('.label')!.textContent = c.status ? L.state[c.status] : L.unknown;
+    li.querySelector<HTMLElement>('.detail')!.textContent = detail(c);
+
+    const byDay = new Map(c.days.map((d) => [d.day, d]));
+    const today = new Date();
+    const firstMonitored = since ? utcDay(new Date(since)) : null;
+    const bars = li.querySelector<HTMLElement>('.bars')!;
+    bars.textContent = '';
+    let problemDays = 0;
+    for (let i = DAYS - 1; i >= 0; i--) {
+      const date = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - i));
+      const day = utcDay(date);
+      const { status, incidents } = dayStatus(c.id, day, byDay.get(day));
+      if (status === 'down' || status === 'degraded') problemDays++;
+      const d = byDay.get(day);
+      const lines = [`<b>${esc(dayf.format(date))}</b> (UTC)`];
+      if (d && d.up + d.degraded + d.down > 0) {
+        const tot = d.up + d.degraded + d.down;
+        lines.push(L.dayUp(tot));
+        if (d.down) lines.push(L.downMin(d.down));
+        if (d.degraded) lines.push(L.degMin(d.degraded));
+        if (!d.down && !d.degraded) lines.push(L.state.up);
+      } else if (firstMonitored && day < firstMonitored) {
+        lines.push(`${L.noData} ${esc(df.format(new Date(since!)))}`);
+      } else {
+        lines.push(L.unknown);
+      }
+      for (const inc of incidents) lines.push(`${inc.kind === 'maintenance' ? L.maintenance : L.incident}: ${esc(inc.title)}`);
+      const bar = document.createElement('span');
+      bar.className = 'bar';
+      bar.dataset.status = status;
+      bar.dataset.tip = lines.join('<br>');
+      bar.tabIndex = 0;
+      bar.setAttribute('aria-label', lines.join(' · ').replace(/<[^>]+>/g, ''));
+      if (i >= RECENT) bar.dataset.old = '';
+      if (incidents.length) {
+        bar.style.cursor = 'pointer';
+        bar.addEventListener('click', () => { location.hash = incidents[0].anchor; });
+      }
+      bar.addEventListener('mouseenter', () => showTip(bar));
+      bar.addEventListener('focus', () => showTip(bar));
+      bar.addEventListener('mouseleave', hideTip);
+      bar.addEventListener('blur', hideTip);
+      bars.appendChild(bar);
+    }
+    bars.setAttribute('aria-label', `${cfg.components[c.id]}: ${problemDays} / ${DAYS}`);
+
+    const monitoredDays = since ? Math.max(1, Math.ceil((Date.now() - Date.parse(since)) / 86_400_000)) : 0;
+    li.querySelector<HTMLElement>('.uptime')!.textContent =
+      c.uptime_90d === null ? '' : L.uptime(pf.format(c.uptime_90d), monitoredDays >= DAYS);
+  }
+
+  function renderNumbers(s: Snap) {
+    const box = document.getElementById('numbers')!;
+    const n = s.network;
+    if (!n) { box.hidden = true; return; }
+    const cell = (k: string, v: string, accent = false) => `<div><div class="k">${esc(k)}</div><div class="v${accent ? ' accent' : ''}">${esc(v)}</div></div>`;
+    const dash = '—';
+    box.innerHTML = [
+      cell(L.numbers.aircraft, n.aircraft === null ? dash : nf.format(n.aircraft), true),
+      cell(L.numbers.msgs, n.messages_per_s === null ? dash : nf.format(Math.round(n.messages_per_s))),
+      cell(L.numbers.beast, n.feeders_beast === null ? dash : nf.format(n.feeders_beast)),
+      cell(L.numbers.mlat, n.feeders_mlat === null ? dash : nf.format(n.feeders_mlat)),
+      cell(L.numbers.age, n.data_age_s === null ? dash : `${nf.format(n.data_age_s)} s`),
+    ].join('');
+    box.hidden = false;
+  }
+
+  function renderOutages(s: Snap) {
+    const sec = document.getElementById('rilevate')!;
+    const ul = document.getElementById('outages')!;
+    if (!s.outages.length) { sec.hidden = true; return; }
+    ul.innerHTML = s.outages.map((o) => {
+      const name = cfg.components[o.component] ?? o.component;
+      const when = o.ended ? `${dtf.format(new Date(o.started))} · ${L.minutes(o.minutes)}` : `${dtf.format(new Date(o.started))} · ${L.ongoing}`;
+      return `<li class="flex flex-wrap items-center justify-between gap-2 px-4 py-3" style="border-color:#1e3048">
+        <span class="inline-flex items-center gap-2"><span class="status-dot" data-status="${o.status}"></span><span class="text-slate-200">${esc(name)}</span>
+        <span class="text-slate-500">${esc(L.state[o.status])}</span></span>
+        <span class="text-xs font-mono text-slate-500">${esc(when)}</span></li>`;
+    }).join('');
+    sec.hidden = false;
+  }
+
+  function renderOverall(s: Snap | null) {
+    const dot = document.querySelector<HTMLElement>('#overall .status-dot')!;
+    const title = document.getElementById('overall-title')!;
+    const sub = document.getElementById('overall-sub')!;
+    if (!s) {
+      dot.dataset.status = 'unknown';
+      title.textContent = L.overall.unknown;
+      sub.textContent = L.unavailable;
+      return;
+    }
+    dot.dataset.status = s.overall;
+    let head = L.overall[s.overall];
+    if (s.overall !== 'up' && s.overall !== 'unknown') {
+      const hit = s.components.filter((c) => c.status === s.overall).map((c) => cfg.components[c.id]);
+      if (hit.length) head += `: ${hit.join(', ')}`;
+    }
+    title.textContent = head;
+    const parts = [`${L.checked} ${tf.format(new Date(s.network?.checked_at ?? s.generated_at))}`, L.refresh];
+    if (s.monitoring_since) parts.push(`${L.since} ${df.format(new Date(s.monitoring_since))}`);
+    sub.textContent = parts.join(' · ');
+  }
+
+  async function load() {
+    let snap: Snap | null = null;
+    try {
+      const res = await fetch(cfg.url, { cache: 'no-store' });
+      if (res.ok) snap = (await res.json()) as Snap;
+    } catch {
+      snap = null;
+    }
+    renderOverall(snap);
+    if (!snap) return;
+    for (const c of snap.components) renderComponent(c, snap.monitoring_since);
+    renderNumbers(snap);
+    renderOutages(snap);
+  }
+
+  load();
+  setInterval(load, 60_000);
+</script>

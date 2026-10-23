@@ -1,0 +1,34 @@
+// flyitalyadsb-status: the probes behind the status page (see src/index.ts).
+// Separate from the Pages project's wrangler.toml at the repo root and from
+// mcp-worker/, like that one.
+//
+// The route (flyitalyadsb.com/status.json) and the script's identity are
+// managed by Terraform in nesso-infra
+// (terraform/cloudflare/workers-flyitalyadsb-status.tf); this file names what
+// the code binds to. Secret: MONITOR_API_KEY (wrangler secret put, value in
+// Infisical project flyitalyadsb, prod, /status-monitor).
+// Local: put MONITOR_API_KEY in status-worker/.dev.vars, then
+// `npm run status:dev` (port 8791) and trigger a pass with
+// `curl 'http://127.0.0.1:8791/__scheduled?cron=*+*+*+*+*'`.
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "flyitalyadsb-status",
+  "main": "src/index.ts",
+  // Same date as the Pages project (wrangler.toml) and mcp-worker.
+  "compatibility_date": "2026-06-15",
+  // Probes go out like any visitor's request, through the zone's edge, not
+  // through same-zone origin routing.
+  "compatibility_flags": ["global_fetch_strictly_public"],
+  "workers_dev": false,
+  "observability": { "enabled": true },
+  "triggers": { "crons": ["* * * * *"] },
+  "vars": {
+    "SITE": "https://flyitalyadsb.com",
+    "MAP": "https://mappa.flyitalyadsb.com",
+    "API_BASE": "https://api.flyitalyadsb.com"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "STATUS", "class_name": "StatusStore" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["StatusStore"] }]
+}

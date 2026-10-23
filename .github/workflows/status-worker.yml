@@ -1,0 +1,71 @@
+# The flyitalyadsb-status Worker (status-worker/): the probes behind the status
+# page. Checked on every pull request that touches it, deployed on every push
+# to main that does. Same shape as mcp-worker.yml.
+#
+# CLOUDFLARE_API_TOKEN: the same deploy token as mcp-worker (Workers Scripts
+# Write on the nesso account, nesso-infra
+# terraform/cloudflare/workers-flyitalyadsb-mcp-deploy-token.tf), so this job
+# uses the `mcp-worker` environment, which only main can deploy to: pull
+# requests never see it. Like there, the deploy job installs without
+# lifecycle scripts and runs nothing but wrangler. The Durable Object storage
+# is part of the script, so no other permission is needed.
+name: status-worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - status-worker/**
+      - package.json
+      - package-lock.json
+      - .github/workflows/status-worker.yml
+  pull_request:
+    paths:
+      - status-worker/**
+      - package.json
+      - package-lock.json
+      - .github/workflows/status-worker.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  WRANGLER_SEND_METRICS: "false"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run status:check
+      - run: npm run status:test
+      - run: npx wrangler deploy -c status-worker/wrangler.jsonc --dry-run --outdir "$RUNNER_TEMP/status-worker"
+
+  deploy:
+    needs: check
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: mcp-worker
+    concurrency:
+      group: status-worker-deploy
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx wrangler deploy -c status-worker/wrangler.jsonc --message "$GITHUB_SHA"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: d40a1afea08131ae3ad6088e1df838c5
